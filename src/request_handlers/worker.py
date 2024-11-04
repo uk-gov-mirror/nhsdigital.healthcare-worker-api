@@ -6,10 +6,10 @@ from hcw_exception import HcwException
 from logs.log import Log
 from request_handlers.base_handler import BaseHandler
 
-logger = Log("worker_handler")
+logger = Log("practitioner_handler")
 
 
-class WorkerHandler(BaseHandler):
+class PractitionerHandler(BaseHandler):
     def get(self, event: APIGatewayProxyEvent) -> FhirWorker:
         worker_id = event.query_string_parameters.get("identifier")
         if worker_id == "999":

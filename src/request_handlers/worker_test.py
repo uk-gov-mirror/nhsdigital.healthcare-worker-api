@@ -1,10 +1,10 @@
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 
-from request_handlers.worker import WorkerHandler
+from request_handlers.worker import PractitionerHandler
 
 
 def test_worker_handler():
-    handler = WorkerHandler()
-    response = handler.get(APIGatewayProxyEvent(data={"resource": "/Worker"}))
+    handler = PractitionerHandler()
+    response = handler.get(APIGatewayProxyEvent(data={"resource": "/Practitioner"}))
 
     assert response.id == "111"

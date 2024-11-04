@@ -45,8 +45,7 @@ resource "aws_iam_policy" "codepipeline_policy" {
           "codestar-connections:UseConnection"
         ],
         "Resource" : [
-          "arn:aws:codestar-connections:eu-north-1:535002889321:connection/b2b799de-0712-4567-94de-bb69a361f972",
-          "arn:aws:codeconnections:eu-north-1:535002889321:connection/b2b799de-0712-4567-94de-bb69a361f972"
+          data.aws_codestarconnections_connection.github_connection.arn
         ]
       },
       {
@@ -289,6 +288,17 @@ resource "aws_iam_policy" "deployment_trigger_policy" {
         "Effect" : "Allow",
         "Action" : "s3:GetObject",
         "Resource" : "arn:aws:s3:::nhse-iam-hcw-build-artifacts-dev/*"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "codeconnections:GetConnectionToken",
+          "codeconnections:GetConnection",
+          "codeconnections:UseConnection"
+        ],
+        "Resource" : [
+          data.aws_codestarconnections_connection.github_connection.arn
+        ]
       }
     ]
   })

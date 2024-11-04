@@ -1,8 +1,17 @@
 import json
 import boto3
 import os
-
 import urllib3
+
+SLACK_CHANNEL_ID = "TODO"
+
+
+def get_slack_access_token() -> str:
+    secret_id = os.environ["slack_secret_id"]
+    client = boto3.client("secretsmanager")
+
+    response = client.get_secret_value(SecretId=secret_id)
+    return response["SecretString"]
 
 
 def get_github_access_token() -> str:
@@ -49,9 +58,8 @@ def send_status_update_request(commit_id, build_status):
     http = urllib3.PoolManager()
     r = http.request('POST', url,
                         headers={'Content-Type': 'application/json',
-                            'Authorization': f"Bearer {get_github_access_token()}"},
-                        body=json.dumps(build_status).encode('utf-8')
-                    )
+                                'Authorization': f"Bearer {get_github_access_token()}"},
+                        body=json.dumps(build_status).encode('utf-8'))
     print(r.data)
 
 
@@ -72,6 +80,22 @@ def get_commit_state(message):
         return "error"
 
 
+def send_slack_notification(commit_id, state):
+    url = "https://slack.com/api/chat.postMessage"
+
+    message = {
+        "channel": SLACK_CHANNEL_ID,
+        "text": f"Commit id {commit_id} in state {state}",
+    }
+    print(f"Sending to URL {url}")
+    http = urllib3.PoolManager()
+    r = http.request('POST', url,
+                        headers={'Content-Type': 'application/json',
+                                'Authorization': f"Bearer {get_slack_access_token()}"},
+                        body=json.dumps(message).encode('utf-8'))
+    print(r.data)
+
+
 def handler(event, context):
     print(f"event = {event}, context = {context}")
     message = json.loads(event["Records"][0]["Sns"]["Message"])
@@ -88,4 +112,5 @@ def handler(event, context):
 
     if branch == "ft":
         # Means that we're running the build from develop to deploy to ft
+        # send_slack_notification(commit_id, state)
         print("Deploying to FT, in the future will insert logic here to publish updates to the team")

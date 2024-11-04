@@ -14,7 +14,7 @@ class TestWorker(IntegrationTest):
     access_token: Optional[str]
 
     def send_worker_get(self, worker_id: Optional[int]):
-        return self.send_request(self.access_token,"Worker", {"identifier": worker_id})
+        return self.send_request(self.access_token, "Practitioner", {"identifier": worker_id})
 
     @pytest.fixture(autouse=True)
     def resource(self):

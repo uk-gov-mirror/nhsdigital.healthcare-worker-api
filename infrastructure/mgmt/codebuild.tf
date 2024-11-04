@@ -1,5 +1,5 @@
 data "aws_codestarconnections_connection" "github_connection" {
-  name = "Github"
+  name = "Github2"
 }
 
 resource "aws_iam_role" "codebuild_role" {
@@ -45,7 +45,7 @@ resource "aws_iam_policy" "codebuild_agent_policy" {
           aws_s3_bucket.build_artifacts.arn,
           "${aws_s3_bucket.build_artifacts.arn}/*"
         ]
-      },
+      }
     ]
   })
 }

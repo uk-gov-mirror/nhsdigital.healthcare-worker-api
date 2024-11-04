@@ -5,12 +5,12 @@ from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 from fhir.worker import FhirWorker
 from hcw_exception import HcwException
 from request_handlers.base_handler import BaseHandler
-from request_handlers.worker import WorkerHandler
+from request_handlers.worker import PractitionerHandler
 
 
 handlers: Dict[str, Type[BaseHandler]]
 handlers = {
-    "/Worker": WorkerHandler
+    "/Practitioner": PractitionerHandler
 }
 
 

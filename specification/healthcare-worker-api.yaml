@@ -225,7 +225,7 @@ components:
             type: object
             properties:
               use:
-                type: code
+                type: string
                 description: Identifies the purpose for this name.
                 default: usual
               family:

@@ -76,7 +76,8 @@ resource "aws_lambda_function" "pipeline_update_lambda" {
 
   environment {
     variables = {
-      secret_id = aws_secretsmanager_secret.github_access_token.id
+      secret_id       = aws_secretsmanager_secret.github_access_token.id
+      slack_secret_id = aws_secretsmanager_secret.slack_access_token.id
     }
   }
 }
@@ -123,4 +124,8 @@ resource "aws_sns_topic_subscription" "pipeline_update_subscription" {
 
 resource "aws_secretsmanager_secret" "github_access_token" {
   name = "github-access-token"
+}
+
+resource "aws_secretsmanager_secret" "slack_access_token" {
+  name = "slack-access-token"
 }

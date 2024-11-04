@@ -53,7 +53,7 @@ def local_start():
     This is just a helper function for triggering the lambda handler locally without having to provide the event
     and context objects
     """
-    lambda_handler({"resource": "/Worker"}, LambdaContext())
+    lambda_handler({"resource": "/Practitioner"}, LambdaContext())
 
 
 if __name__ == '__main__':
