@@ -124,10 +124,10 @@ x-nhsd-apim:
       header: X-API-Key
       secret: example-apikey-secret-name
 paths:
-  /Worker:
+  /Practitioner:
     get:
       summary: Get healthcare worker details
-      operationId: getWorker
+      operationId: getPractitioner
       description: |
         # Overview
         Use this endpoint to get details of healthcare workers in the CIS directory.
@@ -135,14 +135,11 @@ paths:
         This endpoint will return the matching Person object from the directory, which provides the following information:
           * Name
           * Title
-          * Details of any organisations the worker is associated with
-          * Details of [roles](https://digital.nhs.uk/data-and-information/publications/statistical/appointments-in-general-practice/sds-role-groups) the worker holds at each organisation
 
-        Only active objects, showing current organisation and roles will be returned. If the care identity itself is closed, a 410 response will be returned (see below).
+        Only active objects, showing details will be returned. If the care identity itself is closed, a 410 response will be returned (see below).
 
         To get the information, you must supply:
           * CIS unique identifier (sometimes known as SDS user ID or smartcard ID)
-
       parameters:
         - in: query
           name: identifier
@@ -170,12 +167,12 @@ paths:
         '200':
           description: Successful operation
           content:
-            application/json:
+            application/fhir+json:
               schema:
                 type: object
                 properties:
-                  person:
-                    $ref: '#/components/schemas/Worker'
+                  practitioner:
+                    $ref: '#/components/schemas/Practitioner'
         '400':
           description: Missing or invalid query parameter(s).
         '404':
@@ -195,70 +192,51 @@ components:
     app-level3:
       $ref: https://proxygen.prod.api.platform.nhs.uk/components/securitySchemes/app-level3
   schemas:
-    Worker:
+    Practitioner:
       type: object
       properties:
+        resourceType:
+          type: string
+          default: Practitioner
         id:
           type: string
           description: Auto generated unique ID for the person.
           example: 123456789012
-        forename:
-          type: string
-          description: The forename or given name of a person.
-          example: Jane
-        middlenames:
-          type: string
-          description: The middle names of a person.
-          example: Alison
-        surname:
-          type: string
-          description: That part of a person's name which is used to describe family, clan, tribal group, or marital association.
-          example: Smith
-        initials:
-          type: string
-          description: All middle initials, excludes first name initial.
-          example: A
-        title:
-          type: string
-          description: Standard form of address used to precede a person's name
-          example: Ms
-        orgPersons:
+        identifier:
           type: array
-          description: Information relating a person to a specific organisation.
+          description: Auto generated unique ID for the person.
           items:
             type: object
             properties:
-              id:
+              system:
                 type: string
-                description: Auto generated unique ID for the organisational person.
-                example: 345678901234
-              dateOpened:
+                default: https://fhir.nhs.uk/Id/sds-user-id
+              value:
                 type: string
-                description: Date organisational person was opened/re-opened. (yyyymmdd)
-                example: 20210131
-              orgName:
+                example: 123456789012
+        active:
+          type: boolean
+          description: Describes the active status of the Practitioner record in the directory.
+          example: True
+        name:
+          type: array
+          description: Person's name details.
+          items:
+            type: object
+            properties:
+              use:
+                type: code
+                description: Identifies the purpose for this name.
+                default: usual
+              family:
                 type: string
-                description: Official name for the associated organisation, taken from ODS.
-                example: THE CROOKES PRACTICE
-              orgId:
+                description: That part of a person's name which is used to describe family, clan, tribal group, or marital association.
+                example: Smith
+              given:
                 type: string
-                description: Official code for the associated organisation, taken from ODS.
-                example: G7125085
-              roleProfiles:
-                type: array
-                description: The details of a user’s specific roles within a specific organisation.
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                      description: Auto generated unique ID for the role profile.
-                      example: 567890123456
-                    roleName:
-                      type: string
-                      description: Name of the assigned role.
-                      example: General Medical Practitioner
-                    roleCode:
-                      type: string
-                      description: Code of the assigned role.
-                      example: R0260
+                description: The forenames or given names of a person. Includes middle names.
+                example: Jane Alison
+              prefix:
+                type: string
+                description: Standard form of address used to precede a person's name
+                example: Ms
