@@ -17,6 +17,7 @@ resource "aws_cloudwatch_dashboard" "env_dashboard" {
                     [ "AWS/ApiGateway", "Latency", "ApiName", "hcw-api-${var.env}", "Stage", "live" ]
                 ],
                 "region": "eu-west-2"
+                "title": "Request Latency"
             }
         },
         {
@@ -33,7 +34,8 @@ resource "aws_cloudwatch_dashboard" "env_dashboard" {
                 "stacked": false,
                 "region": "eu-west-2",
                 "period": 300,
-                "stat": "Sum"
+                "stat": "Sum",
+                "title": "Requests"
             }
         },
         {
@@ -50,7 +52,8 @@ resource "aws_cloudwatch_dashboard" "env_dashboard" {
                 "view": "pie",
                 "region": "eu-west-2",
                 "period": 300,
-                "stat": "Sum"
+                "stat": "Sum",
+                "title": "Endpoints"
             }
         },
         {
@@ -88,6 +91,7 @@ resource "aws_cloudwatch_dashboard" "env_dashboard" {
                 "region": "eu-west-2",
                 "period": 300,
                 "stat": "Sum"
+                "title": "Request Count"
             }
         },
         {
@@ -105,7 +109,8 @@ resource "aws_cloudwatch_dashboard" "env_dashboard" {
                 "stacked": false,
                 "region": "eu-west-2",
                 "period": 300,
-                "stat": "Sum"
+                "stat": "Sum",
+                "title": "Deployments"
             }
         },
         {
@@ -126,6 +131,7 @@ resource "aws_cloudwatch_dashboard" "env_dashboard" {
                 "region": "eu-west-2",
                 "period": 300,
                 "stat": "Sum"
+                "title": "Request Info"
             }
         },
         {
