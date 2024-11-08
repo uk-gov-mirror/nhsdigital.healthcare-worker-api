@@ -52,20 +52,33 @@ guides through how to do that.
    4. Copy the environment variables and paste into your terminal. This should have set `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_SESSION_TOKEN`.
 6. Go to the `instrastructure` directory
 7. Run `terraform init`. You should see a message including the message "Terraform has been successfully initialized!"
-8. Each AWS account can host multiple application environments (e.g. multiple dev environments in the dev account), but there are also some things that need to be common across the entire environment (e.g. IAM roles). To manage this we have different Terraform workspaces. Any Terraform plan / apply should be run within a workspace and the choice of workspace will depend on the change you want to deploy:
-   1. `mgmt` for anything that's common across all environments. Note that this change will affect all environments in the given account
-   2. Static environment names like (e.g. `ft`, `int`) should be reserved for deployment from the pipelines
-   3. Anything else can be used to deploy a test environment. If running locally it's a good idea to have the workspace name include your name in some way.
-9. Switch to the Terraform workspace you want with `terraform workspace select <workspace>`
+8. Switch to the Terraform workspace you want with `terraform workspace select <workspace>`. See below for workspace details
    1. If this is the first deployment to this workspace then you will need to run `terraform workspace new <workspace>` first
-10. Run `terraform plan -var-file=environments/dev.tfvars` to validate your changes and see what impact it will have if deployed
+9. Run `terraform plan -var-file=environments/dev.tfvars` to validate your changes and see what impact it will have if deployed
     1. This is important. **Make sure the plan represents the change you want to make before running the apply command**
-11. If you're happy with the above plan, run `terraform apply -var-file=environments/dev.tfvars` to make the change in AWS
+10. If you're happy with the above plan, run `terraform apply -var-file=environments/dev.tfvars` to make the change in AWS
     1. If you're deploying to an app environment (i.e. not management) then you'll also need to specify location of the S3 lambda code in S3. For example, `-var "app_s3_filename=66374856c6c908c50e5d0974704b0e727106a934.zip"`. Since you need a valid zip file before deployments, it's almost always easier to let the update happen automatically through the PR.
 
-In the future we plan to put the "management" resources into their own AWS account - [HCW-100](https://nhsd-jira.digital.nhs.uk/browse/HCW-100). For now, we have the `mgmt` workspace in dev which contains all the global resources and `mgmt-int` in int which contains build resources shared by int & ref.
-
 A Terraform linter runs on each push to a PR, the command `terraform fmt -recursive` will resolve any simple formatting issues for fix that status failure.
+
+#### Terraform Workspaces
+
+We make use of Terraform workspaces to keep environments as separate as possible, but there will always be some resources
+which need to be shared between environments. Most of these are in the dedicated "management" account, but some need to
+be in the relevant AWS account (e.g. deployment roles). The following table shows the mapping between AWS account,
+Terraform workspace, and Terraform environments file.
+
+In most cases this is detail you don't need to worry about, but it's worth noting that management changes are not
+deployed until you merge to develop.
+
+| AWS Account               | Terraform Workspace | Environments File | Notes                                                                                                                                               |
+|---------------------------|---------------------|-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| management (209479271736) | management          | mgmt.tfvars       | Anything common between all environments (e.g. VPN connection). Deployed on merge to develop.                                                       |
+| dev (535002889321)        | mgmt                | dev.tfvars        | Resources shared between environments, but specific to the account (e.g. app deployment role). Deployed on merge to develop.                        |
+| dev (535002889321)        | pr-*                | dev.tfvars        | App deployment of lambda and associated resources. Deployed on push to an open PR, contains latest app code from the relevant branch.               |
+| dev (535002889321)        | ft                  | dev.tfvars        | App deployment of lambda and associated resources. Deployed on merge to develop.                                                                    |
+| int (711387117641)        | int                 | int.tfvars        | App deployment of lambda and associated resources. Deployed on run from static env deployment pipeline.                                             |
+| int (711387117641)        | mgmt-int            | int.tfvars        | Resources shared between environments, but specific to the account (e.g. app deployment role). Deployed on run from static env deployment pipeline. |
 
 ## Environments & Pipelines
 
@@ -156,3 +169,32 @@ an access token. This repository includes a script for generating a valid access
 2. Install the poetry dependencies from the top level if you haven't already: `poetry install`
 3. Run the script with the following command, replacing `<api_key>` with the API key from your app: `poetry run token <api_key>`
 4. The script will output the access token. This needs to be included in any requests in the `Authorization` header as `Bearer <access_token>`
+
+## General Maintenance
+
+### Pipeline tokens
+
+We have a few tokens saved as secrets in AWS so that we can publish the state of deployments. We currently have GitHub and slack tokens.
+The GitHub token is for publishing the state of PR deployment to the relevant commit. The slack token is used for publishing
+the result of deployments to FT into a dedicated Slack channel.
+
+These tokens could expire, or otherwise need replacing when we notice a problem. The following sections describe what steps need to be taken to refresh them.
+
+### Renewing GitHub token
+
+The [GitHub documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
+explains how to create a new fine-grained access token. It only needs access to this repository and needs the "Read access to metadata"
+and "Read and Write access to commit statuses" permissions.
+
+Once the new token has been created, the value needs to be saved in the `github-access-token` secret (in secrets manager) in the management AWS account.
+
+### Renewing Slack token
+
+The Slack token is based on the bot app we created specifically for HCW deployments. You can manage this app from the
+[Slack apps page](https://api.slack.com/apps). From the app config go to "OAuth & Permissions", the OAuth token should
+be displayed under "OAuth Tokens".
+
+Save this token as the `slack-access-token` secret (in secrets manager) in the management AWS account.
+
+If the bot app ever needs creating then it simply needs the `chat:write` permission, and then for the bot user to be
+added to the appropriate Slack channel. Make sure to set the value of `SLACK_CHANNEL_ID` in `status_reporting.py` appropriately.

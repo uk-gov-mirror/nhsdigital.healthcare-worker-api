@@ -1,5 +1,5 @@
 data "aws_s3_bucket" "app_deployment" {
-  bucket = "nhse-iam-hcw-build-artifacts-dev"
+  bucket = "nhse-iam-hcw-build-artifacts-mgmt"
 }
 
 data "aws_s3_object" "app_deployment_zip" {
@@ -20,6 +20,11 @@ resource "aws_lambda_function" "hcw-app" {
   source_code_hash = data.aws_s3_object.app_deployment_zip.etag
 
   publish = true
+
+  vpc_config {
+    security_group_ids = [data.aws_security_group.security_group.id]
+    subnet_ids         = data.aws_subnets.subnets.ids
+  }
 }
 
 resource "aws_iam_role" "lambda_app_role" {

@@ -31,10 +31,18 @@ phases:
       - terraform apply tf.plan
       - |
         if expr "${environment_name}" : "ft" >/dev/null; then
+          # TODO: put back to ft instead of pr for testing
           # Since we're deploying to ft we want to make sure we deploy the mgmt infra too (we don't do this on
           # every branch otherwise it'll conflict)
+          # There's two parts to this:
+          # 1) The management account itself
+          # 2) Resources shared between environments within an account
+          # So we're going to do both deployments here
+          terraform workspace select management
+          terraform plan -var-file="environments/mgmt.tfvars" -out tf.plan
+          terraform apply tf.plan
           terraform workspace select mgmt
-          terraform plan -var-file="environments/${account_name}.tfvars" -var "app_s3_filename=${app_s3_filename}" -out tf.plan
+          terraform plan -var-file="environments/${account_name}.tfvars" -out tf.plan
           terraform apply tf.plan
         fi
 

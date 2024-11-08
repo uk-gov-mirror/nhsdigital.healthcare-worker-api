@@ -23,6 +23,92 @@ resource "aws_codebuild_project" "hcw-deployment-static-env-trigger" {
   }
 }
 
+resource "aws_kms_key" "kms_key" {
+  description         = "Encryption key used for artifacts which are shared between AWS accounts"
+  enable_key_rotation = true
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "Enable IAM User Permissions"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::209479271736:root"
+        }
+        Action   = "kms:*"
+        Resource = "*"
+      },
+      {
+        Sid    = "Allow access for Key Administrators"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::209479271736:role/aws-reserved/sso.amazonaws.com/eu-west-2/AWSReservedSSO_AWSAdministratorAccess_a77a65f102a298f7"
+        }
+        Action = [
+          "kms:Create*",
+          "kms:Describe*",
+          "kms:Enable*",
+          "kms:List*",
+          "kms:Put*",
+          "kms:Update*",
+          "kms:Revoke*",
+          "kms:Disable*",
+          "kms:Get*",
+          "kms:Delete*",
+          "kms:TagResource",
+          "kms:UntagResource",
+          "kms:ScheduleKeyDeletion",
+          "kms:CancelKeyDeletion",
+          "kms:RotateKeyOnDemand"
+        ]
+        Resource : "*"
+      },
+      {
+        Sid    = "Allow use of the key"
+        Effect = "Allow"
+        Principal = {
+          AWS = [
+            "arn:aws:iam::711387117641:root",
+            "arn:aws:iam::535002889321:root"
+          ]
+        }
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
+          "kms:DescribeKey"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "Allow attachment of persistent resources"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::711387117641:root"
+        }
+        Action = [
+          "kms:CreateGrant",
+          "kms:ListGrants",
+          "kms:RevokeGrant"
+        ]
+        Resource = "*"
+        Condition = {
+          Bool = {
+            "kms:GrantIsForAWSResource" = "true"
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_kms_alias" "key_alias" {
+  name          = "alias/Artifact-Encryption-Key"
+  target_key_id = aws_kms_key.kms_key.key_id
+}
+
 resource "aws_codepipeline" "static_env_deployment_pipeline" {
   name           = "hcw-api-static-env-deployment"
   role_arn       = aws_iam_role.app_deployment_pipeline_role.arn
@@ -32,8 +118,9 @@ resource "aws_codepipeline" "static_env_deployment_pipeline" {
   artifact_store {
     location = aws_s3_bucket.build_artifacts.bucket
     type     = "S3"
+
     encryption_key {
-      id   = "arn:aws:kms:eu-west-2:535002889321:key/abd1c7ca-8423-4fc0-9b11-f9af494c2cac"
+      id   = aws_kms_key.kms_key.id
       type = "KMS"
     }
   }

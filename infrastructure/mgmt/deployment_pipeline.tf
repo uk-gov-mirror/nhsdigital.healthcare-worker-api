@@ -51,7 +51,10 @@ resource "aws_iam_policy" "codepipeline_policy" {
       {
         "Effect" : "Allow",
         "Action" : "sts:AssumeRole",
-        "Resource" : "arn:aws:iam::711387117641:role/CodeBuildDeployJobRole"
+        "Resource" : [
+          "arn:aws:iam::711387117641:role/CodeBuildDeployJobRole",
+          "arn:aws:iam::535002889321:role/CodeBuildDeployJobRole"
+        ]
       },
       {
         "Effect" : "Allow",
@@ -62,9 +65,7 @@ resource "aws_iam_policy" "codepipeline_policy" {
           "kms:ReEncrypt*",
           "kms:Decrypt"
         ],
-        "Resource" : [
-          "arn:aws:kms:eu-west-2:535002889321:key/abd1c7ca-8423-4fc0-9b11-f9af494c2cac"
-        ]
+        "Resource" : aws_kms_key.kms_key.arn
       }
     ]
   })
@@ -84,6 +85,11 @@ resource "aws_codepipeline" "app_deployment_pipeline" {
   artifact_store {
     location = aws_s3_bucket.build_artifacts.bucket
     type     = "S3"
+
+    encryption_key {
+      id   = aws_kms_key.kms_key.id
+      type = "KMS"
+    }
   }
 
   stage {
@@ -155,6 +161,8 @@ resource "aws_codepipeline" "app_deployment_pipeline" {
 
       input_artifacts = ["source_output"]
 
+      role_arn = "arn:aws:iam::535002889321:role/CodeBuildDeployJobRole"
+
       configuration = {
         ProjectName = "hcw-api-deploy"
 
@@ -202,7 +210,7 @@ resource "aws_codepipeline" "app_deployment_pipeline" {
           },
           {
             name  = "apim_private_key_secret_arn"
-            value = data.aws_secretsmanager_secret.apim_account_private_key.arn
+            value = var.apim_private_key_arn
             type  = "PLAINTEXT"
           }
         ])
@@ -287,7 +295,7 @@ resource "aws_iam_policy" "deployment_trigger_policy" {
       {
         "Effect" : "Allow",
         "Action" : "s3:GetObject",
-        "Resource" : "arn:aws:s3:::nhse-iam-hcw-build-artifacts-dev/*"
+        "Resource" : "arn:aws:s3:::nhse-iam-hcw-build-artifacts-mgmt/*"
       },
       {
         "Effect" : "Allow",
@@ -299,7 +307,20 @@ resource "aws_iam_policy" "deployment_trigger_policy" {
         "Resource" : [
           data.aws_codestarconnections_connection.github_connection.arn
         ]
-      }
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "kms:DescribeKey",
+          "kms:GenerateDataKey*",
+          "kms:Encrypt",
+          "kms:ReEncrypt*",
+          "kms:Decrypt"
+        ],
+        "Resource" : [
+          "arn:aws:kms:eu-west-2:209479271736:key/866deb7e-6dd0-4c7a-b479-3879651af711"
+        ]
+      },
     ]
   })
 }
@@ -376,8 +397,21 @@ resource "aws_iam_policy" "integration_tests_policy" {
       {
         "Effect" : "Allow",
         "Action" : "secretsmanager:GetSecretValue"
-        "Resource" : data.aws_secretsmanager_secret.apim_account_private_key.arn
-      }
+        "Resource" : var.apim_private_key_arn
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "kms:DescribeKey",
+          "kms:GenerateDataKey*",
+          "kms:Encrypt",
+          "kms:ReEncrypt*",
+          "kms:Decrypt"
+        ],
+        "Resource" : [
+          "arn:aws:kms:eu-west-2:209479271736:key/866deb7e-6dd0-4c7a-b479-3879651af711"
+        ]
+      },
     ]
   })
 }

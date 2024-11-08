@@ -1,3 +1,7 @@
+variable "is_pr" {
+  type = bool
+}
+
 variable "env" {
   type = string
 }

@@ -1,5 +1,5 @@
 data "aws_codestarconnections_connection" "github_connection" {
-  name = "Github2"
+  name = "Github"
 }
 
 resource "aws_iam_role" "codebuild_role" {
@@ -45,6 +45,11 @@ resource "aws_iam_policy" "codebuild_agent_policy" {
           aws_s3_bucket.build_artifacts.arn,
           "${aws_s3_bucket.build_artifacts.arn}/*"
         ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : ["kms:Decrypt", "kms:GenerateDataKey"],
+        "Resource" : aws_kms_key.kms_key.arn
       }
     ]
   })
@@ -69,7 +74,7 @@ resource "aws_codebuild_project" "hcw-api-build" {
     type = "S3"
 
     artifact_identifier = "hcw-api-app"
-    location            = "nhse-iam-hcw-build-artifacts-dev"
+    location            = "nhse-iam-hcw-build-artifacts-mgmt"
 
     name           = "hcw-api-build.zip"
     namespace_type = "BUILD_ID"

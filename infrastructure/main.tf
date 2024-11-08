@@ -1,3 +1,8 @@
+locals {
+  is_pr   = length(regexall("pr-.*", local.env)) > 0
+  is_mgmt = length(regexall("mgmt*", local.env)) > 0 || local.env == "management"
+}
+
 terraform {
   required_providers {
     aws = {
@@ -12,11 +17,16 @@ terraform {
     dynamodb_table = "terraform-state-lock"
     key            = "terraform.tfstate"
     region         = "eu-west-2"
+    role_arn       = "arn:aws:iam::209479271736:role/CodeBuildDeployJobRole"
   }
 }
 
 provider "aws" {
   region = "eu-west-2"
+
+  assume_role {
+    role_arn = format("arn:aws:iam::%s:role/CodeBuildDeployJobRole", var.account_id)
+  }
 
   default_tags {
     tags = {
@@ -26,34 +36,73 @@ provider "aws" {
   }
 }
 
-# TODO: Need to think of a cleverer way of doing this. We only want one over all the environments, so maybe we do
-# need a dedicated management account? - raised as https://nhsd-jira.digital.nhs.uk/browse/HCW-100
+
+provider "aws" {
+  alias  = "management"
+  region = "eu-west-2"
+
+  assume_role {
+    role_arn = "arn:aws:iam::209479271736:role/CodeBuildDeployJobRole"
+  }
+
+  default_tags {
+    tags = {
+      Environment = local.env
+      Account     = var.account
+    }
+  }
+}
+
 module "terraform_state" {
   source = "./terraform_state"
 
-  count = local.env == "mgmt" ? 1 : 0
+  count = local.env == "management" ? 1 : 0
 }
 
 module "management" {
-  source  = "./mgmt"
-  account = var.account
+  source               = "./mgmt"
+  account              = var.account
+  vpc_cidr_block       = var.vpc_cidr_block
+  apim_private_key_arn = module.deploy[0].apim_private_key_arn
 
-  count = local.env == "mgmt" ? 1 : 0
+  count = local.env == "management" ? 1 : 0
+}
+
+data "aws_ec2_transit_gateway" "transit_gateway" {
+  provider = aws.management
+
+  filter {
+    name   = "tag:Name"
+    values = ["cim_vpn_transit_gateway"]
+  }
+}
+
+module "vpc" {
+  source         = "./modules/vpc"
+  account        = var.account
+  vpc_cidr_block = var.vpc_cidr_block
+  env            = local.env
+
+  ldap_gateway_cidr_block = var.ldap_gateway_cidr_block
+  transit_gateway_id      = data.aws_ec2_transit_gateway.transit_gateway.id
+
+  count = !local.is_pr && !local.is_mgmt ? 1 : 0
 }
 
 module "deploy" {
   source = "./deploy"
 
-  count = length(regexall("mgmt*", local.env)) > 0 ? 1 : 0
+  count = local.is_mgmt ? 1 : 0
 }
 
 module "app" {
   source  = "./modules/hcw-api"
   env     = local.env
   account = var.account
+  is_pr   = local.is_pr
 
   s3_filename      = var.app_s3_filename
   apim_environment = var.apim_environment
 
-  count = length(regexall("mgmt*", local.env)) == 0 ? 1 : 0
+  count = !local.is_mgmt ? 1 : 0
 }

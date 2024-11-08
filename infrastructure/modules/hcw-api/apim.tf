@@ -1,5 +1,5 @@
 data "aws_secretsmanager_secret" "apim_account_private_key" {
-  name = "apim-account-private-key"
+  name = "apim-deploy-private-key"
 }
 
 resource "null_resource" "apim_instance_deploy" {

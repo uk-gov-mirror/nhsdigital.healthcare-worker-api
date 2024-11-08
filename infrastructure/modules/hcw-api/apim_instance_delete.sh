@@ -18,3 +18,5 @@ source ./modules/hcw-api/proxygen-setup.sh "$apim_private_key_secret_arn"
 # Deploy proxygen instance
 echo proxygen instance delete --no-confirm "$apim_environment" "healthcare-worker${env_name_suffix}"
 proxygen instance delete --no-confirm "$apim_environment" "healthcare-worker${env_name_suffix}"
+
+echo "Delete triggered"

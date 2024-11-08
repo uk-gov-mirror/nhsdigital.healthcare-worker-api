@@ -15,7 +15,14 @@ resource "aws_iam_role" "codebuild_deploy_job_role" {
         Action = "sts:AssumeRole"
         Effect = "Allow"
         Principal = {
-          AWS = "535002889321"
+          AWS = ["209479271736", "535002889321"]
+        }
+      },
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::209479271736:role/DeploymentPipelineRole"
         }
       }
     ]
@@ -31,12 +38,12 @@ resource "aws_iam_policy" "fetch_build_artifacts" {
       {
         "Effect" : "Allow",
         "Action" : "s3:Get*",
-        "Resource" : ["arn:aws:s3:::nhse-iam-hcw-build-artifacts-dev/*"]
+        "Resource" : ["arn:aws:s3:::nhse-iam-hcw-build-artifacts-mgmt/*"]
       },
       {
         "Effect" : "Allow",
         "Action" : "s3:ListBucket",
-        "Resource" : ["arn:aws:s3:::nhse-iam-hcw-build-artifacts-dev"]
+        "Resource" : ["arn:aws:s3:::nhse-iam-hcw-build-artifacts-mgmt"]
       },
       {
         "Effect" : "Allow",
@@ -48,8 +55,13 @@ resource "aws_iam_policy" "fetch_build_artifacts" {
           "kms:Decrypt"
         ],
         "Resource" : [
-          "arn:aws:kms:eu-west-2:535002889321:key/abd1c7ca-8423-4fc0-9b11-f9af494c2cac"
+          "arn:aws:kms:eu-west-2:209479271736:key/866deb7e-6dd0-4c7a-b479-3879651af711"
         ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : "dynamodb:*",
+        "Resource" : "arn:aws:dynamodb:eu-west-2:209479271736:table/terraform-state-lock"
       }
     ]
   })
@@ -122,5 +134,5 @@ resource "aws_codebuild_project" "hcw-api-destroy-pr-env" {
 }
 
 resource "aws_secretsmanager_secret" "apim_account_private_key" {
-  name = "apim-account-private-key"
+  name = "apim-deploy-private-key"
 }

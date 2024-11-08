@@ -22,3 +22,7 @@ jira
 yq
 keypair
 yaml
+mgmt
+env
+repo
+config
