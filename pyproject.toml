@@ -18,6 +18,7 @@ requests = "^2.32.3"
 pyjwt = "^2.9.0"
 cryptography = "^42.0.1"
 proxygen-cli = "^2.1.14"
+pytest-repeat = "^0.9.3"
 
 [tool.poetry.scripts]
 start = "main:local_start"

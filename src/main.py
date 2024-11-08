@@ -21,13 +21,13 @@ def lambda_handler(event_dict: dict, context: LambdaContext) -> dict:
     :param context: General context info for the lambda
     :return: The response to the API gateway, including response body it will forward on
     """
-    url = "http://proxy-in.nhsref-1.auth-ptl.cis2.spineservices.nhs.uk/openam/json/health/live"  # NOSONAR
-    response = requests.get(url)
-    print(f"got a response of {response.status_code}")
-
     event = APIGatewayProxyEvent(event_dict)
     logger.save_event_details(event)
     logger.info(f"Received event: {event} and context: {context}")
+
+    url = "http://proxy-in.nhsref-1.auth-ptl.cis2.spineservices.nhs.uk/openam/json/health/live"  # NOSONAR
+    response = requests.get(url)
+    logger.info(f"got a response of {response.status_code}")
 
     try:
         response = handle_event(event.resource, event)
