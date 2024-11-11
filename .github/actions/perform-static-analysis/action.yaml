@@ -35,7 +35,9 @@ runs:
         export SONAR_ORGANISATION_KEY=${{ inputs.sonar_organisation_key }}
         export SONAR_PROJECT_KEY=${{ inputs.sonar_project_key }}
         export SONAR_TOKEN=${{ inputs.sonar_token }}
-        export PULL_REQUEST_NUMBER=$(echo $GITHUB_REF | sed 's#refs/pull/##' | sed 's#/merge##')
+        if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+          export PULL_REQUEST_NUMBER=$(echo $GITHUB_REF | sed 's#refs/pull/##' | sed 's#/merge##')
+        fi
 
         poetry run coverage run -m pytest
         poetry run coverage xml
