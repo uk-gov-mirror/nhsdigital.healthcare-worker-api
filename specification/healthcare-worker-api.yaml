@@ -123,6 +123,8 @@ x-nhsd-apim:
       type: apikey
       header: X-API-Key
       secret: example-apikey-secret-name
+  target-attributes:
+    - name: client_id
 paths:
   /Practitioner:
     get:

@@ -73,7 +73,7 @@ resource "aws_cloudwatch_dashboard" "env_dashboard" {
           "region" : "eu-west-2",
           "period" : 300,
           "stat" : "Sum",
-          "title" : "Request Response Type"
+          "title" : "Request Response Success"
         }
       },
       {
