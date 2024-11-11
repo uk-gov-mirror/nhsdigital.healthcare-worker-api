@@ -17,12 +17,26 @@ runs:
       shell: bash
       id: check
       run: echo "secret_exist=${{ inputs.sonar_token != '' }}" >> $GITHUB_OUTPUT
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
     - name: "Perform static analysis"
       shell: bash
       if: steps.check.outputs.secret_exist == 'true'
       run: |
+        pip install pipx
+        python -m pipx install poetry
+        python -m pipx ensurepath
+        source ~/.bashrc
+        poetry install
+
         export BRANCH_NAME=${GITHUB_HEAD_REF:-$(echo $GITHUB_REF | sed 's#refs/heads/##')}
         export SONAR_ORGANISATION_KEY=${{ inputs.sonar_organisation_key }}
         export SONAR_PROJECT_KEY=${{ inputs.sonar_project_key }}
         export SONAR_TOKEN=${{ inputs.sonar_token }}
+        export PULL_REQUEST_NUMBER=$(echo $GITHUB_REF | sed 's#refs/pull/##' | sed 's#/merge##')
+
+        poetry run coverage run -m pytest
+        poetry run coverage xml
         ./scripts/reports/perform-static-analysis.sh

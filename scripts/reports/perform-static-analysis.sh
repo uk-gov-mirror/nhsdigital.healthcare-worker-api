@@ -17,8 +17,9 @@ set -euo pipefail
 #   SONAR_TOKEN=token               # SonarCloud token
 #
 # Options:
-#   FORCE_USE_DOCKER=true # If set to true the command is run in a Docker container, default is 'false'
-#   VERBOSE=true          # Show all the executed commands, default is 'false'
+#   FORCE_USE_DOCKER=true           # If set to true the command is run in a Docker container, default is 'false'
+#   VERBOSE=true                    # Show all the executed commands, default is 'false'
+#   PULL_REQUEST_NUMBER=pr-number   # PR number if performing pull request analysis
 
 # ==============================================================================
 
@@ -34,30 +35,57 @@ function main() {
 }
 
 function run-sonar-scanner-natively() {
-
-  sonar-scanner \
-    -Dproject.settings="$PWD/scripts/config/sonar-scanner.properties" \
-    -Dsonar.branch.name="${BRANCH_NAME:-$(git rev-parse --abbrev-ref HEAD)}" \
-    -Dsonar.organization="$SONAR_ORGANISATION_KEY" \
-    -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
-    -Dsonar.token="$SONAR_TOKEN"
+  if [[ -z "$PULL_REQUEST_NUMBER" ]]; then
+    # Not on a PR so do a normal branch analysis
+    sonar-scanner \
+      -Dproject.settings="$PWD/scripts/config/sonar-scanner.properties" \
+      -Dsonar.branch.name="${BRANCH_NAME:-$(git rev-parse --abbrev-ref HEAD)}" \
+      -Dsonar.organization="$SONAR_ORGANISATION_KEY" \
+      -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
+      -Dsonar.token="$SONAR_TOKEN"
+  else
+    # Doing a PR analysis
+    sonar-scanner \
+      -Dproject.settings="$PWD/scripts/config/sonar-scanner.properties" \
+      -Dsonar.pullrequest.key="${PULL_REQUEST_NUMBER:-}" \
+      -Dsonar.pullrequest.branch="${BRANCH_NAME:-$(git rev-parse --abbrev-ref HEAD)}" \
+      -Dsonar.pullrequest.base="${BASE_BRANCH:-develop}" \
+      -Dsonar.organization="$SONAR_ORGANISATION_KEY" \
+      -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
+      -Dsonar.token="$SONAR_TOKEN"
+  fi
 }
 
 function run-sonar-scanner-in-docker() {
-
   # shellcheck disable=SC1091
   source ./scripts/docker/docker.lib.sh
 
   # shellcheck disable=SC2155
   local image=$(name=sonarsource/sonar-scanner-cli docker-get-image-version-and-pull)
-  docker run --rm --platform linux/amd64 \
-    --volume "$PWD":/usr/src \
-    "$image" \
-      -Dproject.settings=/usr/src/scripts/config/sonar-scanner.properties \
-      -Dsonar.branch.name="${BRANCH_NAME:-$(git rev-parse --abbrev-ref HEAD)}" \
-      -Dsonar.organization="$SONAR_ORGANISATION_KEY" \
-      -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
-      -Dsonar.token="$SONAR_TOKEN"
+
+  if [[ -z "$PULL_REQUEST_NUMBER" ]]; then
+    # Not on a PR so do a normal branch analysis
+    docker run --rm --platform linux/amd64 \
+      --volume "$PWD":/usr/src \
+      "$image" \
+        -Dproject.settings=/usr/src/scripts/config/sonar-scanner.properties \
+        -Dsonar.branch.name="${BRANCH_NAME:-$(git rev-parse --abbrev-ref HEAD)}" \
+        -Dsonar.organization="$SONAR_ORGANISATION_KEY" \
+        -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
+        -Dsonar.token="$SONAR_TOKEN"
+  else
+    # Doing a PR analysis
+    docker run --rm --platform linux/amd64 \
+      --volume "$PWD":/usr/src \
+      "$image" \
+        -Dproject.settings=/usr/src/scripts/config/sonar-scanner.properties \
+        -Dsonar.pullrequest.key="${PULL_REQUEST_NUMBER:-}" \
+        -Dsonar.pullrequest.branch="${BRANCH_NAME:-$(git rev-parse --abbrev-ref HEAD)}" \
+        -Dsonar.pullrequest.base="${BASE_BRANCH:-develop}" \
+        -Dsonar.organization="$SONAR_ORGANISATION_KEY" \
+        -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
+        -Dsonar.token="$SONAR_TOKEN"
+  fi
 }
 
 # ==============================================================================
