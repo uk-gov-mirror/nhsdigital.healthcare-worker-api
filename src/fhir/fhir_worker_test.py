@@ -1,10 +1,11 @@
-import json
-
 import jsonpickle
 
-from fhir.worker import FhirWorker, FhirIdentifier, FhirName
+from fhir.fhir_worker import FhirWorker, FhirIdentifier, FhirName
 
 
+# JSON serialisation is key to how this information is returned, and we are relying on a pip dependency to serialise
+# the structure with embedded lists. In the future if this is time-consuming to maintain and we have proven faith
+# in the jsonpickle package, then we might want to remove this test.
 def test_fhir_worker_serialisation():
     worker = FhirWorker()
     worker.id = "uid"

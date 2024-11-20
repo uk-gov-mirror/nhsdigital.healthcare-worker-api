@@ -1,23 +1,39 @@
 """Handler for the worker endpoint"""
+from typing import Optional
+
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 
-from fhir.worker import FhirWorker, FhirIdentifier, FhirName
+from fhir.fhir_worker import FhirWorker, FhirIdentifier, FhirName
+from hcw_exception import HcwException
 from ldap.connection import HcwLdapConnection
 from logs.log import Log
 from request_handlers.base_handler import BaseHandler
 
 logger = Log("practitioner_handler")
 
+# Creating the connection here means that it's saved between requests, meaning that we don't need to re-establish
+# the LDAP connection on every request.
+ldap_connection: Optional[HcwLdapConnection] = None
+
 
 class PractitionerHandler(BaseHandler):
     def __init__(self):
-        self.ldap_connection = HcwLdapConnection()
+        global ldap_connection
+        if not ldap_connection:
+            logger.info("Creating new ldap connection instance")
+            ldap_connection = HcwLdapConnection()
 
     def get(self, event: APIGatewayProxyEvent) -> FhirWorker:
         logger.info("Performing practitioner GET")
         worker_id = event.query_string_parameters.get("identifier")
 
-        nhs_person = self.ldap_connection.search_active_nhs_person(worker_id)
+        if not worker_id:
+            raise HcwException(400, "Missing practitioner identifier")
+
+        nhs_person = ldap_connection.search_active_nhs_person(worker_id)
+
+        if nhs_person.nhs_person_status != "1":
+            raise HcwException(400, "User inactive")
 
         worker = FhirWorker()
         worker.id = nhs_person.uid
@@ -27,7 +43,7 @@ class PractitionerHandler(BaseHandler):
         worker.name = [FhirName(
             "usual",
             nhs_person.sn,
-            f"{nhs_person.given_name} {nhs_person.nhs_middle_names}".strip(),
+            f"{str(nhs_person.given_name or '')} {str(nhs_person.nhs_middle_names or '')}".strip(),
             nhs_person.personal_title
         )]
 

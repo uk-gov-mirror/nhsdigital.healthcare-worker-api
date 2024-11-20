@@ -18,6 +18,6 @@ class NhsPerson(object):
         self.uid = from_list(uid)
         self.sn = from_list(sn)
         self.given_name = from_list(given_name)
-        self.nhs_middle_names = " ".join(nhs_middle_names)
+        self.nhs_middle_names = " ".join(nhs_middle_names or [])
         self.personal_title = from_list(personal_title)
         self.nhs_person_status = nhs_person_status

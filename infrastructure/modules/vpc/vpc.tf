@@ -102,18 +102,6 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "vpn_transit_gateway_attachmen
   vpc_id             = aws_vpc.lambda.id
 }
 
-resource "aws_secretsmanager_secret" "ldap_server_cert" {
-  name = "ldap_server_cert"
-}
-
-resource "aws_secretsmanager_secret" "mtls_client_key" {
-  name = "mtls_client_key"
-}
-
-resource "aws_secretsmanager_secret" "mtls_client_cert" {
-  name = "mtls_client_cert"
-}
-
-resource "aws_secretsmanager_secret" "ldap_password" {
-  name = "ldap_password"
+resource "aws_secretsmanager_secret" "ldap_credentials" {
+  name = "ldap_credentials"
 }

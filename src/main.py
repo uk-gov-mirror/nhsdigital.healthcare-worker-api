@@ -2,6 +2,7 @@
 Basic hello world app for an initial deployment
 """
 import json
+from datetime import datetime
 
 import jsonpickle
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
@@ -9,7 +10,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 from hcw_exception import HcwException
 from logs.log import Log
-from request_handlers.handlers import handle_event
+from request_handlers.handlers import RequestRouter
 
 logger = Log("main")
 
@@ -21,17 +22,19 @@ def lambda_handler(event_dict: dict, context: LambdaContext) -> dict:
     :param context: General context info for the lambda
     :return: The response to the API gateway, including response body it will forward on
     """
+    start_time = datetime.now()
     event = APIGatewayProxyEvent(event_dict)
     logger.save_event_details(event)
     logger.info("New request received")
 
+    response_headers = {"Content-Type": "application/json"}
     try:
-        response = handle_event(event.resource, event)
+        response = RequestRouter().handle_event(event.resource, event)
 
         full_response = {
             "isBase64Encoded": False,
             "statusCode": 200,
-            "headers": {"Content-Type": "application/json"},
+            "headers": response_headers,
             "body": jsonpickle.encode(response, unpicklable=False),
         }
     except HcwException as e:
@@ -40,16 +43,26 @@ def lambda_handler(event_dict: dict, context: LambdaContext) -> dict:
         full_response = {
             "isBase64Encoded": False,
             "statusCode": e.status_code,
-            "headers": {"Content-Type": "application/json"},
+            "headers": response_headers,
             "body": json.dumps({"error": e.return_message})
         }
+    except Exception as e:
+        logger.error(str(e))
 
-    logger.info(f"Sending response of {full_response}")
+        full_response = {
+            "isBase64Encoded": False,
+            "statusCode": 500,
+            "headers": response_headers,
+            "body": json.dumps({"error": "Internal Server Error"})
+        }
+
+    debug_timing = {"ns": (datetime.now() - start_time).microseconds}
+    logger.info(f"Sending response after {json.dumps(debug_timing)}")
     Log.cleanup()
     return full_response
 
 
-def local_start():
+def local_start() -> None:
     """
     This is just a helper function for triggering the lambda handler locally without having to provide the event
     and context objects

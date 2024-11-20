@@ -1,9 +1,4 @@
-import json
-
-from fhir.fhir_object import FhirObject
-
-
-class FhirIdentifier(FhirObject):
+class FhirIdentifier:
     system: str
     value: str
 
@@ -12,7 +7,7 @@ class FhirIdentifier(FhirObject):
         self.value = value
 
 
-class FhirName(FhirObject):
+class FhirName:
     use: str
     family: str
     given: str
@@ -25,7 +20,7 @@ class FhirName(FhirObject):
         self.prefix = prefix
 
 
-class FhirWorker(FhirObject):
+class FhirWorker:
     id: str
     resourceType: str
     active: bool

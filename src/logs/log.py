@@ -45,6 +45,14 @@ class Log:
         log_message = f"Correlation-ID: {correlation_id}, {message}"
         self.logger.info(log_message)
 
+    def warning(self, message: str):
+        """
+        Logs a warning message for tracking in developer logs and possibly alerting.
+        :param message: Message to be logged
+        """
+        log_message = f"Correlation-ID: {correlation_id}, {message}"
+        self.logger.warning(log_message)
+
     def error(self, message: str):
         """
         Logs an error message for tracking in developer logs and possibly alerting.

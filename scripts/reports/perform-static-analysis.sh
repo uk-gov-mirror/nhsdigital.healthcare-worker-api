@@ -35,7 +35,7 @@ function main() {
 }
 
 function run-sonar-scanner-natively() {
-  if [[ -z "$PULL_REQUEST_NUMBER" ]]; then
+  if [[ -z "${PULL_REQUEST_NUMBER:-}" ]]; then
     # Not on a PR so do a normal branch analysis
     sonar-scanner \
       -Dproject.settings="$PWD/scripts/config/sonar-scanner.properties" \
@@ -63,7 +63,7 @@ function run-sonar-scanner-in-docker() {
   # shellcheck disable=SC2155
   local image=$(name=sonarsource/sonar-scanner-cli docker-get-image-version-and-pull)
 
-  if [[ -z "$PULL_REQUEST_NUMBER" ]]; then
+  if [[ -z "${PULL_REQUEST_NUMBER:-}" ]]; then
     # Not on a PR so do a normal branch analysis
     docker run --rm --platform linux/amd64 \
       --volume "$PWD":/usr/src \

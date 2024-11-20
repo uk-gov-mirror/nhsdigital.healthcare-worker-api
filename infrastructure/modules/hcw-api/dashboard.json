@@ -1,0 +1,232 @@
+{
+    "variables": [],
+    "widgets": [
+        {
+            "height": 6,
+            "width": 6,
+            "y": 6,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ "AWS/ApiGateway", "Count", "ApiName", "hcw-api-${env}", "Stage", "live", { "region": "eu-west-2" } ]
+                ],
+                "period": 300,
+                "region": "eu-west-2",
+                "stacked": false,
+                "stat": "Sum",
+                "title": "Requests",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "height": 6,
+            "width": 6,
+            "y": 6,
+            "x": 6,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ "AWS/ApiGateway", "Count", "ApiName", "hcw-api-${env}", "Resource", "/Worker", "Stage", "live", "Method", "GET", { "region": "eu-west-2" } ],
+                    [ "...", "/Practitioner", ".", ".", ".", ".", { "region": "eu-west-2" } ]
+                ],
+                "period": 300,
+                "region": "eu-west-2",
+                "stat": "Sum",
+                "title": "Endpoints",
+                "view": "pie"
+            }
+        },
+        {
+            "height": 6,
+            "width": 6,
+            "y": 0,
+            "x": 6,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ { "expression": "m1-m2-m3", "id": "e1", "label": "Successful Requests", "region": "eu-west-2" } ],
+                    [ "AWS/ApiGateway", "Count", "ApiName", "hcw-api-${env}", "Stage", "live", { "id": "m1", "region": "eu-west-2", "visible": false } ],
+                    [ ".", "5XXError", ".", ".", ".", ".", { "id": "m2", "region": "eu-west-2" } ],
+                    [ ".", "4XXError", ".", ".", ".", ".", { "id": "m3", "region": "eu-west-2" } ]
+                ],
+                "period": 300,
+                "region": "eu-west-2",
+                "stat": "Sum",
+                "title": "Request Response Success",
+                "view": "pie"
+            }
+        },
+        {
+            "height": 6,
+            "width": 6,
+            "y": 0,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ "AWS/ApiGateway", "Count", "ApiName", "hcw-api-${env}", "Stage", "live", { "region": "eu-west-2" } ]
+                ],
+                "period": 300,
+                "region": "eu-west-2",
+                "sparkline": true,
+                "stat": "Sum",
+                "title": "Requests (last 5 minutes)",
+                "view": "singleValue"
+            }
+        },
+        {
+            "height": 6,
+            "width": 12,
+            "y": 12,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ "AWS/ApiGateway", "Count", "ApiName", "hcw-api-${env}", { "region": "eu-west-2" } ],
+                    [ ".", "Latency", ".", ".", { "region": "eu-west-2", "stat": "Average" } ],
+                    [ ".", "4XXError", ".", ".", { "region": "eu-west-2" } ],
+                    [ ".", "5XXError", ".", ".", { "region": "eu-west-2" } ]
+                ],
+                "period": 300,
+                "region": "eu-west-2",
+                "sparkline": false,
+                "stat": "Sum",
+                "title": "Request Info",
+                "view": "table"
+            }
+        },
+        {
+            "height": 6,
+            "width": 24,
+            "y": 24,
+            "x": 0,
+            "type": "log",
+            "properties": {
+                "query": "SOURCE '/aws/lambda/hcw-app-${env}' | fields @timestamp, @message, @logStream, @log\n| filter @message like \"[ERROR]\"\n| sort @timestamp desc\n| limit 10000",
+                "region": "eu-west-2",
+                "stacked": false,
+                "title": "Error logs in hcw-app-${env}",
+                "view": "table"
+            }
+        },
+        {
+            "height": 6,
+            "width": 6,
+            "y": 0,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ "AWS/ApiGateway", "Latency", "ApiName", "hcw-api-${env}", "Stage", "live", { "region": "eu-west-2" } ]
+                ],
+                "period": 300,
+                "region": "eu-west-2",
+                "stacked": false,
+                "stat": "Minimum",
+                "title": "API GW Latency - Min",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "height": 6,
+            "width": 6,
+            "y": 6,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ "AWS/ApiGateway", "Latency", "ApiName", "hcw-api-${env}", "Stage", "live" ]
+                ],
+                "region": "eu-west-2",
+                "stacked": false,
+                "title": "API GW Latency - Avg",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "height": 6,
+            "width": 6,
+            "y": 12,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ "AWS/ApiGateway", "Latency", "ApiName", "hcw-api-${env}", "Stage", "live", { "region": "eu-west-2" } ]
+                ],
+                "period": 300,
+                "region": "eu-west-2",
+                "stacked": false,
+                "stat": "Maximum",
+                "title": "API GW Latency - Max",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "height": 6,
+            "width": 24,
+            "y": 18,
+            "x": 0,
+            "type": "log",
+            "properties": {
+                "query": "SOURCE '/aws/lambda/hcw-app-${env}' | stats avg(ns)/1000, min(ns)/1000, max(ns)/1000 by bin(30s)\n| filter @message like \"Sending response after\"\n| sort @timestamp desc\n| limit 10000",
+                "region": "eu-west-2",
+                "stacked": false,
+                "title": "Logged response times (milliseconds)",
+                "view": "timeSeries"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 18,
+            "y": 0,
+            "width": 6,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/Lambda", "Duration", "FunctionName", "hcw-app-${env}", "Resource", "hcw-app-${env}:live", { "region": "eu-west-2" } ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "eu-west-2",
+                "title": "Lambda Duration - Min",
+                "period": 300,
+                "stat": "Minimum"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 18,
+            "y": 6,
+            "width": 6,
+            "height": 6,
+            "properties": {
+                "view": "timeSeries",
+                "stacked": false,
+                "metrics": [
+                    [ "AWS/Lambda", "Duration", "FunctionName", "hcw-app-${env}", "Resource", "hcw-app-${env}:live" ]
+                ],
+                "region": "eu-west-2",
+                "title": "Lambda Duration - Avg"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 18,
+            "y": 12,
+            "width": 6,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/Lambda", "Duration", "FunctionName", "hcw-app-${env}", "Resource", "hcw-app-${env}:live", { "region": "eu-west-2" } ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "eu-west-2",
+                "title": "Lambda Duration - Max",
+                "period": 300,
+                "stat": "Maximum"
+            }
+        }
+    ]
+}
