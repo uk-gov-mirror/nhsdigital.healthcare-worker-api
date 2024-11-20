@@ -7,6 +7,22 @@ data "aws_s3_object" "app_deployment_zip" {
   key    = var.s3_filename
 }
 
+data "aws_secretsmanager_secret" "ldap_server_cert" {
+  name = "ldap_server_cert"
+}
+
+data "aws_secretsmanager_secret" "mtls_client_key" {
+  name = "mtls_client_key"
+}
+
+data "aws_secretsmanager_secret" "mtls_client_cert" {
+  name = "mtls_client_cert"
+}
+
+data "aws_secretsmanager_secret" "ldap_password" {
+  name = "ldap_password"
+}
+
 resource "aws_lambda_function" "hcw-app" {
   function_name = "hcw-app-${var.env}"
   role          = aws_iam_role.lambda_app_role.arn
@@ -16,6 +32,7 @@ resource "aws_lambda_function" "hcw-app" {
   s3_bucket = data.aws_s3_bucket.app_deployment.id
   s3_key    = var.s3_filename
   handler   = "main.lambda_handler"
+  timeout   = 30
 
   source_code_hash = data.aws_s3_object.app_deployment_zip.etag
 
@@ -24,6 +41,17 @@ resource "aws_lambda_function" "hcw-app" {
   vpc_config {
     security_group_ids = [data.aws_security_group.security_group.id]
     subnet_ids         = data.aws_subnets.subnets.ids
+  }
+
+  environment {
+    variables = {
+      LDAP_SERVER_CERT_ID = data.aws_secretsmanager_secret.ldap_server_cert.arn
+      MTLS_CLIENT_KEY_ID  = data.aws_secretsmanager_secret.mtls_client_key.arn
+      MTLS_CLIENT_CERT_ID = data.aws_secretsmanager_secret.mtls_client_cert.arn
+      LDAP_PASSWORD_ID    = data.aws_secretsmanager_secret.ldap_password.arn
+      LDAP_USERNAME       = "uid=cim-identity-bind-account,ou=admins,o=nhs"
+      LDAP_GATEWAY_URL    = var.ldap_gateway_url
+    }
   }
 }
 
@@ -69,6 +97,18 @@ resource "aws_iam_policy" "lambda_app_policy" {
           "logs:PutLogEvents"
         ],
         "Resource" : "*"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "secretsmanager:GetSecretValue"
+        ],
+        "Resource" : [
+          data.aws_secretsmanager_secret.ldap_server_cert.arn,
+          data.aws_secretsmanager_secret.mtls_client_key.arn,
+          data.aws_secretsmanager_secret.mtls_client_cert.arn,
+          data.aws_secretsmanager_secret.ldap_password.arn
+        ]
       }
     ]
   })

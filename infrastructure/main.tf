@@ -103,6 +103,7 @@ module "app" {
 
   s3_filename      = var.app_s3_filename
   apim_environment = var.apim_environment
+  ldap_gateway_url = var.ldap_gateway_url
 
   count = !local.is_mgmt ? 1 : 0
 }

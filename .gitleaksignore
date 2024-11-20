@@ -33,3 +33,5 @@ c3649eb721f136fde20e23c47216358e56fb228a:integration_tests/config/ft_environment
 ee0ccab05470d9409648ed7362fb41c3269e4b9e:integration_tests/config/ft_environment.py:generic-api-key:5
 0d8883626b85533423cb4082257df766e16ab5c6:integration_tests/config/ft_environment.py:generic-api-key:5
 3d24c403d35e5fa911814f093876d570912d2263:integration_tests/config/ft_environment.py:generic-api-key:5
+782aee5bc13e4cf653ba348e358a52bfece9a325:integration_tests/locals.properties:generic-api-key:4
+418e8dc924c27306cb8e5c39f2bb6ea3cd82c7e5:nft/.nft.env:generic-api-key:8

@@ -3,13 +3,13 @@ Basic hello world app for an initial deployment
 """
 import json
 
+import jsonpickle
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
 from hcw_exception import HcwException
 from logs.log import Log
 from request_handlers.handlers import handle_event
-import requests
 
 logger = Log("main")
 
@@ -21,13 +21,9 @@ def lambda_handler(event_dict: dict, context: LambdaContext) -> dict:
     :param context: General context info for the lambda
     :return: The response to the API gateway, including response body it will forward on
     """
-    url = "http://proxy-in.nhsref-1.auth-ptl.cis2.spineservices.nhs.uk/openam/json/health/live"  # NOSONAR
-    response = requests.get(url)
-    print(f"got a response of {response.status_code}")
-
     event = APIGatewayProxyEvent(event_dict)
     logger.save_event_details(event)
-    logger.info(f"Received event: {event} and context: {context}")
+    logger.info("New request received")
 
     try:
         response = handle_event(event.resource, event)
@@ -36,7 +32,7 @@ def lambda_handler(event_dict: dict, context: LambdaContext) -> dict:
             "isBase64Encoded": False,
             "statusCode": 200,
             "headers": {"Content-Type": "application/json"},
-            "body": response.to_json(),
+            "body": jsonpickle.encode(response, unpicklable=False),
         }
     except HcwException as e:
         logger.error(str(e))

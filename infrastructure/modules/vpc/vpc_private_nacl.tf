@@ -6,42 +6,34 @@ resource "aws_network_acl" "hcw_private_acl" {
   }
 }
 
-resource "aws_network_acl_rule" "private_to_all_http_out" {
+# HTTPS inside VPC
+resource "aws_network_acl_rule" "private_to_https_out" {
   network_acl_id = aws_network_acl.hcw_private_acl.id
-  rule_number    = 210
+  rule_number    = 100
   rule_action    = "allow"
   egress         = true
   protocol       = "tcp"
-  cidr_block     = "0.0.0.0/0"
-  from_port      = 80
-  to_port        = 80
-}
-
-resource "aws_network_acl_rule" "private_to_all_https_out" {
-  network_acl_id = aws_network_acl.hcw_private_acl.id
-  rule_number    = 211
-  rule_action    = "allow"
-  egress         = true
-  protocol       = "tcp"
-  cidr_block     = "0.0.0.0/0"
+  cidr_block     = var.vpc_cidr_block
   from_port      = 443
   to_port        = 443
 }
 
-resource "aws_network_acl_rule" "private_to_all_ephemeral_in" {
+# LDAPS over VPN
+resource "aws_network_acl_rule" "vgw_ldap_egr_route3_to_cia" {
   network_acl_id = aws_network_acl.hcw_private_acl.id
-  rule_number    = 212
+  rule_number    = 110
   rule_action    = "allow"
-  egress         = false
+  egress         = true
   protocol       = "tcp"
-  cidr_block     = "0.0.0.0/0"
-  from_port      = 1024
-  to_port        = 65535
+  cidr_block     = var.ldap_gateway_cidr_block
+  from_port      = 636
+  to_port        = 636
 }
 
+# Ephemeral ports
 resource "aws_network_acl_rule" "private_to_all_ephemeral_out" {
   network_acl_id = aws_network_acl.hcw_private_acl.id
-  rule_number    = 213
+  rule_number    = 120
   rule_action    = "allow"
   egress         = true
   protocol       = "tcp"
@@ -50,9 +42,10 @@ resource "aws_network_acl_rule" "private_to_all_ephemeral_out" {
   to_port        = 65535
 }
 
+# HTTPS in VPC
 resource "aws_network_acl_rule" "private_https_in_from_vpc" {
   network_acl_id = aws_network_acl.hcw_private_acl.id
-  rule_number    = 214
+  rule_number    = 100
   rule_action    = "allow"
   egress         = false
   protocol       = "tcp"
@@ -61,57 +54,28 @@ resource "aws_network_acl_rule" "private_https_in_from_vpc" {
   to_port        = 443
 }
 
-resource "aws_network_acl_rule" "private_http_in_from_vpc" {
+# LDAPS from local
+resource "aws_network_acl_rule" "private_ldaps_in_from_local" {
   network_acl_id = aws_network_acl.hcw_private_acl.id
-  rule_number    = 215
+  rule_number    = 110
   rule_action    = "allow"
   egress         = false
   protocol       = "tcp"
-  cidr_block     = var.ldap_gateway_cidr_block
-  from_port      = 80
-  to_port        = 80
-}
-
-resource "aws_network_acl_rule" "private_ldaps_in_from_vpc" {
-  network_acl_id = aws_network_acl.hcw_private_acl.id
-  rule_number    = 100
-  rule_action    = "allow"
-  egress         = false
-  protocol       = "tcp"
-  cidr_block     = var.ldap_gateway_cidr_block
+  cidr_block     = var.vpc_cidr_block
   from_port      = 636
   to_port        = 636
 }
 
-resource "aws_network_acl_rule" "vgw_http_route3_to_cia" {
+# Ephemeral ports
+resource "aws_network_acl_rule" "private_to_all_ephemeral_in" {
   network_acl_id = aws_network_acl.hcw_private_acl.id
-  rule_number    = 221
+  rule_number    = 120
   rule_action    = "allow"
-  egress         = true
+  egress         = false
   protocol       = "tcp"
-  cidr_block     = var.ldap_gateway_cidr_block
-  from_port      = 80
-  to_port        = 80
+  cidr_block     = "0.0.0.0/0"
+  from_port      = 1024
+  to_port        = 65535
 }
 
-resource "aws_network_acl_rule" "vgw_egr_route3_to_cia" {
-  network_acl_id = aws_network_acl.hcw_private_acl.id
-  rule_number    = 222
-  rule_action    = "allow"
-  egress         = true
-  protocol       = "tcp"
-  cidr_block     = var.ldap_gateway_cidr_block
-  from_port      = 443
-  to_port        = 443
-}
 
-resource "aws_network_acl_rule" "vgw_ldap_egr_route3_to_cia" {
-  network_acl_id = aws_network_acl.hcw_private_acl.id
-  rule_number    = 223
-  rule_action    = "allow"
-  egress         = true
-  protocol       = "tcp"
-  cidr_block     = var.ldap_gateway_cidr_block
-  from_port      = 636
-  to_port        = 636
-}

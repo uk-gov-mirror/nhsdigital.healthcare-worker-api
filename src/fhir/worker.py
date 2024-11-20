@@ -3,34 +3,31 @@ import json
 from fhir.fhir_object import FhirObject
 
 
-class RoleProfile(FhirObject):
-    id: str
-    roleName: str
-    roleCode: str
+class FhirIdentifier(FhirObject):
+    system: str
+    value: str
 
-    def to_json(self):
-        return json.dumps({"id": id})
+    def __init__(self, system: str, value: str):
+        self.system = system
+        self.value = value
 
 
-class OrgPerson(FhirObject):
-    id: str
-    dateOpened: str
-    orgName: str
-    orgId: str
-    roleProfiles: [RoleProfile]
+class FhirName(FhirObject):
+    use: str
+    family: str
+    given: str
+    prefix: str
 
-    def to_json(self):
-        return json.dumps({"id": id})
+    def __init__(self, use: str, family: str, given: str, prefix: str):
+        self.use = use
+        self.family = family
+        self.given = given
+        self.prefix = prefix
 
 
 class FhirWorker(FhirObject):
     id: str
-    forename: str
-    middlenames: str
-    surname: str
-    initials: str
-    title: str
-    orgPersons: [OrgPerson]
-
-    def to_json(self):
-        return json.dumps({"id": self.id})
+    resourceType: str
+    active: bool
+    identifier: [FhirIdentifier]
+    name: [FhirName]

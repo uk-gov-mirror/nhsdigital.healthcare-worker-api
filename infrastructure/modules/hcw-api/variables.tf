@@ -17,3 +17,7 @@ variable "s3_filename" {
 variable "apim_environment" {
   type = string
 }
+
+variable "ldap_gateway_url" {
+  type = string
+}

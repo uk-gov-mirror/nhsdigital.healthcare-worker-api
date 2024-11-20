@@ -24,24 +24,22 @@ class TestWorker(IntegrationTest):
         yield
 
     def test_get_worker(self):
-        response = self.send_worker_get(1)
-        worker_details = response.json()
+        response = self.send_worker_get(150549950108)
 
         assert response.status_code == 200
-        assert worker_details == {"id": "1"}
 
-    def test_get_worker_without_id(self):
-        # Just for testing purposes this defaults to 123 if not provided
-        response = self.send_worker_get(None)
         worker_details = response.json()
-
-        assert response.status_code == 200
-        assert worker_details == {"id": "111"}
+        assert worker_details == {
+            "id": "150549950108",
+            "resourceType": "Practitioner",
+            "active": True,
+            "identifier": [{"system": "https://fhir.nhs.uk/Id/sds-user-id", "value": "150549950108"}],
+            "name": [{"family": "Banshpal", "given": "Jitendra", "prefix": "Mr", "use": "usual"}]
+        }
 
     def test_get_missing_worker(self):
-        # Just for testing purposes worker 999 is not found
         response = self.send_worker_get(999)
         worker_details = response.json()
 
         assert response.status_code == 404
-        assert worker_details == {"error": "User not found"}
+        assert worker_details == {"error": "User with id 999 not found"}

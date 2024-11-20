@@ -7,25 +7,20 @@ resource "aws_security_group" "vpc_lambda" {
   description = "security group for lambda inside the vpc"
   vpc_id      = aws_vpc.lambda.id
 
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   egress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr_block]
+    description = "HTTPS API calls including AWS"
   }
 
   egress {
-    from_port   = 80
-    to_port     = 80
+    from_port   = 636
+    to_port     = 636
     protocol    = "tcp"
     cidr_blocks = [var.ldap_gateway_cidr_block]
+    description = "LDAPS calls over VPN"
   }
 
   tags = {

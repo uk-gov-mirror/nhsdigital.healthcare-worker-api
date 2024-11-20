@@ -49,11 +49,34 @@ resource "aws_iam_role" "vpc_flow_log_cloudwatch" {
   }
 }
 
+resource "aws_iam_role_policy" "vpc_flow_logs_policy" {
+  name = "${var.env}-vpc-flow-logs-policy"
+  role = aws_iam_role.vpc_flow_log_cloudwatch.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams"
+      ]
+      Resource = [
+        aws_cloudwatch_log_group.vpc_flow_log.arn,
+        "${aws_cloudwatch_log_group.vpc_flow_log.arn}:log-stream:*"
+      ]
+    }]
+  })
+}
+
 resource "aws_vpc_endpoint" "vpc_lambda_to_secretsmanager" {
   vpc_id              = aws_vpc.lambda.id
   service_name        = "com.amazonaws.eu-west-2.secretsmanager"
   vpc_endpoint_type   = "Interface"
-  subnet_ids          = aws_subnet.public.*.id
+  subnet_ids          = aws_subnet.private.*.id
   security_group_ids  = [aws_security_group.endpoint.id]
   private_dns_enabled = true
 
@@ -77,4 +100,20 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "vpn_transit_gateway_attachmen
   subnet_ids         = aws_subnet.private.*.id
   transit_gateway_id = var.transit_gateway_id
   vpc_id             = aws_vpc.lambda.id
+}
+
+resource "aws_secretsmanager_secret" "ldap_server_cert" {
+  name = "ldap_server_cert"
+}
+
+resource "aws_secretsmanager_secret" "mtls_client_key" {
+  name = "mtls_client_key"
+}
+
+resource "aws_secretsmanager_secret" "mtls_client_cert" {
+  name = "mtls_client_cert"
+}
+
+resource "aws_secretsmanager_secret" "ldap_password" {
+  name = "ldap_password"
 }

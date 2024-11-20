@@ -29,3 +29,7 @@ variable "bgp_asn" {}
 variable "ldap_gateway_cidr_block" {
   type = string
 }
+
+variable "ldap_gateway_url" {
+  type = string
+}
