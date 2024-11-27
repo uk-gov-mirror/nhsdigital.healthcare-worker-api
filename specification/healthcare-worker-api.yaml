@@ -120,9 +120,8 @@ x-nhsd-apim:
     healthcheck: /
     url:
     security:
-      type: apikey
-      header: X-API-Key
-      secret: example-apikey-secret-name
+      type: mtls
+      secret: hcw-mtls
 paths:
   /Practitioner:
     get:

@@ -2,7 +2,7 @@ from integration_tests.config.base_environment import EnvironmentConfig
 
 
 class FtEnvironmentConfig(EnvironmentConfig):
-    client_id = "c3Uk5zOnUVJh5aUSgI2FfrqA758vUWiE"
+    client_id = "KG8XEhXyL0iHP3wN8hKM6KVgDInd2DX0"
 
     def __init__(self):
         super(FtEnvironmentConfig, self).__init__(self.client_id)

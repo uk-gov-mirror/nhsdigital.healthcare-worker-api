@@ -17,7 +17,9 @@ terraform {
     dynamodb_table = "terraform-state-lock"
     key            = "terraform.tfstate"
     region         = "eu-west-2"
-    role_arn       = "arn:aws:iam::209479271736:role/CodeBuildDeployJobRole"
+    assume_role = {
+      role_arn = "arn:aws:iam::209479271736:role/CodeBuildDeployJobRole"
+    }
   }
 }
 
@@ -82,6 +84,7 @@ module "vpc" {
   account        = var.account
   vpc_cidr_block = var.vpc_cidr_block
   env            = local.env
+  subdomain      = var.subdomain
 
   ldap_gateway_cidr_block = var.ldap_gateway_cidr_block
   transit_gateway_id      = data.aws_ec2_transit_gateway.transit_gateway.id
@@ -96,10 +99,11 @@ module "deploy" {
 }
 
 module "app" {
-  source  = "./modules/hcw-api"
-  env     = local.env
-  account = var.account
-  is_pr   = local.is_pr
+  source    = "./modules/hcw-api"
+  env       = local.env
+  account   = var.account
+  is_pr     = local.is_pr
+  subdomain = var.subdomain
 
   s3_filename      = var.app_s3_filename
   apim_environment = var.apim_environment

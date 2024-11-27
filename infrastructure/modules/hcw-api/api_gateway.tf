@@ -49,6 +49,8 @@ resource "aws_api_gateway_rest_api" "app_api" {
   endpoint_configuration {
     types = ["REGIONAL"]
   }
+
+  disable_execute_api_endpoint = true
 }
 
 resource "aws_api_gateway_resource" "practitioner" {
@@ -118,4 +120,11 @@ resource "aws_lambda_permission" "apigw_lambda" {
 
 resource "aws_cloudwatch_log_group" "gateway_log_group" {
   name = "API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.app_api.id}/${aws_api_gateway_stage.live.stage_name}"
+}
+
+resource "aws_api_gateway_base_path_mapping" "domain_name_mapping" {
+  api_id      = aws_api_gateway_rest_api.app_api.id
+  stage_name  = aws_api_gateway_stage.live.stage_name
+  domain_name = local.api_gateway_domain
+  base_path   = var.is_pr ? var.env : ""
 }

@@ -21,3 +21,7 @@ variable "apim_environment" {
 variable "ldap_gateway_url" {
   type = string
 }
+
+variable "subdomain" {
+  type = string
+}

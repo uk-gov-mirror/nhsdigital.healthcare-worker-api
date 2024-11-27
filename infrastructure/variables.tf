@@ -33,3 +33,7 @@ variable "ldap_gateway_cidr_block" {
 variable "ldap_gateway_url" {
   type = string
 }
+
+variable "subdomain" {
+  type = string
+}

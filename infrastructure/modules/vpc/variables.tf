@@ -20,3 +20,7 @@ variable "transit_gateway_id" {
 }
 
 variable "ldap_gateway_cidr_block" {}
+
+variable "subdomain" {
+  type = string
+}

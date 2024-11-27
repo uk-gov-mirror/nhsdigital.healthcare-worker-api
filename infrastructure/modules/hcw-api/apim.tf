@@ -2,6 +2,11 @@ data "aws_secretsmanager_secret" "apim_account_private_key" {
   name = "apim-deploy-private-key"
 }
 
+locals {
+  api_gateway_domain = "${var.subdomain}.healthcare-worker.care-identity-service2.nhs.uk"
+  api_gateway_url    = var.is_pr ? "https://${local.api_gateway_domain}/${var.env}" : "https://${local.api_gateway_domain}"
+}
+
 resource "null_resource" "apim_instance_deploy" {
   triggers = {
     spec             = sha1(file("${path.root}/../specification/healthcare-worker-api.yaml"))
@@ -10,15 +15,10 @@ resource "null_resource" "apim_instance_deploy" {
     apim_environment = var.apim_environment
     key_arn          = data.aws_secretsmanager_secret.apim_account_private_key.arn
     key              = data.aws_secretsmanager_secret.apim_account_private_key.last_changed_date
-    invoke_url       = aws_api_gateway_stage.live.invoke_url
+    api_gateway_url  = local.api_gateway_url
   }
 
   provisioner "local-exec" {
-    command = "${path.module}/apim_instance_deploy.sh ${var.env} ${var.apim_environment} ${data.aws_secretsmanager_secret.apim_account_private_key.arn} ${aws_api_gateway_stage.live.invoke_url}"
-  }
-
-  provisioner "local-exec" {
-    when    = destroy
-    command = "${path.module}/apim_instance_delete.sh ${self.triggers.env} ${self.triggers.apim_environment} ${self.triggers.key_arn}"
+    command = "${path.module}/apim_instance_deploy.sh ${var.env} ${var.apim_environment} ${data.aws_secretsmanager_secret.apim_account_private_key.arn} ${local.api_gateway_url}"
   }
 }
