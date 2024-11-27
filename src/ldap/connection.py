@@ -75,11 +75,12 @@ class HcwLdapConnection:
         try:
             logger.info("Searching LDAP for nhsPerson")
 
-            return_attributes = ["uid", "Sn", "givenName", "nhsMiddleNames", "personalTitle", "nhsPersonStatus"]
+            return_attributes = ["uid", "Sn", "givenName", "nhsMiddleNames", "personalTitle", "nhsPersonStatus", "nhsGMC"]
             success, result, response, request = self.connection.search(f"uid={uid},ou=people,o=nhs",
                                                                         "(objectclass=nhsPerson)",
                                                                         attributes=return_attributes)
 
+            logger.info(f"LDAP response: {response}")
             logger.info(f"Received LDAP response, success: {success}")
             return success, result, response, request
         except LDAPException as e:
