@@ -5,7 +5,9 @@ from jproperties import Properties
 
 from integration_tests.config.base_environment import EnvironmentConfig
 from .ft_environment import FtEnvironmentConfig
+from .int import IntEnvironmentConfig
 from .pr_environment import PrEnvironmentConfig
+from .sandbox import SandboxEnvironmentConfig
 
 default_env = ""
 
@@ -44,5 +46,9 @@ def get_current_env() -> EnvironmentConfig:
         return PrEnvironmentConfig(client_id, env)
     if env == "ft":
         return FtEnvironmentConfig()
+    if env == "int":
+        return IntEnvironmentConfig()
+    if env == "sand" or env == "sandbox":
+        return SandboxEnvironmentConfig()
     else:
         raise NotImplementedError("Unknown environment. Cannot run tests.")

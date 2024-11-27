@@ -5,6 +5,9 @@ from time import time
 import jwt
 import requests
 
+from config.base_environment import EnvironmentConfig
+from config.pr_environment import PrEnvironmentConfig
+
 
 def generate_from_command_line():
     if len(sys.argv) != 2:
@@ -12,24 +15,23 @@ def generate_from_command_line():
         exit(1)
 
     client_id = sys.argv[1]
-    access_token = generate_access_token(client_id)
+    access_token = generate_access_token(PrEnvironmentConfig(client_id, ""))
     print(f"Access token: {access_token}")
 
 
-def generate_access_token(client_id: str, silent=False):
-    realm_url = "https://internal-dev.api.service.nhs.uk/oauth2/token"
+def generate_access_token(env: EnvironmentConfig, silent=False):
     if not silent:
         # This can be a useful confirmation for integration tests, but is messy during an NFT run
-        print(f"client id = {client_id}")
+        print(f"client id = {env.client_id}")
 
     private_key_filename = f"{os.path.dirname(os.path.realpath(__file__))}/test-1.pem"
     key_id = "test-1"
 
     claims = {
-        "sub": client_id,
-        "iss": client_id,
+        "sub": env.client_id,
+        "iss": env.client_id,
         "jti": str(uuid.uuid4()),
-        "aud": realm_url,
+        "aud": env.realm_url,
         "exp": int(time()) + 300,
     }
 
@@ -41,7 +43,7 @@ def generate_access_token(client_id: str, silent=False):
     )
 
     token_response = requests.post(
-        f"https://internal-dev.api.service.nhs.uk/oauth2/token",
+        env.realm_url,
         data={
             "grant_type": "client_credentials",
             "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",

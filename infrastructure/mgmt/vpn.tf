@@ -119,3 +119,13 @@ resource "aws_ram_principal_association" "dev_account" {
   principal          = "535002889321"
   resource_share_arn = aws_ram_resource_share.resource_share.id
 }
+
+resource "aws_ram_principal_association" "int_account" {
+  principal          = "711387117641"
+  resource_share_arn = aws_ram_resource_share.resource_share.id
+}
+
+resource "aws_ram_principal_association" "prod_account" {
+  principal          = "266735814611"
+  resource_share_arn = aws_ram_resource_share.resource_share.id
+}

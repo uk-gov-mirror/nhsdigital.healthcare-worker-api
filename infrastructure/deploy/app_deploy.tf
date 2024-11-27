@@ -15,7 +15,7 @@ resource "aws_iam_role" "codebuild_deploy_job_role" {
         Action = "sts:AssumeRole"
         Effect = "Allow"
         Principal = {
-          AWS = ["209479271736", "535002889321"]
+          AWS = ["209479271736", "535002889321", "711387117641", "266735814611"]
         }
       },
       {

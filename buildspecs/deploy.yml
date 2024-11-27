@@ -26,12 +26,8 @@ phases:
     commands:
       - cd infrastructure
       - terraform init
-      - terraform workspace select -or-create ${environment_name}
-      - terraform plan -var-file="environments/${account_name}.tfvars" -var "app_s3_filename=${app_s3_filename}" -out tf.plan
-      - terraform apply tf.plan
       - |
         if expr "${environment_name}" : "ft" >/dev/null; then
-          # TODO: put back to ft instead of pr for testing
           # Since we're deploying to ft we want to make sure we deploy the mgmt infra too (we don't do this on
           # every branch otherwise it'll conflict)
           # There's two parts to this:
@@ -41,8 +37,26 @@ phases:
           terraform workspace select management
           terraform plan -var-file="environments/mgmt.tfvars" -out tf.plan
           terraform apply tf.plan
+
           terraform workspace select mgmt
           terraform plan -var-file="environments/${account_name}.tfvars" -out tf.plan
           terraform apply tf.plan
         fi
+      - |
+        if expr "${environment_name}" : "int" >/dev/null; then
+          # INT and PROD are in their own accounts, so need their own mgmt workspaces
+          terraform workspace select mgmt-int
+          terraform plan -var-file="environments/${account_name}.tfvars" -out tf.plan
+          terraform apply tf.plan
+        fi
+      - |
+        if expr "${environment_name}" : "prod" >/dev/null; then
+          # INT and PROD are in their own accounts, so need their own mgmt workspaces
+          terraform workspace select mgmt-prod
+          terraform plan -var-file="environments/${account_name}.tfvars" -out tf.plan
+          terraform apply tf.plan
+        fi
+      - terraform workspace select -or-create ${environment_name}
+      - terraform plan -var-file="environments/${account_name}.tfvars" -var "app_s3_filename=${app_s3_filename}" -out tf.plan
+      - terraform apply tf.plan
 

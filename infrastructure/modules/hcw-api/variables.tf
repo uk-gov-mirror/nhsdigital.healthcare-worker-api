@@ -6,10 +6,6 @@ variable "env" {
   type = string
 }
 
-variable "account" {
-  type = string
-}
-
 variable "s3_filename" {
   type = string
 }
@@ -28,4 +24,12 @@ variable "subdomain" {
 
 variable "provisioned_capacity" {
   type = number
+}
+
+variable "sandbox_mode" {
+  type = bool
+}
+
+variable "vpc_env" {
+  type = string
 }

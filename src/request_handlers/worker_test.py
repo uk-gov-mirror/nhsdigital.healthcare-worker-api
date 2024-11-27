@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Optional
 from unittest.mock import MagicMock
 
@@ -13,6 +12,38 @@ from request_handlers.worker import PractitionerHandler
 import request_handlers.worker
 
 
+def assert_valid_ldaps_user(response):
+    assert response.id == "uid"
+    assert response.resourceType == "Practitioner"
+    assert response.active
+
+    assert len(response.identifier) == 1
+    assert response.identifier[0].system == "https://fhir.nhs.uk/Id/sds-user-id"
+    assert response.identifier[0].value == "uid"
+
+    assert len(response.name) == 1
+    assert response.name[0].use == "usual"
+    assert response.name[0].prefix == "Mr"
+    assert response.name[0].family == "Smith"
+    assert response.name[0].given == "Bob John James"
+
+
+def assert_valid_sandbox_user(response):
+    assert response.id == 123
+    assert response.resourceType == "Practitioner"
+    assert response.active
+
+    assert len(response.identifier) == 1
+    assert response.identifier[0].system == "https://fhir.nhs.uk/Id/sds-user-id"
+    assert response.identifier[0].value == 123
+
+    assert len(response.name) == 1
+    assert response.name[0].use == "usual"
+    assert response.name[0].prefix == "Mrs"
+    assert response.name[0].given == "Tabby Ashlyn"
+    assert response.name[0].family == "Westbrook"
+
+
 def mock_ldap(uid: Optional[str] = "uid", sn: Optional[str] = "Smith",
                 given_name: Optional[str] = "Bob", nhs_middle_names=None, title: Optional[str] = "Mr",
                 status: Optional[str] = "1"):
@@ -21,10 +52,8 @@ def mock_ldap(uid: Optional[str] = "uid", sn: Optional[str] = "Smith",
 
     ldap_connection_mock = MagicMock()
     mock_ldap_response = NhsPerson([uid], [sn], [given_name], nhs_middle_names, [title], status)
-    ldap_connection_mock.search_active_nhs_person.return_value = mock_ldap_response
-    ldap_connection_mock.bind_time = datetime.now()
-    ldap_connection_mock.connection.closed = False
-    request_handlers.worker.ldap_connection = ldap_connection_mock
+    ldap_connection_mock.return_value.search_active_nhs_person.return_value = mock_ldap_response
+    request_handlers.worker.get_connection = ldap_connection_mock
 
     return ldap_connection_mock
 
@@ -41,22 +70,8 @@ def practitioner_get(uid: Optional[str]) -> FhirWorker:
 
 def test_worker_handler():
     mock_ldap()
-
     response = practitioner_get("uid")
-
-    assert response.id == "uid"
-    assert response.resourceType == "Practitioner"
-    assert response.active
-
-    assert len(response.identifier) == 1
-    assert response.identifier[0].system == "https://fhir.nhs.uk/Id/sds-user-id"
-    assert response.identifier[0].value == "uid"
-
-    assert len(response.name) == 1
-    assert response.name[0].use == "usual"
-    assert response.name[0].family == "Smith"
-    assert response.name[0].given == "Bob John James"
-    assert response.name[0].prefix == "Mr"
+    assert_valid_ldaps_user(response)
 
 
 def test_missing_id():
@@ -71,12 +86,12 @@ def test_missing_id():
 
 def test_ldap_returns_error():
     ldap_connection_mock = mock_ldap()
-    ldap_connection_mock.search_active_nhs_person.side_effect = HcwException(500, "LDAP Error")
+    ldap_connection_mock.return_value.search_active_nhs_person.side_effect = HcwException(500, "LDAP Error")
 
     with pytest.raises(HcwException) as e:
         practitioner_get("uid")
 
-    assert e.value == ldap_connection_mock.search_active_nhs_person.side_effect
+    assert e.value == ldap_connection_mock.return_value.search_active_nhs_person.side_effect
 
 
 class TestLdapMissingField:

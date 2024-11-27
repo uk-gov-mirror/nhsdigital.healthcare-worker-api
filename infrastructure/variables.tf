@@ -24,8 +24,6 @@ variable "vpc_cidr_block" {
   type        = string
 }
 
-variable "bgp_asn" {}
-
 variable "ldap_gateway_cidr_block" {
   type = string
 }
@@ -44,4 +42,12 @@ variable "provisioned_capacity" {
 
 variable "include_nft_vpc" {
   type = bool
+}
+
+variable "sandbox" {
+  type = bool
+}
+
+variable "vpc_env" {
+  type = string
 }

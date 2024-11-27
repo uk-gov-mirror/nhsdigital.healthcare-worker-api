@@ -6,6 +6,7 @@ from typing import Optional
 import pytest
 
 from config.current_env import get_current_env
+from config.sandbox import SandboxEnvironmentConfig
 from utils.generate_access_token import generate_access_token
 from utils.integration_test_base import IntegrationTest
 
@@ -32,7 +33,10 @@ class TestWorker(IntegrationTest):
     @pytest.fixture(autouse=True)
     def resource(self):
         env = get_current_env()
-        self.access_token, _ = generate_access_token(env.client_id)
+        if not isinstance(env, SandboxEnvironmentConfig):
+            self.access_token, _ = generate_access_token(env)
+        else:
+            self.access_token = "no_auth_required"
 
         yield
 

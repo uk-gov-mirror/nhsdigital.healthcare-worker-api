@@ -35,6 +35,7 @@ resource "aws_lambda_function" "hcw-app" {
     variables = {
       LDAP_CREDENTIALS_SECRET_ID = data.aws_secretsmanager_secret.ldap_credentials.arn
       LDAP_GATEWAY_URL           = var.ldap_gateway_url
+      SANDBOX_MODE               = var.sandbox_mode
     }
   }
 }

@@ -7,21 +7,22 @@ import pytest
 from ldap3 import SAFE_SYNC, AUTO_BIND_TLS_BEFORE_BIND
 from ldap3.core.exceptions import LDAPException
 
-import ldap.connection
+import ldap.real_connection
 import builtins
 
 from hcw_exception import HcwException
-from ldap.connection import HcwLdapConnection
+from ldap.real_connection import RealHcwLdapConnection
 
 
 @pytest.fixture(autouse=True)
 def cleanup():
     yield
-    ldap.connection.connection = None
+    ldap.real_connection.connection = None
 
 
 def environment_variables() -> dict:
-    return {"LDAP_CREDENTIALS_SECRET_ID": "creds_secret_id"}
+    return {"LDAP_CREDENTIALS_SECRET_ID": "creds_secret_id",
+            "LDAP_GATEWAY_URL": "gateway_url"}
 
 
 def mock_secrets(boto3):
@@ -35,15 +36,15 @@ def mock_secrets(boto3):
 
 
 def setup_ldap_connection_mock():
-    ldap.connection.boto3 = MagicMock()
-    ldap.connection.Tls = MagicMock()
-    ldap.connection.Server = MagicMock()
-    ldap.connection.Connection = MagicMock()
-    ldap.connection.uuid = MagicMock()
+    ldap.real_connection.boto3 = MagicMock()
+    ldap.real_connection.Tls = MagicMock()
+    ldap.real_connection.Server = MagicMock()
+    ldap.real_connection.Connection = MagicMock()
+    ldap.real_connection.uuid = MagicMock()
     builtins.open = mock_open()
 
-    return (ldap.connection.boto3, ldap.connection.Tls, ldap.connection.Server, ldap.connection.Connection,
-            ldap.connection.uuid)
+    return (ldap.real_connection.boto3, ldap.real_connection.Tls, ldap.real_connection.Server,
+            ldap.real_connection.Connection, ldap.real_connection.uuid)
 
 
 def test_connect():
@@ -53,7 +54,7 @@ def test_connect():
         uuid.uuid4.return_value = "id"
         mock_secrets(boto3)
 
-        conn = HcwLdapConnection()
+        conn = RealHcwLdapConnection()
         boto3.client.return_value.get_secret_value.assert_called_with(SecretId="creds_secret_id")
 
         tmp_filename = "/tmp/id.pem"
@@ -63,7 +64,7 @@ def test_connect():
             ca_certs_file=tmp_filename,
             validate=CERT_REQUIRED)
 
-        server.assert_called_with("proxy-in.nhsref-1.auth-ptl.cis2.spineservices.nhs.uk",
+        server.assert_called_with("gateway_url",
             use_ssl=True, tls=tls.return_value)
 
         connection.assert_called_with(server.return_value, user="username", password="password",
@@ -82,7 +83,7 @@ def test_connect_fail():
         connection.side_effect = LDAPException("Connection error")
 
         with pytest.raises(HcwException) as e:
-            HcwLdapConnection()
+            RealHcwLdapConnection()
 
         assert e.value.status_code == 500
         assert e.value.message == "Error connecting to LDAP: Connection error"
@@ -95,7 +96,7 @@ class TestLdapSearch:
 
         with patch.dict(os.environ, environment_variables()):
             mock_secrets(boto3)
-            conn = HcwLdapConnection()
+            conn = RealHcwLdapConnection()
 
             ldap_result = [{"attributes": {
                 "uid": ["123"],
@@ -125,7 +126,7 @@ class TestLdapSearch:
 
         with patch.dict(os.environ, environment_variables()):
             mock_secrets(boto3)
-            conn = HcwLdapConnection()
+            conn = RealHcwLdapConnection()
 
             connection.return_value.search.return_value = False, {"result": 32}, None, ""
 
@@ -140,7 +141,7 @@ class TestLdapSearch:
 
         with patch.dict(os.environ, environment_variables()):
             mock_secrets(boto3)
-            conn = HcwLdapConnection()
+            conn = RealHcwLdapConnection()
 
             ldap_result = {"attributes": {
                 "uid": ["123"],
@@ -163,7 +164,7 @@ class TestLdapSearch:
 
         with patch.dict(os.environ, environment_variables()):
             mock_secrets(boto3)
-            conn = HcwLdapConnection()
+            conn = RealHcwLdapConnection()
 
             ldap_result = [{"attributes": {
                 "uid": [],
@@ -189,7 +190,7 @@ class TestLdapSearch:
 
         with patch.dict(os.environ, environment_variables()):
             mock_secrets(boto3)
-            conn = HcwLdapConnection()
+            conn = RealHcwLdapConnection()
 
             connection.return_value.search.return_value = False, {"result": 999}, None, ""
 

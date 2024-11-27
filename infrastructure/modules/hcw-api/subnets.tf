@@ -1,10 +1,6 @@
-locals {
-  vpc_env = var.is_pr ? "ft" : var.env
-}
-
 data "aws_vpc" "vpc" {
   tags = {
-    Name = "${local.vpc_env}-vpc-lambda"
+    Name = "${var.vpc_env}-vpc-lambda"
   }
 }
 
@@ -21,5 +17,5 @@ data "aws_subnets" "subnets" {
 
 data "aws_security_group" "security_group" {
   vpc_id = data.aws_vpc.vpc.id
-  name   = "ft-vpc-lambda-sg"
+  name   = "${var.vpc_env}-vpc-lambda-sg"
 }

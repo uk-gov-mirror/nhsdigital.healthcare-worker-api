@@ -7,3 +7,4 @@ class FtEnvironmentConfig(EnvironmentConfig):
     def __init__(self):
         super(FtEnvironmentConfig, self).__init__(self.client_id)
         self.base_url = f"https://internal-dev.api.service.nhs.uk/healthcare-worker"
+        self.realm_url = "https://internal-dev.api.service.nhs.uk/oauth2/token"

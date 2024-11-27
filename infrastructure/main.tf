@@ -1,6 +1,7 @@
 locals {
   is_pr   = length(regexall("pr-.*", local.env)) > 0
   is_mgmt = length(regexall("mgmt*", local.env)) > 0 || local.env == "management"
+  is_sand = var.sandbox
 }
 
 terraform {
@@ -89,7 +90,7 @@ module "vpc" {
   ldap_gateway_cidr_block = var.ldap_gateway_cidr_block
   transit_gateway_id      = data.aws_ec2_transit_gateway.transit_gateway.id
 
-  count = !local.is_pr && !local.is_mgmt ? 1 : 0
+  count = !local.is_pr && !local.is_mgmt && !local.is_sand ? 1 : 0
 }
 
 module "deploy" {
@@ -101,14 +102,16 @@ module "deploy" {
 module "app" {
   source    = "./modules/hcw-api"
   env       = local.env
-  account   = var.account
   is_pr     = local.is_pr
   subdomain = var.subdomain
+
+  sandbox_mode = var.sandbox
 
   s3_filename          = var.app_s3_filename
   apim_environment     = var.apim_environment
   ldap_gateway_url     = var.ldap_gateway_url
   provisioned_capacity = var.provisioned_capacity
+  vpc_env              = var.vpc_env
 
   count = !local.is_mgmt ? 1 : 0
 }

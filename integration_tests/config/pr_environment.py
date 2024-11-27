@@ -8,3 +8,4 @@ class PrEnvironmentConfig(EnvironmentConfig):
 
         super(PrEnvironmentConfig, self).__init__(client_id)
         self.base_url = f"https://internal-dev.api.service.nhs.uk/healthcare-worker/{pr_env}"
+        self.realm_url = "https://internal-dev.api.service.nhs.uk/oauth2/token"
