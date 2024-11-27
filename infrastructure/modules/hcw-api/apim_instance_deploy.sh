@@ -27,6 +27,14 @@ service_base_path="healthcare-worker${env_name_suffix}"
 echo proxygen instance deploy --no-confirm "$apim_environment" "${service_base_path}" ./temp_spec.yaml
 proxygen instance deploy --no-confirm "$apim_environment" "${service_base_path}" ./temp_spec.yaml
 
+if [[ "$environment_name" == "ft" ]]; then
+  echo "Uploading app spec to UAT"
+  proxygen spec publish ./temp_spec.yaml --uat --no-confirm
+elif [[ "$environment_name" == "int" ]]; then
+  echo "Uploading app spec"
+  proxygen spec publish ./temp_spec.yaml --no-confirm
+fi
+
 echo "Creating APIM proxy app for new PR env"
 access_token=$(proxygen pytest-nhsd-apim get-token | jq -r ".pytest_nhsd_apim_token")
 

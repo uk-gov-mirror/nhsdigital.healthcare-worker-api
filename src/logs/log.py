@@ -4,6 +4,7 @@ and that the logs are available when running locally.
 """
 import logging
 import sys
+from uuid import uuid4
 
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 
@@ -27,7 +28,7 @@ class Log:
         :param event: Lambda event with details like correlation id
         """
         global correlation_id
-        correlation_id = event.resolved_headers_field.get("X-Correlation-ID", None)
+        correlation_id = event.resolved_headers_field.get("X-Correlation-ID", f"no-id-{uuid4()}")
 
     @staticmethod
     def cleanup():

@@ -12,13 +12,14 @@ def test_log_init(logging):
     logging.getLogger.return_value.setLevel.assert_called_with(logging.INFO)
 
 
-def test_log_save_details():
+@patch("logs.log.uuid4")
+def test_log_save_details(uuid4_mock):
     logger = Log("test_module")
     event = MagicMock()
 
     logger.save_event_details(event)
 
-    event.resolved_headers_field.get.assert_called_with("X-Correlation-ID", None)
+    event.resolved_headers_field.get.assert_called_with("X-Correlation-ID", f"no-id-{uuid4_mock.return_value}")
     assert logs.log.correlation_id == event.resolved_headers_field.get.return_value
 
 

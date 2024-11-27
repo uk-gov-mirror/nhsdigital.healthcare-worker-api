@@ -172,6 +172,13 @@ an access token. This repository includes a script for generating a valid access
 
 ## General Maintenance
 
+### Public App Documentation
+
+The [public app documentation](https://digital.nhs.uk/developer/api-catalogue/healthcare-worker) is taken from the OAS
+file at specification/healthcare-worker-api.yaml. Merging to develop will publish the specification to the
+[UAT catalogue](https://uat2.nhsd.io/developer/api-catalogue/healthcare-worker), and deploying to INT will deploy to the
+main public catalogue.
+
 ### Pipeline tokens
 
 We have a few tokens saved as secrets in AWS so that we can publish the state of deployments. We currently have GitHub and slack tokens.
