@@ -17,7 +17,9 @@ terraform {
     dynamodb_table = "terraform-state-lock"
     key            = "terraform.tfstate"
     region         = "eu-west-2"
-    role_arn       = "arn:aws:iam::209479271736:role/CodeBuildDeployJobRole"
+    assume_role = {
+      role_arn = "arn:aws:iam::209479271736:role/CodeBuildDeployJobRole"
+    }
   }
 }
 
