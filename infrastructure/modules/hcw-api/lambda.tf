@@ -39,6 +39,14 @@ resource "aws_lambda_function" "hcw-app" {
   }
 }
 
+resource "aws_lambda_provisioned_concurrency_config" "provisioned_capacity" {
+  count = var.provisioned_capacity > 0 ? 1 : 0
+
+  function_name                     = aws_lambda_function.hcw-app.function_name
+  provisioned_concurrent_executions = var.provisioned_capacity
+  qualifier                         = aws_lambda_alias.live.name
+}
+
 resource "aws_iam_role" "lambda_app_role" {
   name = "lambda-app-role-${var.env}"
 

@@ -7,5 +7,5 @@ from fhir.fhir_worker import FhirWorker
 
 class BaseHandler:
     @abstractmethod
-    def get(self, event: APIGatewayProxyEvent) -> FhirWorker:
+    def get(self, event: APIGatewayProxyEvent):
         pass

@@ -37,3 +37,11 @@ variable "ldap_gateway_url" {
 variable "subdomain" {
   type = string
 }
+
+variable "provisioned_capacity" {
+  type = number
+}
+
+variable "include_nft_vpc" {
+  type = bool
+}

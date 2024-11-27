@@ -1,5 +1,6 @@
-from typing import Optional, Union
-from unittest.mock import patch, MagicMock
+from datetime import datetime
+from typing import Optional
+from unittest.mock import MagicMock
 
 import pytest
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
@@ -21,6 +22,8 @@ def mock_ldap(uid: Optional[str] = "uid", sn: Optional[str] = "Smith",
     ldap_connection_mock = MagicMock()
     mock_ldap_response = NhsPerson([uid], [sn], [given_name], nhs_middle_names, [title], status)
     ldap_connection_mock.search_active_nhs_person.return_value = mock_ldap_response
+    ldap_connection_mock.bind_time = datetime.now()
+    ldap_connection_mock.connection.closed = False
     request_handlers.worker.ldap_connection = ldap_connection_mock
 
     return ldap_connection_mock

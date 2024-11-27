@@ -7,7 +7,7 @@ from hcw_exception import HcwException
 from main import lambda_handler
 from request_handlers.handlers import UnknownHandlerException
 
-PRACTITIONER_PATH = "/Practitioner"
+EXAMPLE_PATH = "/example"
 EXPECTED_HEADERS = {"Content-Type": "application/json"}
 
 
@@ -18,7 +18,7 @@ def test_worker(request_router_mock, jsonpickle_mock, log_mock):
     event_handler_response = {"worker": "details"}
     request_router_mock.return_value.handle_event.return_value = event_handler_response
 
-    response = lambda_handler({"resource": PRACTITIONER_PATH}, LambdaContext())
+    response = lambda_handler({"resource": EXAMPLE_PATH}, LambdaContext())
 
     jsonpickle_mock.encode.assert_called_with(event_handler_response, unpicklable=False)
     assert response["statusCode"] == 200
@@ -31,7 +31,7 @@ def test_worker(request_router_mock, jsonpickle_mock, log_mock):
 def test_worker_hcw_exception(request_router_mock, log_mock):
     request_router_mock.return_value.handle_event.side_effect = HcwException(500, "Unknown error")
 
-    response = lambda_handler({"resource": PRACTITIONER_PATH}, LambdaContext())
+    response = lambda_handler({"resource": EXAMPLE_PATH}, LambdaContext())
 
     assert response == {
         "isBase64Encoded": False,
@@ -47,7 +47,7 @@ def test_worker_hcw_exception(request_router_mock, log_mock):
 def test_worker_general_exception(request_router_mock, log_mock):
     request_router_mock.return_value.handle_event.side_effect = Exception()
 
-    response = lambda_handler({"resource": PRACTITIONER_PATH}, LambdaContext())
+    response = lambda_handler({"resource": EXAMPLE_PATH}, LambdaContext())
 
     assert response == {
         "isBase64Encoded": False,

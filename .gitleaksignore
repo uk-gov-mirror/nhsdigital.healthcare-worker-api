@@ -45,3 +45,4 @@ bb04a8c5be6915e5d93cf95d8bb5209f44769de2:integration_tests/config/ft_environment
 1b0c8c55019f53438ad81b6eb0a50dd01e69f184:integration_tests/locals.properties:generic-api-key:4
 b77e4051c227aa82dad1b470ba3aa131e70babc9:integration_tests/config/int.py:generic-api-key:5
 ad9dca25a1b4eb723d077df517453d3806d62f69:integration_tests/utils/test-1.pem:private-key:1
+8f25960999bfb6e5f5616fdecd9c100f376dd105:integration_tests/config/ft_environment.py:generic-api-key:5

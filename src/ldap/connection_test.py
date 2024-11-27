@@ -67,7 +67,8 @@ def test_connect():
             use_ssl=True, tls=tls.return_value)
 
         connection.assert_called_with(server.return_value, user="username", password="password",
-                                        client_strategy=SAFE_SYNC, auto_bind=AUTO_BIND_TLS_BEFORE_BIND)
+                                        client_strategy=SAFE_SYNC)
+        assert connection.return_value.bind.called
 
         assert conn.connection == connection.return_value
 

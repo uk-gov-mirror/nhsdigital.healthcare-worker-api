@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "hcw-api-nft"
+version = "0.0.1"
+authors = ["Ian Robinson <ian.robinson27@nhs.net>", "Sat Thakor <satyarajsinh.thakor1@nhs.net>"]
+description = "NFT tests for the HCW API"
+readme = "README.md"
+packages = [{include = "*", from="src"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+locust = "^2.32.2"
+pyjwt = "^2.9.0"
+cryptography = "^43.0.3"
+
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[build-system]
+requires = ["poetry-core"]

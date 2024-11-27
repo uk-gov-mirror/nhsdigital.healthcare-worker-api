@@ -8,3 +8,6 @@ ldap_gateway_cidr_block = "192.168.209.0/25"
 ldap_gateway_url        = ""
 
 subdomain = ""
+
+provisioned_capacity = 0
+include_nft_vpc      = false

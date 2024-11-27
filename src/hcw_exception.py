@@ -1,3 +1,8 @@
+from logs.log import Log
+
+logger = Log("hcw_exception")
+
+
 class HcwException(Exception):
     status_code: int
     return_message: str

@@ -5,6 +5,7 @@ from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 from fhir.fhir_worker import FhirWorker
 from hcw_exception import HcwException
 from request_handlers.base_handler import BaseHandler
+from request_handlers.status import StatusHandler
 from request_handlers.worker import PractitionerHandler
 
 
@@ -18,7 +19,9 @@ class RequestRouter:
 
     def __init__(self):
         self.handlers = {
-            "/Practitioner": PractitionerHandler
+            "/Practitioner": PractitionerHandler,
+            "/": StatusHandler,
+            "/_status": StatusHandler
         }
 
     def handle_event(self, endpoint: str, event: APIGatewayProxyEvent) -> FhirWorker:

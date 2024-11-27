@@ -2,11 +2,13 @@
 Basic hello world app for an initial deployment
 """
 import json
+import traceback
 from datetime import datetime
 
 import jsonpickle
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 from aws_lambda_powertools.utilities.typing import LambdaContext
+from pydantic.schema import timedelta
 
 from hcw_exception import HcwException
 from logs.log import Log
@@ -48,6 +50,7 @@ def lambda_handler(event_dict: dict, context: LambdaContext) -> dict:
         }
     except Exception as e:
         logger.error(str(e))
+        logger.error(traceback.format_exc())
 
         full_response = {
             "isBase64Encoded": False,
@@ -56,7 +59,8 @@ def lambda_handler(event_dict: dict, context: LambdaContext) -> dict:
             "body": json.dumps({"error": "Internal Server Error"})
         }
 
-    debug_timing = {"ns": (datetime.now() - start_time).microseconds}
+    end_time = datetime.now()
+    debug_timing = {"ms": int((end_time - start_time) / timedelta(milliseconds=1))}
     logger.info(f"Sending response after {json.dumps(debug_timing)}")
     Log.cleanup()
     return full_response

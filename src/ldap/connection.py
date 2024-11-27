@@ -1,13 +1,14 @@
 import json
 import os
 import uuid
+from datetime import datetime
 from enum import IntEnum
 from ssl import CERT_REQUIRED
 from typing import Optional
 
 import boto3
 from botocore.config import Config
-from ldap3 import Tls, Server, Connection, SAFE_SYNC, AUTO_BIND_TLS_BEFORE_BIND
+from ldap3 import Tls, Server, Connection, SAFE_SYNC
 from ldap3.core.exceptions import LDAPException
 
 from hcw_exception import HcwException
@@ -23,6 +24,7 @@ class LdapErrorCode(IntEnum):
 
 class HcwLdapConnection:
     connection: Connection
+    bind_time: datetime
 
     def __init__(self):
         self.client = boto3.client("secretsmanager", config=Config(region_name="eu-west-2"))
@@ -66,8 +68,15 @@ class HcwLdapConnection:
             )
             server = Server("proxy-in.nhsref-1.auth-ptl.cis2.spineservices.nhs.uk", use_ssl=True, tls=tls)
 
-            return Connection(server, user=username, password=password, client_strategy=SAFE_SYNC,
-                                auto_bind=AUTO_BIND_TLS_BEFORE_BIND)
+            connection = Connection(server, user=username, password=password, client_strategy=SAFE_SYNC)
+
+            bound = connection.bind()
+            if not bound:
+                raise HcwException(500, "Could not bind to LDAP server")
+
+            self.bind_time = datetime.now()
+
+            return connection
         except LDAPException as e:
             raise HcwException(500, f"Error connecting to LDAP: {e}", "Error connecting to LDAP")
 

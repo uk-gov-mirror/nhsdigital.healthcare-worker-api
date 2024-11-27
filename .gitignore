@@ -23,3 +23,5 @@ hcw-api.zip
 
 .coverage
 coverage.xml
+
+nft/*.csv

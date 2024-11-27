@@ -1,0 +1,95 @@
+{
+  "builds": [
+    {
+      "name": "hcw-nft",
+      "builder_type": "amazon-ebs",
+      "build_time": 1731666739,
+      "files": null,
+      "artifact_id": "eu-west-2:ami-0a84774dae7faa59c",
+      "packer_run_uuid": "fa213437-ac0a-6fad-eb75-a2947b3402d5",
+      "custom_data": null
+    },
+    {
+      "name": "hcw-nft",
+      "builder_type": "amazon-ebs",
+      "build_time": 1731671246,
+      "files": null,
+      "artifact_id": "eu-west-2:ami-01f892c8f8dbd552a",
+      "packer_run_uuid": "f2521b2d-e16c-babf-20a2-5215a0468ee5",
+      "custom_data": null
+    },
+    {
+      "name": "hcw-nft",
+      "builder_type": "amazon-ebs",
+      "build_time": 1731674069,
+      "files": null,
+      "artifact_id": "eu-west-2:ami-00271895742a3d81b",
+      "packer_run_uuid": "87568757-ce44-61f0-3f55-88bd15eb5cda",
+      "custom_data": null
+    },
+    {
+      "name": "hcw-nft",
+      "builder_type": "amazon-ebs",
+      "build_time": 1731675264,
+      "files": null,
+      "artifact_id": "eu-west-2:ami-0707882289b483d7f",
+      "packer_run_uuid": "d0b32484-4387-53d5-002b-3509c3fc97a6",
+      "custom_data": null
+    },
+    {
+      "name": "hcw-nft",
+      "builder_type": "amazon-ebs",
+      "build_time": 1731676839,
+      "files": null,
+      "artifact_id": "eu-west-2:ami-0a809c203ad9b192b",
+      "packer_run_uuid": "6b202b08-d96e-4105-4783-31ed5c5ccda9",
+      "custom_data": null
+    },
+    {
+      "name": "hcw-nft",
+      "builder_type": "amazon-ebs",
+      "build_time": 1731681274,
+      "files": null,
+      "artifact_id": "eu-west-2:ami-0f576261c34bb6e85",
+      "packer_run_uuid": "a65ad25f-fb1e-4c34-a553-e9e667636f5b",
+      "custom_data": null
+    },
+    {
+      "name": "hcw-nft",
+      "builder_type": "amazon-ebs",
+      "build_time": 1731920685,
+      "files": null,
+      "artifact_id": "eu-west-2:ami-0bb7aaca7574bdcf4",
+      "packer_run_uuid": "1666ad08-bc6a-8702-114d-1c56977c2734",
+      "custom_data": null
+    },
+    {
+      "name": "hcw-nft",
+      "builder_type": "amazon-ebs",
+      "build_time": 1731941117,
+      "files": null,
+      "artifact_id": "eu-west-2:ami-00d8e65e40288569e",
+      "packer_run_uuid": "212bbc2d-b313-f326-0e17-7458c46bd73b",
+      "custom_data": null
+    },
+    {
+      "name": "hcw-nft",
+      "builder_type": "amazon-ebs",
+      "build_time": 1731942810,
+      "files": null,
+      "artifact_id": "eu-west-2:ami-05b5327cb959e0f05",
+      "packer_run_uuid": "c42e7090-7a9c-0f38-5b8f-9dfa274d752a",
+      "custom_data": null
+    },
+    {
+      "name": "hcw-nft",
+      "builder_type": "amazon-ebs",
+      "build_time": 1732271178,
+      "files": null,
+      "artifact_id": "eu-west-2:ami-0d5fda6d0906f09e5",
+      "packer_run_uuid": "5d0bf61b-0752-1d59-6efa-d5526766f2f8",
+      "custom_data": null
+    }
+  ],
+  "last_run_uuid": "5d0bf61b-0752-1d59-6efa-d5526766f2f8"
+}

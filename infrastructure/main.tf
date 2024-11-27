@@ -105,9 +105,17 @@ module "app" {
   is_pr     = local.is_pr
   subdomain = var.subdomain
 
-  s3_filename      = var.app_s3_filename
-  apim_environment = var.apim_environment
-  ldap_gateway_url = var.ldap_gateway_url
+  s3_filename          = var.app_s3_filename
+  apim_environment     = var.apim_environment
+  ldap_gateway_url     = var.ldap_gateway_url
+  provisioned_capacity = var.provisioned_capacity
 
   count = !local.is_mgmt ? 1 : 0
+}
+
+module "nft" {
+  source = "./modules/nft"
+  env    = local.env
+
+  count = var.include_nft_vpc && !local.is_pr && !local.is_mgmt ? 1 : 0
 }

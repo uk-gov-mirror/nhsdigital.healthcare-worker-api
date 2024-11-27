@@ -32,7 +32,7 @@ class TestWorker(IntegrationTest):
     @pytest.fixture(autouse=True)
     def resource(self):
         env = get_current_env()
-        self.access_token = generate_access_token(env.client_id)
+        self.access_token, _ = generate_access_token(env.client_id)
 
         yield
 

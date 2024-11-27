@@ -1,4 +1,6 @@
 """Handler for the worker endpoint"""
+import os
+from datetime import datetime, timedelta
 from typing import Optional
 
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
@@ -14,14 +16,21 @@ logger = Log("practitioner_handler")
 # Creating the connection here means that it's saved between requests, meaning that we don't need to re-establish
 # the LDAP connection on every request.
 ldap_connection: Optional[HcwLdapConnection] = None
+if "UNIT_TESTING" not in os.environ:
+    # Unfortunately doing this during unit testing is difficult because it triggers during the import before we have
+    # any mocking. But having it here moves the initial connection creation to the lambda start instead of the first
+    # request, which greatly improves performance for that request if we have provisioned concurrency.
+    ldap_connection = HcwLdapConnection()
 
 
 class PractitionerHandler(BaseHandler):
     def __init__(self):
         global ldap_connection
-        if not ldap_connection:
+        if not ldap_connection or ldap_connection.connection.closed or ldap_connection.bind_time < datetime.now() - timedelta(minutes=5):
             logger.info("Creating new ldap connection instance")
             ldap_connection = HcwLdapConnection()
+        else:
+            logger.info("Using existing LDAP connection instance")
 
     def get(self, event: APIGatewayProxyEvent) -> FhirWorker:
         logger.info("Performing practitioner GET")
