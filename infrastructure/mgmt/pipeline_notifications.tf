@@ -105,7 +105,10 @@ resource "aws_iam_policy" "pipeline_update_lambda" {
       {
         "Effect" : "Allow",
         "Action" : "secretsmanager:GetSecretValue",
-        "Resource" : aws_secretsmanager_secret.github_access_token.arn
+        "Resource" : [
+          aws_secretsmanager_secret.github_access_token.arn,
+          aws_secretsmanager_secret.slack_access_token.arn
+        ]
       }
     ]
   })

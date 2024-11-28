@@ -3,7 +3,7 @@ import boto3
 import os
 import urllib3
 
-SLACK_CHANNEL_ID = "TODO"
+SLACK_CHANNEL_ID = "C07RCAJEJPP"
 
 
 def get_slack_access_token() -> str:
@@ -31,15 +31,15 @@ def get_commit_details(message):
     print(response)
     commit_id = response['pipelineExecution']['artifactRevisions'][0]['revisionId']
     variables = response['pipelineExecution']['variables']
-    branch = next(filter(lambda env: env["name"] == "branch", variables))
+    branch_entry = next(filter(lambda env: env["name"] == "branch", variables))
 
-    return commit_id, branch
-
-
-def build_status_update(message, state):
     url = (f"https://eu-west-2.console.aws.amazon.com/codesuite/codepipeline/pipelines/{message['detail']['pipeline']}"
             f"/executions/{message['detail']['execution-id']}?region=eu-west-2")
 
+    return commit_id, branch_entry["resolvedValue"], url
+
+
+def build_status_update(message, state, url):
     build_status = {
         'state': state,
         'context': 'HCW Deployment',
@@ -80,20 +80,33 @@ def get_commit_state(message):
         return "error"
 
 
-def send_slack_notification(commit_id, state):
+def send_slack_notification(state, build_url):
     url = "https://slack.com/api/chat.postMessage"
 
-    message = {
-        "channel": SLACK_CHANNEL_ID,
-        "text": f"Commit id {commit_id} in state {state}",
-    }
-    print(f"Sending to URL {url}")
-    http = urllib3.PoolManager()
-    r = http.request('POST', url,
-                        headers={'Content-Type': 'application/json',
-                                'Authorization': f"Bearer {get_slack_access_token()}"},
-                        body=json.dumps(message).encode('utf-8'))
-    print(r.data)
+    if state == "success":
+        message_text = f"New FT build, deploy and test successful - <{build_url}|Pipeline>"
+    elif state == "error":
+        message_text = f"<!here> ⚠️ New FT build / deploy / test failed - <{build_url}|Pipeline>"
+    else:
+        message_text = None
+
+    if message_text:
+        message = {
+            "channel": SLACK_CHANNEL_ID,
+            "text": message_text,
+        }
+        print(f"Sending to slack URL {url}")
+        http = urllib3.PoolManager()
+        r = http.request('POST', url,
+                            headers={'Content-Type': 'application/json; charset=utf-8',
+                                    'Authorization': f"Bearer {get_slack_access_token()}"},
+                            body=json.dumps(message).encode('utf-8'))
+        response = json.loads(r.data.decode('utf-8'))
+
+        if not response["ok"]:
+            print(f"Could not send slack update. Received response {response}")
+        else:
+            print("Slack update sent successfully")
 
 
 def handler(event, context):
@@ -106,11 +119,11 @@ def handler(event, context):
         # Means that we're not interested in this update
         return
 
-    commit_id, branch = get_commit_details(message)
-    build_status = build_status_update(message, state)
+    commit_id, branch, url = get_commit_details(message)
+    build_status = build_status_update(message, state, url)
     send_status_update_request(commit_id, build_status)
 
+    print(f"Found branch of {branch}")
     if branch == "ft":
         # Means that we're running the build from develop to deploy to ft
-        # send_slack_notification(commit_id, state)
-        print("Deploying to FT, in the future will insert logic here to publish updates to the team")
+        send_slack_notification(state, url)
