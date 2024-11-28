@@ -65,7 +65,6 @@ module "terraform_state" {
 module "management" {
   source               = "./mgmt"
   account              = var.account
-  vpc_cidr_block       = var.vpc_cidr_block
   apim_private_key_arn = module.deploy[0].apim_private_key_arn
 
   count = local.env == "management" ? 1 : 0

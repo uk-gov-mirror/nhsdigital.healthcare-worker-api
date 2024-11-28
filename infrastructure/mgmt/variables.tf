@@ -7,10 +7,6 @@ variable "bgp_asn" {
   default = "65000"
 }
 
-variable "vpc_cidr_block" {
-  type = string
-}
-
 variable "apim_private_key_arn" {
   type = string
 }

@@ -231,21 +231,10 @@ resource "aws_codepipeline" "static_env_deployment_pipeline" {
   }
 
   stage {
-    name = "Ref-Approval"
-    action {
-      category = "Approval"
-      name     = "Ref-Approval"
-      owner    = "AWS"
-      provider = "Manual"
-      version  = "1"
-    }
-  }
-
-  stage {
-    name = "Ref-Deploy"
+    name = "Int-Integration-Test"
 
     action {
-      name     = "Deploy"
+      name     = "Integration-Test"
       category = "Build"
       owner    = "AWS"
       provider = "CodeBuild"
@@ -253,25 +242,13 @@ resource "aws_codepipeline" "static_env_deployment_pipeline" {
 
       input_artifacts = ["source_output"]
 
-      role_arn = "arn:aws:iam::711387117641:role/CodeBuildDeployJobRole"
-
       configuration = {
-        ProjectName = "hcw-api-deploy"
+        ProjectName = "hcw-integration-tests"
 
         EnvironmentVariables = jsonencode([
           {
-            name  = "environment_name"
-            value = "ref"
-            type  = "PLAINTEXT"
-          },
-          {
-            name  = "account_name"
+            name  = "branch"
             value = "int"
-            type  = "PLAINTEXT"
-          },
-          {
-            name  = "app_s3_filename"
-            value = "#{variables.commit_id}.zip"
             type  = "PLAINTEXT"
           }
         ])
