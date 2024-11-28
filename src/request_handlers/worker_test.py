@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 
+import ldap.connection
 from fhir.fhir_worker import FhirWorker
 from hcw_exception import HcwException
 from ldap.nhs_person import NhsPerson
@@ -45,11 +46,8 @@ def assert_valid_sandbox_user(response):
 
 
 def mock_ldap(uid: Optional[str] = "uid", sn: Optional[str] = "Smith",
-                given_name: Optional[str] = "Bob", nhs_middle_names=None, title: Optional[str] = "Mr",
-                status: Optional[str] = "1"):
-    if nhs_middle_names is None:
-        nhs_middle_names = ["John", "James"]
-
+                given_name: Optional[str] = "Bob", nhs_middle_names: Optional[str] = "John James",
+                title: Optional[str] = "Mr", status: Optional[str] = "1"):
     ldap_connection_mock = MagicMock()
     mock_ldap_response = NhsPerson([uid], [sn], [given_name], nhs_middle_names, [title], status)
     ldap_connection_mock.return_value.search_active_nhs_person.return_value = mock_ldap_response
@@ -72,6 +70,32 @@ def test_worker_handler():
     mock_ldap()
     response = practitioner_get("uid")
     assert_valid_ldaps_user(response)
+
+
+def test_worker_handler_ldap_string_responses():
+    # We've seen some inconsistency in the responses from ldap. Sometimes returning a list with a single value,
+    # sometimes returning a string. We normally expect a single value array for most values, but this tests is for
+    # strings instead. This makes sure that we don't error on an unexpected response format.
+    ldap_connection_mock = MagicMock()
+    mock_ldap_response = NhsPerson("uid", "Smith", "Bob", "John James", "Mr", "1")
+    ldap_connection_mock.return_value.search_active_nhs_person.return_value = mock_ldap_response
+    request_handlers.worker.get_connection = ldap_connection_mock
+
+    response = practitioner_get("uid")
+
+    assert response.id == "uid"
+    assert response.resourceType == "Practitioner"
+    assert response.active
+
+    assert len(response.identifier) == 1
+    assert response.identifier[0].system == "https://fhir.nhs.uk/Id/sds-user-id"
+    assert response.identifier[0].value == "uid"
+
+    assert len(response.name) == 1
+    assert response.name[0].use == "usual"
+    assert response.name[0].family == "Smith"
+    assert response.name[0].given == "Bob John James"
+    assert response.name[0].prefix == "Mr"
 
 
 def test_missing_id():
@@ -124,28 +148,28 @@ class TestLdapMissingField:
         assert response.name[0].given == "John James"
 
     def test_ldap_response_with_single_middle_name(self):
-        mock_ldap(nhs_middle_names=["Middle"])
+        mock_ldap(nhs_middle_names="Middle")
 
         response = practitioner_get("uid")
 
         assert response.name[0].given == "Bob Middle"
 
     def test_ldap_response_with_no_middle_name(self):
-        mock_ldap(nhs_middle_names=False)
+        mock_ldap(nhs_middle_names=None)
 
         response = practitioner_get("uid")
 
         assert response.name[0].given == "Bob"
 
     def test_ldap_response_with_empty_middle_names(self):
-        mock_ldap(nhs_middle_names=[])
+        mock_ldap(nhs_middle_names="")
 
         response = practitioner_get("uid")
 
         assert response.name[0].given == "Bob"
 
     def test_ldap_response_with_no_first_or_middle_name(self):
-        mock_ldap(given_name=None, nhs_middle_names=[])
+        mock_ldap(given_name=None, nhs_middle_names=None)
 
         response = practitioner_get("uid")
 

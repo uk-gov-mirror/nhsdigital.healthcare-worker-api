@@ -102,7 +102,7 @@ class TestLdapSearch:
                 "uid": ["123"],
                 "sn": ["Smith"],
                 "givenName": ["John"],
-                "nhsMiddleNames": ["Doe", "James", "Dave"],
+                "nhsMiddleNames": ["Doe James Dave"],
                 "personalTitle": ["Mr"],
                 "nhsPersonStatus": "1",
             }}]
