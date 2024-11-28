@@ -59,6 +59,9 @@ info:
 
     * [Application-restricted RESTful APIs - API key authentication](https://digital.nhs.uk/developer/guides-and-documentation/security-and-authorisation/application-restricted-restful-apis-api-key-authentication)
 
+    ## Postman Collection
+    See https://github.com/NHSDigital/healthcare-worker-api/tree/develop/postman for an export of our postman collection. The readme in that directory explains how to set it up and send the requests.
+
     ## Environments and testing
     | Environment       | Base URL
     | ----------------- | ---------------------------------------------------------------------|
