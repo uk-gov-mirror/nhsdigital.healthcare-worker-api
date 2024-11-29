@@ -18,10 +18,6 @@ variable "ldap_gateway_url" {
   type = string
 }
 
-variable "subdomain" {
-  type = string
-}
-
 variable "provisioned_capacity" {
   type = number
 }
@@ -31,5 +27,13 @@ variable "sandbox_mode" {
 }
 
 variable "vpc_env" {
+  type = string
+}
+
+variable "subdomain" {
+  type = string
+}
+
+variable "account_id" {
   type = string
 }

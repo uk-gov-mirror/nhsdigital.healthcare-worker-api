@@ -65,17 +65,3 @@ resource "aws_network_acl_rule" "private_ldaps_in_from_local" {
   from_port      = 636
   to_port        = 636
 }
-
-# Ephemeral ports
-resource "aws_network_acl_rule" "private_to_all_ephemeral_in" {
-  network_acl_id = aws_network_acl.hcw_private_acl.id
-  rule_number    = 120
-  rule_action    = "allow"
-  egress         = false
-  protocol       = "tcp"
-  cidr_block     = "0.0.0.0/0"
-  from_port      = 1024
-  to_port        = 65535
-}
-
-

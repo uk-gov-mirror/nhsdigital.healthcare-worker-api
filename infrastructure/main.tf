@@ -99,10 +99,11 @@ module "deploy" {
 }
 
 module "app" {
-  source    = "./modules/hcw-api"
-  env       = local.env
-  is_pr     = local.is_pr
-  subdomain = var.subdomain
+  source     = "./modules/hcw-api"
+  env        = local.env
+  is_pr      = local.is_pr
+  subdomain  = var.subdomain
+  account_id = var.account_id
 
   sandbox_mode = var.sandbox
 

@@ -48,3 +48,8 @@ ad9dca25a1b4eb723d077df517453d3806d62f69:integration_tests/utils/test-1.pem:priv
 8f25960999bfb6e5f5616fdecd9c100f376dd105:integration_tests/config/ft_environment.py:generic-api-key:5
 cc2d9e1a3f0950cfca2753f459c2867631aa0ed1:integration_tests/config/int.py:generic-api-key:5
 7d18158eba34acf0db66c81c3ae4ae3aa3de4e4b:integration_tests/config/int.py:generic-api-key:5
+816a83cfe332f7dc11a5078335dbcdb3bc3036b1:postman/ft.json:private-key:37
+816a83cfe332f7dc11a5078335dbcdb3bc3036b1:postman/pr.json:private-key:37
+1dc3d077f4240376ebe5f09a9ba679fe6c9588d4:integration_tests/config/int.py:generic-api-key:5
+906b8c2b2d493e396d087a844fbe919fd914d753:postman/ft.json:private-key:37
+906b8c2b2d493e396d087a844fbe919fd914d753:postman/pr.json:private-key:37

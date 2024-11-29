@@ -42,3 +42,15 @@ runs:
         poetry run coverage run -m pytest
         poetry run coverage xml
         ./scripts/reports/perform-static-analysis.sh
+    - name: "Run Trivy Checks"
+      uses: aquasecurity/trivy-action@0.28.0
+      with:
+        scan-type: "config"
+        format: "sarif"
+        output: trivy.sarif
+      env:
+        TRIVY_SKIP_DB_UPDATE: true
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: 'trivy.sarif'

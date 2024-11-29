@@ -4,7 +4,6 @@ resource "aws_subnet" "private" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
   cidr_block        = local.subnets_cidr_blocks[count.index + 3]
 
-  depends_on = [aws_subnet.public]
   tags = {
     Name    = "${var.env}-hcw-private-${data.aws_availability_zones.available.names[count.index]}"
     private = "True"

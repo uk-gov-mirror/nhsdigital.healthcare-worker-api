@@ -39,6 +39,22 @@ resource "aws_s3_bucket_policy" "build_artifacts_bucket_policy" {
   })
 }
 
+resource "aws_kms_key" "s3_kms_key" {
+  description         = "Key used to encrypt S3 objects"
+  enable_key_rotation = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "truststore_config" {
+  bucket = aws_s3_bucket.truststore.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.s3_kms_key.arn
+      sse_algorithm     = "aws:kms"
+    }
+  }
+}
+
 resource "aws_s3_bucket_public_access_block" "block_public_access" {
   bucket = aws_s3_bucket.truststore.id
 

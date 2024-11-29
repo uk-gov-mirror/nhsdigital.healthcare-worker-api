@@ -124,6 +124,11 @@ resource "aws_api_gateway_stage" "live" {
   deployment_id = aws_api_gateway_deployment.live.id
   rest_api_id   = aws_api_gateway_rest_api.app_api.id
   stage_name    = "live"
+
+  access_log_settings {
+    destination_arn = "arn:aws:logs:eu-west-2:${var.account_id}:log-group:/API-Gateway-Access-Logs_${aws_api_gateway_rest_api.app_api.id}/live"
+    format          = "{ \"requestId\":\"$context.requestId\", \"extendedRequestId\":\"$context.extendedRequestId\",\"ip\": \"$context.identity.sourceIp\", \"caller\":\"$context.identity.caller\", \"user\":\"$context.identity.user\", \"requestTime\":\"$context.requestTime\", \"httpMethod\":\"$context.httpMethod\", \"resourcePath\":\"$context.resourcePath\", \"status\":\"$context.status\", \"protocol\":\"$context.protocol\", \"responseLength\":\"$context.responseLength\" }"
+  }
 }
 
 resource "aws_lambda_permission" "apigw_lambda" {

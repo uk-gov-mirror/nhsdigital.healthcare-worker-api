@@ -32,34 +32,6 @@ resource "aws_security_group" "vpc_lambda" {
   }
 }
 
-resource "aws_security_group" "internet_access" {
-  name        = "${var.env}-internet-access-sg"
-  description = "security group for outbound access to the internet"
-  vpc_id      = aws_vpc.lambda.id
-
-  egress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${var.env}-internet-access-sg"
-  }
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
 resource "aws_security_group" "endpoint" {
   name        = "${var.env}-vpc-endpoints-sg"
   description = "security group for the secretsmanager vpc endpoint inside the vpc"
