@@ -8,4 +8,4 @@ def test_status_handler():
 
     response = handler.get(APIGatewayProxyEvent(data={}))
 
-    assert response.ok is True
+    assert response.main_response[0].ok is True

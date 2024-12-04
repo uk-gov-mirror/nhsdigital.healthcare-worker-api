@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 from ssl import CERT_REQUIRED
 from unittest.mock import patch, mock_open, MagicMock
 
@@ -91,6 +92,38 @@ def test_connect_fail():
 
 
 class TestLdapSearch:
+    full_ldap_response_example = [{
+            "attributes": {
+                "objectClass": ["nhsPerson"],
+                "uid": ["123"],
+                "sn": ["Smith"],
+                "givenName": ["John"],
+                "nhsMiddleNames": ["Doe James Dave"],
+                "personalTitle": ["Mr"],
+                "nhsPersonStatus": "1",
+            }
+        }, {
+            "attributes": {
+                "objectClass": ["nhsOrgPerson"],
+                "uniqueIdentifier": "orgPersonId",
+                "nhsOpenDate": "20240101",
+                "o": "org",
+                "nhsIDCode": "Y51"
+            }
+        }, {
+            "attributes": {
+                "objectClass": ["nhsOrgPersonRole"],
+                "uniqueIdentifier": "orgPersonRoleId",
+                "nhsBusinessFunctionsCodes": "bCodes",
+                "nhsBusinessFunctions": "bFunctions",
+                "nhsJobRole": "jobRole",
+                "nhsJobRoleCode": "jobRoleCode",
+                "nhsIDCode": "Y51",
+                "nhsOpenDate": "20200101",
+                "nhsCloseDate": "29990101",
+            }
+        }]
+
     def test_search(self):
         boto3, _, _, connection, _ = setup_ldap_connection_mock()
 
@@ -98,28 +131,39 @@ class TestLdapSearch:
             mock_secrets(boto3)
             conn = RealHcwLdapConnection()
 
-            ldap_result = [{"attributes": {
-                "uid": ["123"],
-                "sn": ["Smith"],
-                "givenName": ["John"],
-                "nhsMiddleNames": ["Doe James Dave"],
-                "personalTitle": ["Mr"],
-                "nhsPersonStatus": "1",
-            }}]
-            connection.return_value.search.return_value = True, {"result": 0}, ldap_result, ""
+            connection.return_value.search.return_value = True, {"result": 0}, self.full_ldap_response_example, ""
 
-            result = conn.search_active_nhs_person("123")
+            practitioner, org_persons, roles = conn.search_active_nhs_person("123")
 
-            expected_attributes = ["uid", "Sn", "givenName", "nhsMiddleNames", "personalTitle", "nhsPersonStatus"]
-            connection.return_value.search.assert_called_with("uid=123,ou=people,o=nhs", "(objectclass=nhsPerson)",
+            expected_attributes = ["uid", "Sn", "givenName", "nhsMiddleNames", "personalTitle", "nhsPersonStatus",
+                                    "objectclass", "uniqueIdentifier", "nhsOpenDate", "nhsIDCode", "o",
+                                    "nhsBusinessFunctionsCodes", "nhsJobRole", "nhsJobRoleCode", "nhsBusinessFunctions", "nhsCloseDate"]
+            connection.return_value.search.assert_called_with("uid=123,ou=people,o=nhs", "(objectclass=*)",
                                                                 attributes=expected_attributes)
 
-            assert result.uid == "123"
-            assert result.sn == "Smith"
-            assert result.given_name == "John"
-            assert result.nhs_middle_names == "Doe James Dave"
-            assert result.personal_title == "Mr"
-            assert result.nhs_person_status == "1"
+            assert practitioner.uid == "123"
+            assert practitioner.sn == "Smith"
+            assert practitioner.given_name == "John"
+            assert practitioner.nhs_middle_names == "Doe James Dave"
+            assert practitioner.personal_title == "Mr"
+            assert practitioner.nhs_person_status == "1"
+
+            assert len(org_persons) == 1
+            assert org_persons[0].org_person_id == "orgPersonId"
+            assert org_persons[0].joined == datetime(2024, 1, 1).date()
+            assert org_persons[0].ods_code == "Y51"
+            assert org_persons[0].org_name == "org"
+            assert org_persons[0].nhs_id_code == "Y51"
+
+            assert len(roles) == 1
+            assert roles[0].profile_id == "orgPersonRoleId"
+            assert roles[0].business_function_codes == "bCodes"
+            assert roles[0].job_role == "jobRole"
+            assert roles[0].job_role_code == "jobRoleCode"
+            assert roles[0].role_granted == datetime(2020, 1, 1).date()
+            assert roles[0].role_stopped == datetime(2999, 1, 1).date()
+            assert roles[0].practitioner.uid == "123"
+            assert roles[0].org_person.org_person_id == "orgPersonId"
 
     def test_search_person_not_found(self):
         boto3, _, _, connection, _ = setup_ldap_connection_mock()
@@ -136,29 +180,6 @@ class TestLdapSearch:
             assert e.value.status_code == 404
             assert e.value.message == "User with id 123 not found"
 
-    def test_search_multiple_matches(self):
-        boto3, _, _, connection, _ = setup_ldap_connection_mock()
-
-        with patch.dict(os.environ, environment_variables()):
-            mock_secrets(boto3)
-            conn = RealHcwLdapConnection()
-
-            ldap_result = {"attributes": {
-                "uid": ["123"],
-                "sn": ["Smith"],
-                "givenName": ["John"],
-                "nhsMiddleNames": [],
-                "personalTitle": ["Mr"],
-                "nhsPersonStatus": "1",
-            }}
-            connection.return_value.search.return_value = True, {"result": 0}, [ldap_result, ldap_result], ""
-
-            with pytest.raises(HcwException) as e:
-                conn.search_active_nhs_person("123")
-
-            assert e.value.status_code == 500
-            assert e.value.return_message == "Found multiple users with id 123"
-
     def test_search_missing_values(self):
         boto3, _, _, connection, _ = setup_ldap_connection_mock()
 
@@ -167,6 +188,7 @@ class TestLdapSearch:
             conn = RealHcwLdapConnection()
 
             ldap_result = [{"attributes": {
+                "objectClass": "nhsPerson",
                 "uid": [],
                 "sn": [],
                 "givenName": [],
@@ -176,14 +198,14 @@ class TestLdapSearch:
             }}]
             connection.return_value.search.return_value = True, {"result": 0}, ldap_result, ""
 
-            result = conn.search_active_nhs_person("123")
+            nhs_person, _org_persons, roles = conn.search_active_nhs_person("123")
 
-            assert result.uid == ""
-            assert result.sn == ""
-            assert result.given_name == ""
-            assert result.nhs_middle_names == ""
-            assert result.personal_title == ""
-            assert result.nhs_person_status == ""
+            assert nhs_person.uid == ""
+            assert nhs_person.sn == ""
+            assert nhs_person.given_name == ""
+            assert nhs_person.nhs_middle_names == ""
+            assert nhs_person.personal_title == ""
+            assert nhs_person.nhs_person_status == ""
 
     def test_search_returns_error(self):
         boto3, _, _, connection, _ = setup_ldap_connection_mock()
@@ -199,3 +221,20 @@ class TestLdapSearch:
 
             assert e.value.status_code == 500
             assert e.value.return_message == "Unknown error from LDAP request"
+
+    def test_search_filters_inactive_roles(self):
+        boto3, _, _, connection, _ = setup_ldap_connection_mock()
+
+        with patch.dict(os.environ, environment_variables()):
+            mock_secrets(boto3)
+            conn = RealHcwLdapConnection()
+
+            example = self.full_ldap_response_example.copy()
+            example[2]["attributes"]["nhsCloseDate"] = "20240501"  # Close date in the past
+            connection.return_value.search.return_value = True, {"result": 0}, example, ""
+
+            practitioner, org_persons, roles = conn.search_active_nhs_person("123")
+
+            assert practitioner is not None
+            assert len(org_persons) == 1
+            assert roles == []

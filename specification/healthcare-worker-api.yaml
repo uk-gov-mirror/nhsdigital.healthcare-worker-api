@@ -142,6 +142,9 @@ paths:
 
         Only active objects, showing details will be returned. If the care identity itself is closed, a 410 response will be returned (see below).
 
+        This endpoint supports the use of the _revinclude query parameter to expose more information about practitioner roles.
+        It must take the value of either PractitionerRole:practitioner.
+
         To get the information, you must supply:
           * CIS unique identifier (sometimes known as SDS user ID or smartcard ID)
       parameters:
@@ -153,6 +156,13 @@ paths:
           schema:
             type: string
           explode: true
+        - in: query
+          name: _revinclude
+          description: Include objects which reference the one being returned.
+          required: false
+          example: PractitionerRole:practitioner
+          schema:
+            type: string
         - in: header
           name: X-Correlation-Id
           description: UUID for request tracking
@@ -160,12 +170,6 @@ paths:
             type: string
             format: uuid
           example: 6d3d3674-7ce5-11ec-90d6-0242ac120003
-        - in: header
-          name: apikey
-          description: API key to authenticate with. Use any value for Sandbox environment.
-          schema:
-            type: string
-          required: true
       responses:
         '200':
           description: Successful operation
@@ -190,6 +194,53 @@ paths:
           description: Upstream system returned an unsupported response
         '504':
           description: Upstream server request has timed out
+  /PractitionerRole:
+    get:
+      summary: Get healthcare worker role details
+      operationId: getPractitionerRole
+      description: |
+        # Overview
+        Use this endpoint to get details of healthcare worker roles in the CIS directory. It takes a practitioner's
+        id as input and returns all the roles associated with that practitioner.
+
+        This endpoint supports the use of the _include query parameter to expose more information about referenced
+        organisations and practitioners. It must take the value of either PractitionerRole:organization or
+        PractitionerRole:practitioner, with multiple values supported.
+      parameters:
+        - in: query
+          name: practitioner.identifier
+          description: SDS user ID which uniquely identifies a person.
+          required: true
+          example: 123456789012
+          schema:
+            type: string
+          explode: true
+        - in: query
+          name: _include
+          description: Include objects which are referenced by the ones being returned.
+          required: false
+          example: PractitionerRole:practitioner
+          schema:
+            type: string
+        - in: header
+          name: X-Correlation-Id
+          description: UUID for request tracking
+          schema:
+            type: string
+            format: uuid
+          required: true
+          example: 6d3d3674-7ce5-11ec-90d6-0242ac120003
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/fhir+json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    practitioner_role:
+                      $ref: '#/components/schemas/PractitionerRole'
 components:
   securitySchemes:
     app-level3:
@@ -243,3 +294,71 @@ components:
                 type: string
                 description: Standard form of address used to precede a person's name
                 example: Ms
+    PractitionerRole:
+      type: object
+      properties:
+        resourceType:
+          type: string
+          default: PractitionerRole
+        id:
+          type: string
+          description: Id of the practitioner role
+        identifier:
+          type: array
+          description: Auto generated unique ID for the role.
+          items:
+            type: object
+            properties:
+              system:
+                type: string
+                default: https://fhir.nhs.uk/Id/sds-role-profile-id
+              value:
+                type: string
+                example: 123456789012
+        active:
+          type: boolean
+          description: Describes the active status of the Practitioner record in the directory.
+          example: True
+        practitioner:
+          $ref: '#/components/schemas/Reference'
+        organization:
+          $ref: '#/components/schemas/Reference'
+        period:
+          type: object
+          properties:
+              start:
+                type: string
+              end:
+                type: string
+        code:
+          type: array
+          items:
+            $ref: '#/components/schemas/CodeableConcept'
+    Reference:
+      type: object
+      properties:
+        resourceType:
+          type: string
+          default: Identifier
+        system:
+          type: string
+        value:
+          type: string
+    CodeableConcept:
+      type: object
+      properties:
+        resourceType:
+          type: string
+          default: CodeableConcept
+        coding:
+          type: object
+          properties:
+            resourceType:
+              type: string
+              default: Coding
+            system:
+              type: string
+            code:
+              type: string
+            display:
+              type: string

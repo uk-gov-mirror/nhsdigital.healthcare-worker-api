@@ -4,13 +4,12 @@ from unittest.mock import MagicMock
 import pytest
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 
-import ldap.connection
-from fhir.fhir_worker import FhirWorker
+from fhir.fhir_practitioner import FhirPractitioner
 from hcw_exception import HcwException
 from ldap.nhs_person import NhsPerson
-from request_handlers.worker import PractitionerHandler
+from request_handlers.practitioner import PractitionerHandler
 
-import request_handlers.worker
+import request_handlers.practitioner
 
 
 def assert_valid_ldaps_user(response):
@@ -49,21 +48,29 @@ def mock_ldap(uid: Optional[str] = "uid", sn: Optional[str] = "Smith",
                 given_name: Optional[str] = "Bob", nhs_middle_names: Optional[str] = "John James",
                 title: Optional[str] = "Mr", status: Optional[str] = "1"):
     ldap_connection_mock = MagicMock()
-    mock_ldap_response = NhsPerson([uid], [sn], [given_name], nhs_middle_names, [title], status)
-    ldap_connection_mock.return_value.search_active_nhs_person.return_value = mock_ldap_response
-    request_handlers.worker.get_connection = ldap_connection_mock
+    nhs_person = NhsPerson({
+        "uid": uid,
+        "sn": sn,
+        "givenName": given_name,
+        "nhsMiddleNames": nhs_middle_names,
+        "personalTitle": title,
+        "nhsPersonStatus": status,
+    })
+    ldap_connection_mock.return_value.search_active_nhs_person.return_value = [nhs_person, [], []]
+    request_handlers.practitioner.get_connection = ldap_connection_mock
 
     return ldap_connection_mock
 
 
-def practitioner_get(uid: Optional[str]) -> FhirWorker:
+def practitioner_get(uid: Optional[str]) -> FhirPractitioner:
     handler = PractitionerHandler()
-    return handler.get(APIGatewayProxyEvent(data={
+    handler_response = handler.get(APIGatewayProxyEvent(data={
         "resource": "/Practitioner",
         "queryStringParameters": {
             "identifier": uid
         }
     }))
+    return handler_response.main_response[0]
 
 
 def test_worker_handler():
@@ -77,9 +84,16 @@ def test_worker_handler_ldap_string_responses():
     # sometimes returning a string. We normally expect a single value array for most values, but this tests is for
     # strings instead. This makes sure that we don't error on an unexpected response format.
     ldap_connection_mock = MagicMock()
-    mock_ldap_response = NhsPerson("uid", "Smith", "Bob", "John James", "Mr", "1")
-    ldap_connection_mock.return_value.search_active_nhs_person.return_value = mock_ldap_response
-    request_handlers.worker.get_connection = ldap_connection_mock
+    nhs_person = NhsPerson({
+        "uid": "uid",
+        "sn": "Smith",
+        "givenName": "Bob",
+        "nhsMiddleNames": "John James",
+        "personalTitle": "Mr",
+        "nhsPersonStatus": "1",
+    })
+    ldap_connection_mock.return_value.search_active_nhs_person.return_value = [nhs_person, [], []]
+    request_handlers.practitioner.get_connection = ldap_connection_mock
 
     response = practitioner_get("uid")
 
@@ -129,15 +143,15 @@ class TestLdapMissingField:
 
         response = practitioner_get("uid")
 
-        assert response.id is None
-        assert response.identifier[0].value is None
+        assert response.id == ""
+        assert response.identifier[0].value == ""
 
     def test_ldap_response_with_no_sn(self):
         mock_ldap(sn=None)
 
         response = practitioner_get("uid")
 
-        assert response.name[0].family is None
+        assert response.name[0].family == ""
 
     def test_ldap_response_with_no_given_name(self):
         mock_ldap(given_name=None)
@@ -180,4 +194,4 @@ class TestLdapMissingField:
 
         response = practitioner_get("uid")
 
-        assert response.name[0].prefix is None
+        assert response.name[0].prefix == ""

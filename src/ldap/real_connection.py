@@ -8,12 +8,12 @@ from typing import Optional
 
 import boto3
 from botocore.config import Config
-from ldap3 import Tls, Server, Connection, SAFE_SYNC, AUTO_BIND_TLS_BEFORE_BIND
+from ldap3 import Tls, Server, Connection, SAFE_SYNC
 from ldap3.core.exceptions import LDAPException
 
 from hcw_exception import HcwException
 from ldap.connection import HcwLdapConnection
-from ldap.nhs_person import NhsPerson
+from ldap.nhs_person import NhsPerson, NhsOrgPersonRole, NhsOrgPerson
 from logs.log import Log
 
 logger = Log("ldap_connection")
@@ -81,28 +81,8 @@ class RealHcwLdapConnection(HcwLdapConnection):
         except LDAPException as e:
             raise HcwException(500, f"Error connecting to LDAP: {e}", "Error connecting to LDAP")
 
-    def perform_nhs_person_search(self, uid: str, allow_retry: bool = True):
-        try:
-            logger.info("Searching LDAP for nhsPerson")
-
-            return_attributes = ["uid", "Sn", "givenName", "nhsMiddleNames", "personalTitle", "nhsPersonStatus"]
-            success, result, response, request = self.connection.search(f"uid={uid},ou=people,o=nhs",
-                                                                        "(objectclass=nhsPerson)",
-                                                                        attributes=return_attributes)
-
-            logger.info(f"Received LDAP response, success: {success}")
-            return success, result, response, request
-        except LDAPException as e:
-            if allow_retry:
-                logger.warning(f"Got an LDAP connection error {e}. Attempting to reconnect.")
-                self.connection = self.connect()
-                logger.info("LDAP connection re-established")
-                return self.perform_nhs_person_search(uid, allow_retry=False)
-            else:
-                raise HcwException(500, "LDAP connection error and retry failed", "Error connecting to LDAP")
-
     @staticmethod
-    def verify_single_response(uid, success, result, response):
+    def check_response(uid, success, result):
         result_code = result["result"]
         if result_code == LdapErrorCode.NOT_FOUND:
             raise HcwException(404, f"User with id {uid} not found")
@@ -111,19 +91,56 @@ class RealHcwLdapConnection(HcwLdapConnection):
             raise HcwException(500, f"Unknown error from LDAP request. Result: {result}",
                                 "Unknown error from LDAP request")
 
-        if len(response) > 1:
-            raise HcwException(500, f"Found multiple users with id {uid}")
+    @staticmethod
+    def find_by_type(response, object_class):
+        return map(lambda r: r["attributes"], filter(lambda r: object_class in r["attributes"]["objectClass"], response))
 
-    def search_active_nhs_person(self, uid: str) -> NhsPerson:
-        success, result, response, _ = self.perform_nhs_person_search(uid)
-        self.verify_single_response(uid, success, result, response)
+    @staticmethod
+    def get_nhs_person(response) -> dict[str, str]:
+        return next(RealHcwLdapConnection.find_by_type(response, "nhsPerson"))
 
-        attrs = response[0]["attributes"]
-        return NhsPerson(
-            attrs["uid"],
-            attrs["sn"],
-            attrs["givenName"],
-            attrs["nhsMiddleNames"],
-            attrs["personalTitle"],
-            attrs["nhsPersonStatus"]
-        )
+    @staticmethod
+    def get_org_person(response) -> list[dict[str, str]]:
+        return list(RealHcwLdapConnection.find_by_type(response, "nhsOrgPerson"))
+
+    @staticmethod
+    def get_org_roles(response) -> list[dict[str, str]]:
+        return list(RealHcwLdapConnection.find_by_type(response, "nhsOrgPersonRole"))
+
+    def search_active_nhs_person(self, uid: str, allow_retry: bool = True) -> [NhsPerson, list[NhsOrgPerson], list[NhsOrgPersonRole]]:
+        try:
+            logger.info("Searching LDAP for nhsPerson")
+
+            return_attributes = ["uid", "Sn", "givenName", "nhsMiddleNames", "personalTitle", "nhsPersonStatus",
+                                    "objectclass", "uniqueIdentifier", "nhsOpenDate", "nhsIDCode", "o",
+                                    "nhsBusinessFunctionsCodes", "nhsJobRole", "nhsJobRoleCode", "nhsBusinessFunctions",
+                                    "nhsCloseDate"]
+            success, result, response, request = self.connection.search(f"uid={uid},ou=people,o=nhs",
+                                                                        "(objectclass=*)",
+                                                                        attributes=return_attributes)
+
+            logger.info(f"Received LDAP response, success: {success}")
+
+            self.check_response(uid, success, result)
+
+            practitioner = NhsPerson(self.get_nhs_person(response))
+            org_persons = [NhsOrgPerson(r) for r in self.get_org_person(response)]
+            roles = [NhsOrgPersonRole(r) for r in self.get_org_roles(response)]
+
+            active_roles = []
+            for role in roles:
+                if not role.role_stopped or role.role_stopped > datetime.now().date():
+                    role.org_person = next(filter(lambda op: op.nhs_id_code == role.nhs_id_code, org_persons))
+                    role.practitioner = practitioner
+                    active_roles.append(role)
+
+            return practitioner, org_persons, active_roles
+
+        except LDAPException as e:
+            if allow_retry:
+                logger.warning(f"Got an LDAP connection error {e}. Attempting to reconnect.")
+                self.connection = self.connect()
+                logger.info("LDAP connection re-established")
+                return self.search_active_nhs_person(uid, allow_retry=False)
+            else:
+                raise HcwException(500, "LDAP connection error and retry failed", "Error connecting to LDAP")

@@ -4,9 +4,19 @@ real ldaps connection so we have no chance of returning PID from the LDAPS insta
 """
 
 from ldap.connection import HcwLdapConnection
-from ldap.nhs_person import NhsPerson
+from ldap.nhs_person import NhsPerson, NhsOrgPerson, NhsOrgPersonRole
 
 
 class MockHcwLdapConnection(HcwLdapConnection):
-    def search_active_nhs_person(self, uid: str) -> NhsPerson:
-        return NhsPerson([123], ["Westbrook"], ["Tabby"], ["Ashlyn"], ["Mrs"], "1")
+    def search_active_nhs_person(self, uid: str) -> [NhsPerson, list[NhsOrgPerson], list[NhsOrgPersonRole]]:
+        return NhsPerson({
+            "uid": "123",
+            "sn": "Westbrook",
+            "givenName": "Tabby",
+            "nhsMiddleNames": "Ashlyn",
+            "personalTitle": "Mrs",
+            "nhsPersonStatus": "1",
+        }), [], []
+
+    def search_org_roles(self, uid: str) -> list[NhsOrgPersonRole]:
+        return []

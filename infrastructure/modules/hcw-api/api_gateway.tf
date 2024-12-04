@@ -93,6 +93,29 @@ resource "aws_api_gateway_integration" "practitioner_get_lambda_integration" {
   uri                     = aws_lambda_alias.live.invoke_arn
 }
 
+resource "aws_api_gateway_resource" "practitioner_role" {
+  parent_id   = aws_api_gateway_rest_api.app_api.root_resource_id
+  path_part   = "PractitionerRole"
+  rest_api_id = aws_api_gateway_rest_api.app_api.id
+}
+
+resource "aws_api_gateway_method" "practitioner_role_get" {
+  authorization = "NONE"
+  http_method   = "GET"
+  resource_id   = aws_api_gateway_resource.practitioner_role.id
+  rest_api_id   = aws_api_gateway_rest_api.app_api.id
+}
+
+resource "aws_api_gateway_integration" "practitioner_role_get_lambda_integration" {
+  http_method = aws_api_gateway_method.practitioner_role_get.http_method
+  resource_id = aws_api_gateway_resource.practitioner_role.id
+  rest_api_id = aws_api_gateway_rest_api.app_api.id
+
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_alias.live.invoke_arn
+}
+
 resource "aws_api_gateway_method_settings" "api_settings" {
   rest_api_id = aws_api_gateway_rest_api.app_api.id
   stage_name  = aws_api_gateway_stage.live.stage_name
@@ -109,6 +132,7 @@ resource "aws_api_gateway_deployment" "live" {
     redeployment = sha1(jsonencode([
       aws_api_gateway_resource.practitioner,
       aws_api_gateway_method.practitioner_get,
+      aws_api_gateway_method.practitioner_role_get,
       aws_api_gateway_method.root_get,
       aws_api_gateway_integration.practitioner_get_lambda_integration
     ]))

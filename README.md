@@ -93,6 +93,21 @@ We have a number of dev environments and static environments for more formal tes
 
 ### Development process
 
+#### Code Structure
+
+This repo contains all the source code for the project. This includes the production code (in `src`), integration tests (`integration_tests`),
+NFT tests (`nft`), Terraform (`infrastructure`) and the [publicly deployed specification](https://digital.nhs.uk/developer/api-catalogue/healthcare-fhir-api/content) (`specification`).
+
+The production code is split into two main layers. The requests from the API Gateway are routed to the appropriate handler in `request_handlers`
+based on the called endpoint. These handlers take data from the appropriate data source and convert into the FHIR format (all FHIR classes are in their own `fhir` folder).
+The handler then returns the FHIR which is returned to callers of the API.
+
+This app supports the use of FHIR's `_include` and `_revinclude` query parameters. These query parameters allow API consumers to request more than the base resource that's being searched for.
+`_include` looks for other objects referenced by any in the response, `_revinclude` looks for any other objects which reference any already in the response.
+The functionality in `include_populator.py` supports this functionality by checking the responses from the data layer. This is applied automatically
+to all handlers so long as the data layer returns the appropriate information, and it's mapped into FhirReference objects by the handler. See the `FhirPractitioner` and
+`FhirPractitionerRole` classes for examples of how this works.
+
 #### PRs
 
 **All commits need to be [signed](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits)** else the PR will be automatically rejected.

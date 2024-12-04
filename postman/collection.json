@@ -1,309 +1,420 @@
 {
-	"info": {
-		"_postman_id": "985fb0a0-25d2-407e-9854-45d9191e429b",
-		"name": "HCW",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "31431277"
-	},
-	"item": [
-		{
-			"name": "Generate JWT",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"const moment = require(\"moment\")",
-							"const expireTime = moment().add(5, \"minutes\").unix()",
-							"pm.environment.set(\"expireTime\", expireTime)"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"console.log(\"in the post response\")",
-							"pm.environment.set(\"authToken\", pm.request.getHeaders()[\"Authorization\"])"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "jwt",
-					"jwt": [
-						{
-							"key": "privateKey",
-							"value": "",
-							"type": "string"
-						},
-						{
-							"key": "payload",
-							"value": "{\n    \"sub\": \"{{client_id}}\",\n    \"iss\": \"{{client_id}}\",\n    \"jti\": \"{{$guid}}\",\n    \"aud\": \"{{realm_url}}\",\n    \"exp\": {{expireTime}}\n}",
-							"type": "string"
-						},
-						{
-							"key": "headerPrefix",
-							"value": "",
-							"type": "string"
-						},
-						{
-							"key": "header",
-							"value": "{\n    \"kid\": \"{{key_id}}\",\n    \"typ\": \"JWT\"\n}",
-							"type": "string"
-						},
-						{
-							"key": "algorithm",
-							"value": "RS512",
-							"type": "string"
-						},
-						{
-							"key": "isSecretBase64Encoded",
-							"value": false,
-							"type": "boolean"
-						},
-						{
-							"key": "addTokenTo",
-							"value": "header",
-							"type": "string"
-						},
-						{
-							"key": "queryParamKey",
-							"value": "token",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "www.example.com",
-					"host": [
-						"www",
-						"example",
-						"com"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Auth",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.environment.set(\"access_token\", pm.response.json()[\"access_token\"])"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "grant_type",
-							"value": "client_credentials",
-							"type": "text"
-						},
-						{
-							"key": "client_assertion_type",
-							"value": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-							"type": "text"
-						},
-						{
-							"key": "client_assertion",
-							"value": "{{authToken}}",
-							"type": "text"
-						}
-					]
-				},
-				"url": {
-					"raw": "{{realm_url}}",
-					"host": [
-						"{{realm_url}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Practitioner",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/Practitioner?identifier=150549950108",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"Practitioner"
-					],
-					"query": [
-						{
-							"key": "identifier",
-							"value": "150549950108"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "No Middle Name or Prefix",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/Practitioner?identifier=151504269102",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"Practitioner"
-					],
-					"query": [
-						{
-							"key": "identifier",
-							"value": "151504269102"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Multiple Middle Names",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/Practitioner?identifier=151504270100",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"Practitioner"
-					],
-					"query": [
-						{
-							"key": "identifier",
-							"value": "151504270100"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Unknown Practitioner",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/Practitioner?identifier=999",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"Practitioner"
-					],
-					"query": [
-						{
-							"key": "identifier",
-							"value": "999"
-						}
-					]
-				}
-			},
-			"response": []
-		}
-	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"packages": {},
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"packages": {},
-				"exec": [
-					""
-				]
-			}
-		}
-	]
+    "info": {
+        "_postman_id": "86e238ae-9736-4362-bc3c-af71258d0e4c",
+        "name": "HCW",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "_exporter_id": "31431277"
+    },
+    "item": [
+        {
+            "name": "Generate JWT",
+            "event": [
+                {
+                    "listen": "prerequest",
+                    "script": {
+                        "exec": [
+                            "const moment = require(\"moment\")",
+                            "const expireTime = moment().add(5, \"minutes\").unix()",
+                            "pm.environment.set(\"expireTime\", expireTime)"
+                        ],
+                        "type": "text/javascript",
+                        "packages": {}
+                    }
+                },
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "console.log(\"in the post response\")",
+                            "pm.environment.set(\"authToken\", pm.request.getHeaders()[\"Authorization\"])"
+                        ],
+                        "type": "text/javascript",
+                        "packages": {}
+                    }
+                }
+            ],
+            "request": {
+                "auth": {
+                    "type": "jwt",
+                    "jwt": [
+                        {
+                            "key": "privateKey",
+                            "value": "",
+                            "type": "string"
+                        },
+                        {
+                            "key": "payload",
+                            "value": "{\n    \"sub\": \"{{client_id}}\",\n    \"iss\": \"{{client_id}}\",\n    \"jti\": \"{{$guid}}\",\n    \"aud\": \"{{realm_url}}\",\n    \"exp\": {{expireTime}}\n}",
+                            "type": "string"
+                        },
+                        {
+                            "key": "headerPrefix",
+                            "value": "",
+                            "type": "string"
+                        },
+                        {
+                            "key": "header",
+                            "value": "{\n    \"kid\": \"{{key_id}}\",\n    \"typ\": \"JWT\"\n}",
+                            "type": "string"
+                        },
+                        {
+                            "key": "algorithm",
+                            "value": "RS512",
+                            "type": "string"
+                        },
+                        {
+                            "key": "isSecretBase64Encoded",
+                            "value": false,
+                            "type": "boolean"
+                        },
+                        {
+                            "key": "addTokenTo",
+                            "value": "header",
+                            "type": "string"
+                        },
+                        {
+                            "key": "queryParamKey",
+                            "value": "token",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "www.example.com",
+                    "host": [
+                        "www",
+                        "example",
+                        "com"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Auth",
+            "event": [
+                {
+                    "listen": "prerequest",
+                    "script": {
+                        "exec": [
+                            ""
+                        ],
+                        "type": "text/javascript",
+                        "packages": {}
+                    }
+                },
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.environment.set(\"access_token\", pm.response.json()[\"access_token\"])"
+                        ],
+                        "type": "text/javascript",
+                        "packages": {}
+                    }
+                }
+            ],
+            "request": {
+                "auth": {
+                    "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                    "mode": "urlencoded",
+                    "urlencoded": [
+                        {
+                            "key": "grant_type",
+                            "value": "client_credentials",
+                            "type": "text"
+                        },
+                        {
+                            "key": "client_assertion_type",
+                            "value": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+                            "type": "text"
+                        },
+                        {
+                            "key": "client_assertion",
+                            "value": "{{authToken}}",
+                            "type": "text"
+                        }
+                    ]
+                },
+                "url": {
+                    "raw": "{{realm_url}}",
+                    "host": [
+                        "{{realm_url}}"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Get Practitioner",
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{access_token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/Practitioner?identifier=150549950108",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "Practitioner"
+                    ],
+                    "query": [
+                        {
+                            "key": "identifier",
+                            "value": "150549950108"
+                        }
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Get Practitioner with Role",
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{access_token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/Practitioner?identifier=150549950108&_revinclude=PractitionerRole:practitioner",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "Practitioner"
+                    ],
+                    "query": [
+                        {
+                            "key": "identifier",
+                            "value": "150549950108"
+                        },
+                        {
+                            "key": "_revinclude",
+                            "value": "PractitionerRole:practitioner"
+                        }
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Get Practitioner Role",
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{access_token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/PractitionerRole?practitioner.identifier=151504269102",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "PractitionerRole"
+                    ],
+                    "query": [
+                        {
+                            "key": "practitioner.identifier",
+                            "value": "151504269102"
+                        }
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Get Practitioner Role with Practitioner and Org",
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{access_token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/PractitionerRole?practitioner.identifier=150549950108&_include=PractitionerRole:organization&_include=PractitionerRole:practitioner",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "PractitionerRole"
+                    ],
+                    "query": [
+                        {
+                            "key": "practitioner.identifier",
+                            "value": "150549950108"
+                        },
+                        {
+                            "key": "_include",
+                            "value": "PractitionerRole:organization"
+                        },
+                        {
+                            "key": "_include",
+                            "value": "PractitionerRole:practitioner"
+                        }
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "No Middle Name or Prefix",
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{access_token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/Practitioner?identifier=151504269102",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "Practitioner"
+                    ],
+                    "query": [
+                        {
+                            "key": "identifier",
+                            "value": "151504269102"
+                        }
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Multiple Middle Names",
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{access_token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/Practitioner?identifier=151504270100",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "Practitioner"
+                    ],
+                    "query": [
+                        {
+                            "key": "identifier",
+                            "value": "151504270100"
+                        }
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Unknown Practitioner",
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{access_token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/Practitioner?identifier=999",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "Practitioner"
+                    ],
+                    "query": [
+                        {
+                            "key": "identifier",
+                            "value": "999"
+                        }
+                    ]
+                }
+            },
+            "response": []
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "packages": {},
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "packages": {},
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ]
 }

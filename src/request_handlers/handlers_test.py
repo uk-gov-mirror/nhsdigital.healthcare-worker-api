@@ -11,7 +11,7 @@ def test_handler_practitioner(practitioner_handler):
 
     response = RequestRouter().handle_event("/Practitioner", event)
 
-    assert response == practitioner_handler.return_value.get.return_value
+    assert response == practitioner_handler.return_value.get.return_value.main_response
 
 
 @patch("request_handlers.handlers.StatusHandler")
@@ -20,7 +20,7 @@ def test_handler_root(status_handler):
 
     response = RequestRouter().handle_event("/", event)
 
-    assert response == status_handler.return_value.get.return_value
+    assert response == status_handler.return_value.get.return_value.main_response
 
 
 @patch("request_handlers.handlers.StatusHandler")
@@ -29,7 +29,7 @@ def test_handler_status(status_handler):
 
     response = RequestRouter().handle_event("/_status", event)
 
-    assert response == status_handler.return_value.get.return_value
+    assert response == status_handler.return_value.get.return_value.main_response
 
 
 def test_handle_unknown_endpoint():
