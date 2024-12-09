@@ -12,15 +12,20 @@ info:
     You cannot currently use this API to:
     - search by professional codes, such as GMC or RNC code
 
-    The strategic aim of the API is to allow systems to search, retrieve and display of healthcare worker data from +1.4m NHS employees with a health care profile.
-    The objective is to increase data efficiency, business logic and improve interoperability within the business. This strategic solution will allow internal and 3rd
-    party systems to access and share information more reliably, flexibly and efficiently while benefiting from improved network and bandwidth capacity, financial savings
+    The strategic aim of the API is to allow systems to search, retrieve and display healthcare worker data from over 1.4 million NHS employees with a health care profile.
+    The objective is to increase data efficiency, business logic and improve interoperability within the business.
+
+    This strategic solution will allow internal and 3rd party systems to access and share information more reliably, flexibly and efficiently while benefiting from improved network and bandwidth capacity, financial savings
     and easier and smoother access to clinical systems.
 
     ## Who can use this API
     This API can only be used where there is a legal basis to do so. Make sure you have a valid use case before you go too far with your development.
 
     You must do this before you can go live (see "Onboarding" below).
+
+    ## Related APIs
+    The following APIs are related to this one:
+    * [Healthcare Worker - FHIR API](https://digital.nhs.uk/developer/api-catalogue/healthcare-fhir-api)
 
     ## API status and roadmap
     This API is [in alpha](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#statuses).
@@ -57,10 +62,19 @@ info:
 
     To use this API, use the following security pattern:
 
-    * [Application-restricted RESTful APIs - API key authentication](https://digital.nhs.uk/developer/guides-and-documentation/security-and-authorisation/application-restricted-restful-apis-api-key-authentication)
+    * [Application-restricted RESTful APIs - signed JWT authentication](https://digital.nhs.uk/developer/guides-and-documentation/security-and-authorisation/application-restricted-restful-apis-signed-jwt-authentication)
 
     ## Postman Collection
     See https://github.com/NHSDigital/healthcare-worker-api/tree/develop/postman for an export of our postman collection. The readme in that directory explains how to set it up and send the requests.
+
+    ## Open source
+
+    You might find the following [open source](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#open-source) resources useful:
+
+    | Resource                | Description                                                   | Links                                                                                                                                        |
+    | ----------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+    | Project codebase        | The full Healthcare Worker codebase is open source in GitHub. | [Github](https://github.com/NHSDigital/healthcare-worker-api)                                                                                |
+    | FHIR libraries and SDKs | Various open source libraries for integrating with FHIR APIs. | [FHIR libraries and SDKs](https://digital.nhs.uk/developer/guides-and-documentation/api-technologies-at-nhs-digital#fhir-libraries-and-sdks) |
 
     ## Environments and testing
     | Environment       | Base URL
@@ -89,13 +103,20 @@ info:
     for example, developers who have migrated from the [Query Accredited System Information API](https://digital.nhs.uk/developer/api-catalogue/query-accredited-system-information-soap).
 
     ## Related APIs
-    The following APIs are related to this one:
-    - [Spine Directory Service - LDAP API](https://digital.nhs.uk/developer/api-catalogue/spine-directory-service-ldap) - Access details of organisations, people and systems registered in the Spine Directory Service (SDS) using our LDAP API.
+    The following APIs are related to this one:- [Spine Directory Service - LDAP API](https://digital.nhs.uk/developer/api-catalogue/spine-directory-service-ldap) - Access details of organisations, people and systems registered in the Spine Directory Service (SDS) using our LDAP API. This API is only available on HSCN, doesn't use the FHIR standard and is being considered for deprecation.
+    - [Organisation Data Terminology - FHIR API](https://digital.nhs.uk/developer/api-catalogue/organisation-data-terminology) - Access an organisation-based dataset from the Organisation Data Service (ODS), including some limited information on some prescribing staff at each organisation.
+    - [Organisation Data Service - FHIR API](https://digital.nhs.uk/developer/api-catalogue/organisation-data-service-fhir) - Access a reduced organisation-based dataset from the Organisation Data Service (ODS). An older, limited alternative to ODS Terminology API and soon to be deprecated.
 
     ## Onboarding
     You need to get your software approved by us before it can go live with this API. We call this onboarding. The onboarding process can sometimes be quite long, so it's worth planning well ahead.
 
-    *We are still defining our onboarding process while we are in alpha*
+    As part of this process, you need to demonstrate that you can manage risks and that your software conforms
+    technically with the requirements for this API. This might impact the design of your software. For details, see
+    [Onboarding support information](https://digital.nhs.uk/developer/api-catalogue/child-protection-information-sharing-hl7-v3/onboarding-support-information).
+
+    To understand how our online digital onboarding process works, see [digital onboarding](https://digital.nhs.uk/developer/guides-and-documentation/digital-onboarding).
+
+    To get started, sign in or create a [developer account](https://onboarding.prod.api.platform.nhs.uk/), then select 'product onboarding'.
 
     ## Errors
     We use standard HTTP status codes to show whether an API request succeeded or not. They are usually in the range:
