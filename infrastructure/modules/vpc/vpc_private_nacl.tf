@@ -31,13 +31,13 @@ resource "aws_network_acl_rule" "vgw_ldap_egr_route3_to_cia" {
 }
 
 # Ephemeral ports
-resource "aws_network_acl_rule" "private_to_all_ephemeral_out" {
+resource "aws_network_acl_rule" "private_to_ephemeral_out" {
   network_acl_id = aws_network_acl.hcw_private_acl.id
   rule_number    = 120
   rule_action    = "allow"
   egress         = true
   protocol       = "tcp"
-  cidr_block     = "0.0.0.0/0"
+  cidr_block     = var.vpc_cidr_block
   from_port      = 1024
   to_port        = 65535
 }
@@ -64,4 +64,17 @@ resource "aws_network_acl_rule" "private_ldaps_in_from_local" {
   cidr_block     = var.vpc_cidr_block
   from_port      = 636
   to_port        = 636
+}
+
+
+# Ephemeral ports
+resource "aws_network_acl_rule" "private_from_ephemeral_in" {
+  network_acl_id = aws_network_acl.hcw_private_acl.id
+  rule_number    = 120
+  rule_action    = "allow"
+  egress         = false
+  protocol       = "tcp"
+  cidr_block     = var.ldap_gateway_cidr_block
+  from_port      = 1024
+  to_port        = 65535
 }
