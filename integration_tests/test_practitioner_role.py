@@ -104,3 +104,8 @@ class TestPractitionerRole(IntegrationTest):
         self.check_response_includes_practitioner(response, get_practitioners_example(SINGLE_ROLE))
         self.check_response_includes_orgs(response, get_practitioners_example(SINGLE_ROLE))
 
+    def test_get_practitioner_role_no_auth(self):
+        response = self.send_request(None, "Practitioner", {"practitioner.identifier": SINGLE_ROLE})
+
+        assert response.status_code == 401
+        assert response.content == b""
