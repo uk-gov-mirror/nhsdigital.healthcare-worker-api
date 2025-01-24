@@ -4,8 +4,9 @@ from abc import abstractmethod
 class FhirObject:
     resourceType: str
 
-    def __init__(self, resource_type: str):
-        self.resourceType = resource_type
+    def __init__(self, resource_type: str | None):
+        if resource_type:
+            self.resourceType = resource_type
 
     @abstractmethod
     def __eq__(self, other) -> bool:

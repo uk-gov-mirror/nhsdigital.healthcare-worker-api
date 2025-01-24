@@ -1,15 +1,19 @@
+import os
 from typing import Dict, Type
 
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 
+from fhir.fhir_bundle import FhirBundle
+from fhir.fhir_bundle_entry import FhirBundleEntry
+from fhir.fhir_entry_search import FhirEntrySearch
+from fhir.fhir_link import FhirLink
 from fhir.fhir_object import FhirObject
-from fhir.fhir_practitioner import FhirPractitioner
 from hcw_exception import HcwException
 from logs.log import Log
-from request_handlers.base_handler import BaseHandler
-from request_handlers.include_populator import add_includes_to_response, add_revincludes_to_response
+from request_handlers.base_handler import BaseHandler, HandlerResponse
+from request_handlers.include_populator import get_references_to_include, get_revincludes
 from request_handlers.status import StatusHandler
-from request_handlers.practitioner_role import PractitionerRole
+from request_handlers.practitioner_role import PractitionerRoleHandler
 from request_handlers.practitioner import PractitionerHandler
 
 logger = Log("handlers")
@@ -17,7 +21,7 @@ logger = Log("handlers")
 
 class UnknownHandlerException(HcwException):
     def __init__(self, endpoint):
-        super().__init__(404, f"There is no defined handler for the provided endpoint {endpoint}")
+        super().__init__(404, f"There is no defined handler for the provided endpoint {endpoint}", "unknown")
 
 
 class RequestRouter:
@@ -26,7 +30,7 @@ class RequestRouter:
     def __init__(self):
         self.handlers = {
             "/Practitioner": PractitionerHandler,
-            "/PractitionerRole": PractitionerRole,
+            "/PractitionerRole": PractitionerRoleHandler,
             "/": StatusHandler,
             "/_status": StatusHandler
         }
@@ -35,10 +39,25 @@ class RequestRouter:
         if endpoint not in self.handlers:
             raise UnknownHandlerException(endpoint)
 
-        response = self.handlers[endpoint]().get(event)
-        logger.info(f"Got response from handler of {response.main_response}")
+        response: HandlerResponse = self.handlers[endpoint]().get(event)
 
-        response_with_includes = add_includes_to_response(response.main_response, event.multi_value_query_string_parameters)
-        return add_revincludes_to_response(response_with_includes, event.multi_value_query_string_parameters, response.related_entries)
+        linked = set()
+        linked = linked.union(get_references_to_include(response.main_response, event.multi_value_query_string_parameters))
+        linked = linked.union(get_revincludes(response.main_response, event.multi_value_query_string_parameters, response.related_entries))
 
+        return self.construct_bundle(response.main_response, linked, endpoint)
 
+    @staticmethod
+    def construct_bundle(matches: [FhirObject], links: [FhirObject], path: str) -> FhirBundle:
+        all_entries = set()
+        for item in matches:
+            search = FhirEntrySearch("match")
+            all_entries.add(FhirBundleEntry(search, item))
+
+        for item in links:
+            search = FhirEntrySearch("include")
+            all_entries.add(FhirBundleEntry(search, item))
+
+        link = FhirLink("self", f"https://{os.environ["BASE_URL"]}{path}")
+
+        return FhirBundle("searchset", len(matches), all_entries, link)

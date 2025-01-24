@@ -137,7 +137,9 @@ class TestLdapSearch:
 
             expected_attributes = ["uid", "Sn", "givenName", "nhsMiddleNames", "personalTitle", "nhsPersonStatus",
                                     "objectclass", "uniqueIdentifier", "nhsOpenDate", "nhsIDCode", "o",
-                                    "nhsBusinessFunctionsCodes", "nhsJobRole", "nhsJobRoleCode", "nhsBusinessFunctions", "nhsCloseDate"]
+                                    "nhsBusinessFunctionsCodes", "nhsJobRole", "nhsJobRoleCode", "nhsBusinessFunctions",
+                                    "nhsCloseDate", "nhsGMC", "nhsGDP", "nhsGDC", "nhsRCN",
+                                    "nhsNMC", "nhsConsultant", "nhsGMP", "nhsOcsPrCode"]
             connection.return_value.search.assert_called_with("uid=123,ou=people,o=nhs", "(objectclass=*)",
                                                                 attributes=expected_attributes)
 

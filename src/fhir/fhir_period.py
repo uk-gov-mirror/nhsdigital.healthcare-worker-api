@@ -9,7 +9,7 @@ class FhirPeriod(FhirObject):
     end: str
 
     def __init__(self, start: date, end: Optional[date]):
-        super().__init__("Period")
+        super().__init__(None)
         self.start = start.strftime("%Y-%m-%d")
         if end:
             self.end = end.strftime("%Y-%m-%d")

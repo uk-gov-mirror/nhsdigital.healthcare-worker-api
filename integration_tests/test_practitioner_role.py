@@ -3,7 +3,7 @@ from typing import Optional
 from example_practitioners import PractitionerExample, SINGLE_ROLE, \
     get_practitioners_example, NO_ROLE
 from utils.integration_test_base import IntegrationTest
-from utils.response_checks import check_practitioner_role_entry, check_practitioner_entry
+from utils.response_checks import check_practitioner_role_entry, check_practitioner_entry, check_bundle, check_entry_wrapper
 
 
 class TestPractitionerRole(IntegrationTest):
@@ -19,18 +19,23 @@ class TestPractitionerRole(IntegrationTest):
         assert response.status_code == 200
 
         response_json = response.json()
+        check_bundle(response_json, 1)
         for i in range(0, len(practitioner.roles)):
             role = practitioner.roles[i]
-            check_practitioner_role_entry(response_json[i], practitioner, role)
+            entry = [x["resource"] for x in response_json["entry"] if x["search"]["mode"] == "match" and
+                        x["resource"]["identifier"][0]["value"] == role.role_profile_id][0]
+            check_practitioner_role_entry(entry, practitioner, role)
 
     @staticmethod
     def check_response_includes_practitioner(response, practitioner: PractitionerExample):
         response_json = response.json()
         found_entry = False
-        for entry in response_json:
-            if entry["resourceType"] == "Practitioner" and entry["id"] == practitioner.id:
+        for entry in response_json["entry"]:
+            entry_resource = entry["resource"]
+            if entry_resource["resourceType"] == "Practitioner" and entry_resource["id"] == practitioner.id:
                 found_entry = True
-                check_practitioner_entry(entry, practitioner)
+                check_entry_wrapper(entry, "include")
+                check_practitioner_entry(entry_resource, practitioner)
 
         assert found_entry
 
@@ -40,13 +45,17 @@ class TestPractitionerRole(IntegrationTest):
 
         for role in practitioner.roles:
             found_entry_for_role = False
-            for entry in response_json:
-                # TODO: Is this the right format for the organisation?
-                if entry["resourceType"] == "Organisation" and entry["identifier"] == role.org_code:
+            for entry in response_json["entry"]:
+                entry_resource = entry["resource"]
+                if entry_resource["resourceType"] == "Organization" and entry_resource["identifier"][0]["value"] == role.org_code:
                     found_entry_for_role = True
-                    assert entry == {
-                        "resourceType": "Organisation",
-                        "identifier": role.org_code,
+                    assert entry_resource == {
+                        "resourceType": "Organization",
+                        "id": role.org_code,
+                        "identifier": [{
+                            "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+                            "value": role.org_code,
+                        }],
                         "name": role.org_name
                     }
 
@@ -62,7 +71,8 @@ class TestPractitionerRole(IntegrationTest):
     def test_get_practitioner_role_no_roles(self):
         response = self.send_practitioner_role_get(NO_ROLE)
         assert response.status_code == 200
-        assert response.json() == []
+        assert response.json() == {"entry": [], "resourceType": "Bundle", "total": 0, "type": "searchset",
+                                    "link": [{"relation": "self", "url": "https://https://internal-dev.api.service.nhs.uk/healthcare-worker/PractitionerRole"}]}
 
     def test_get_practitioner_role_with_included_practitioner(self):
         response = self.send_practitioner_role_get(SINGLE_ROLE,

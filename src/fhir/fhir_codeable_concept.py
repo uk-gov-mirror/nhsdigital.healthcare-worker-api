@@ -7,7 +7,7 @@ class FhirCoding(FhirObject):
     display: str
 
     def __init__(self, system: str, code: str, display: str):
-        super().__init__("Coding")
+        super().__init__(None)
         self.system = system
         self.code = code
         self.display = display
@@ -20,11 +20,11 @@ class FhirCoding(FhirObject):
 
 
 class FhirCodeableConcept(FhirObject):
-    coding: FhirCoding
+    coding: [FhirCoding]
 
     def __init__(self, system: str, code: str, display: str):
-        super().__init__("CodeableConcept")
-        self.coding = FhirCoding(system, code, display)
+        super().__init__(None)
+        self.coding = [FhirCoding(system, code, display)]
 
     def __eq__(self, other: 'FhirCodeableConcept') -> bool:
         return other.coding == self.coding

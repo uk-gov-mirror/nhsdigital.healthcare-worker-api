@@ -45,6 +45,6 @@ class IntegrationTest:
     def check_no_resource_type(response, resource_type: str):
         response_json = response.json()
 
-        for entry in response_json:
-            if entry["resourceType"] == resource_type:
+        for entry in response_json["entry"]:
+            if entry["resource"]["resourceType"] == resource_type:
                 fail(f"Expected no {resource_type} entries in response")

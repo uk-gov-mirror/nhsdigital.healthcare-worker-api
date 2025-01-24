@@ -200,7 +200,7 @@ paths:
                 type: object
                 properties:
                   practitioner:
-                    $ref: '#/components/schemas/Practitioner'
+                    $ref: '#/components/schemas/Bundle'
         '400':
           description: Missing or invalid query parameter(s).
         '404':
@@ -257,16 +257,46 @@ paths:
           content:
             application/fhir+json:
               schema:
-                type: array
-                items:
-                  properties:
-                    practitioner_role:
-                      $ref: '#/components/schemas/PractitionerRole'
+                type: object
+                properties:
+                  practitioner:
+                    $ref: '#/components/schemas/Bundle'
 components:
   securitySchemes:
     app-level3:
       $ref: https://proxygen.prod.api.platform.nhs.uk/components/securitySchemes/app-level3
   schemas:
+    Bundle:
+      type: object
+      properties:
+        resourceType:
+          type: string
+          default: Bundle
+        type:
+          type: string
+          default: searchset
+        total:
+          type: number
+          description: Total count of matching entries, does not includes extra included entries from link relationships
+        entry:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchEntry"
+    SearchEntry:
+      type: object
+      properties:
+        search:
+          $ref: "#/components/schemas/SearchDetails"
+        resource:
+          oneOf:
+            - $ref: "#/components/schemas/Practitioner"
+            - $ref: "#/components/schemas/PractitionerRole"
+    SearchDetails:
+      type: object
+      properties:
+        mode:
+          type: string
+          description: Either "match" or "include". Match indicates a direct match to the query. Include indicates that the entry is linked to one of the matching entries, and that the relevant link was requested in the search.
     Practitioner:
       type: object
       properties:

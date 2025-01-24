@@ -1,6 +1,8 @@
+import os
 from abc import abstractmethod
 
 from fhir.fhir_object import FhirObject
+from fhir.fhir_object_with_url import FhirObjectWithUrl
 
 
 class FhirIdentifier(FhirObject):
@@ -8,7 +10,7 @@ class FhirIdentifier(FhirObject):
     value: str
 
     def __init__(self, system: str, value: str):
-        super().__init__("Identifier")
+        super().__init__(None)
 
         self.system = system
         self.value = value
@@ -20,7 +22,7 @@ class FhirIdentifier(FhirObject):
         return hash((self.system, self.value))
 
 
-class FhirReferable(FhirObject):
+class FhirReferable(FhirObjectWithUrl):
     @abstractmethod
     def get_reference(self) -> str:
         pass
@@ -39,6 +41,11 @@ class FhirReferable(FhirObject):
     def __hash__(self) -> int:
         return hash(self.get_identifier())
 
+    @property
+    def url(self):
+        base_url = os.environ["BASE_URL"]
+        return f"{base_url}/{self.get_reference()}"
+
 
 class FhirReference[T: FhirReferable](FhirObject):
     reference: str
@@ -47,7 +54,7 @@ class FhirReference[T: FhirReferable](FhirObject):
     full_value: T
 
     def __init__(self, value: T):
-        super().__init__("Reference")
+        super().__init__(None)
 
         self.reference = value.get_reference()
         self.identifier = value.get_identifier()

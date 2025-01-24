@@ -38,14 +38,34 @@ class NhsPerson:
     nhs_middle_names: str
     personal_title: str
     nhs_person_status: str
+    speciality: str
+    rpsgb_number: str
+    gmc_number: str
+    gdp_number: str
+    gdc_number: str
+    rcn_number: str
+    nmc_number: str
+    gmp_number: str
+    consultant_code: str
+    nacs_practitioner_code: str
 
     def __init__(self, person_attrs: dict[str, str]) -> None:
-        self.uid = from_list_or_string(person_attrs["uid"])
-        self.sn = from_list_or_string(person_attrs["sn"])
-        self.given_name = from_list_or_string(person_attrs["givenName"])
-        self.nhs_middle_names = from_list_or_string(person_attrs["nhsMiddleNames"])
-        self.personal_title = from_list_or_string(person_attrs["personalTitle"])
-        self.nhs_person_status = from_list_or_string(person_attrs["nhsPersonStatus"])
+        self.uid = from_list_or_string(person_attrs.get("uid", None))
+        self.sn = from_list_or_string(person_attrs.get("sn", None))
+        self.given_name = from_list_or_string(person_attrs.get("givenName", None))
+        self.nhs_middle_names = from_list_or_string(person_attrs.get("nhsMiddleNames", None))
+        self.personal_title = from_list_or_string(person_attrs.get("personalTitle", None))
+        self.nhs_person_status = from_list_or_string(person_attrs.get("nhsPersonStatus", None))
+        self.speciality = from_list_or_string(person_attrs.get("nhsPrinOcc", None))
+        self.rpsgb_number = from_list_or_string(person_attrs.get("nhsRPSGB", None))
+        self.gmc_number = from_list_or_string(person_attrs.get("nhsGMC", None))
+        self.gdp_number = from_list_or_string(person_attrs.get("nhsGDP", None))
+        self.gdc_number = from_list_or_string(person_attrs.get("nhsGDC", None))
+        self.rcn_number = from_list_or_string(person_attrs.get("nhsRCN", None))
+        self.nmc_number = from_list_or_string(person_attrs.get("nhsNMC", None))
+        self.gmp_number = from_list_or_string(person_attrs.get("nhsGMP", None))
+        self.consultant_code = from_list_or_string(person_attrs.get("nhsConsultant", None))
+        self.nacs_practitioner_code = from_list_or_string(person_attrs.get("nhsOcsPrCode", None))
 
 
 class NhsOrgPersonRole:
@@ -55,16 +75,20 @@ class NhsOrgPersonRole:
     job_role_code: str
     role_granted: date
     role_stopped: Optional[date] = None
+    nacs_site_names: [str]
+    nacs_site_codes: [str]
     practitioner: Optional[NhsPerson]
     org_person: Optional[NhsOrgPerson]
 
     def __init__(self, role_attrs: dict) -> None:
-        self.profile_id = from_list_or_string(role_attrs["uniqueIdentifier"])
-        self.business_function_codes = role_attrs["nhsBusinessFunctionsCodes"]
-        self.business_functions = role_attrs["nhsBusinessFunctions"]
-        self.job_role = from_list_or_string(role_attrs["nhsJobRole"])
-        self.job_role_code = from_list_or_string(role_attrs["nhsJobRoleCode"])
-        self.nhs_id_code = from_list_or_string(role_attrs["nhsIDCode"])
+        self.profile_id = from_list_or_string(role_attrs.get("uniqueIdentifier", []))
+        self.business_function_codes = role_attrs.get("nhsBusinessFunctionsCodes", [])
+        self.business_functions = role_attrs.get("nhsBusinessFunctions", None)
+        self.job_role = from_list_or_string(role_attrs.get("nhsJobRole", []))
+        self.job_role_code = from_list_or_string(role_attrs.get("nhsJobRoleCode", []))
+        self.nhs_id_code = from_list_or_string(role_attrs.get("nhsIDCode", []))
+        self.nacs_site_names = role_attrs.get("nhsSiteNames", None)
+        self.nacs_site_codes = role_attrs.get("nhsSiteCodes", None)
 
         self.role_granted = datetime.strptime(from_list_or_string(role_attrs["nhsOpenDate"]), "%Y%m%d").date()
         if role_attrs["nhsCloseDate"]:

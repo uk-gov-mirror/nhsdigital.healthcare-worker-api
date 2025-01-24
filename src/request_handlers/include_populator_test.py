@@ -1,7 +1,7 @@
 import unittest
 
 from fhir.fhir_reference import FhirReference, FhirReferable, FhirIdentifier
-from request_handlers.include_populator import add_includes_to_response, add_revincludes_to_response
+from request_handlers.include_populator import get_references_to_include, get_revincludes
 
 
 class FhirTestObject(FhirReferable):
@@ -31,41 +31,36 @@ class TestIncludeQueryParam(unittest.TestCase):
         original = FhirTestObject("base")
         original.reference_field = FhirReference(FhirTestObject("referenced"))
 
-        with_includes = add_includes_to_response([original], {"_include": ["TestObject:reference_field"]})
+        includes = get_references_to_include([original], {"_include": ["TestObject:reference_field"]})
 
-        assert len(with_includes) == 2
-        assert with_includes[0] == original
-        assert with_includes[1] == FhirTestObject("referenced")
+        assert len(includes) == 1
+        assert list(includes)[0] == FhirTestObject("referenced")
 
     def test_include_unknown_resource_ignored(self):
         original = FhirTestObject("base")
         original.reference_field = FhirReference(FhirTestObject("referenced"))
 
-        with_includes = add_includes_to_response([original], {"_include": ["Unknown:reference_field"]})
+        includes = get_references_to_include([original], {"_include": ["Unknown:reference_field"]})
 
-        assert len(with_includes) == 1
-        assert with_includes[0] == original
+        assert len(includes) == 0
 
     def test_include_unknown_field_ignored(self):
         original = FhirTestObject("base")
         original.reference_field = FhirReference(FhirTestObject("referenced"))
 
-        with_includes = add_includes_to_response([original], {"_include": ["TestObject:unknown"]})
+        includes = get_references_to_include([original], {"_include": ["TestObject:unknown"]})
 
-        assert len(with_includes) == 1
-        assert with_includes[0] == original
+        assert len(includes) == 0
 
     def test_same_reference_not_duplicated(self):
         original = [FhirTestObject("base")] * 2
         for x in original:
             x.reference_field = FhirReference(FhirTestObject("referenced"))
 
-        with_includes = add_includes_to_response(original, {"_include": ["TestObject:reference_field"]})
+        includes = get_references_to_include(original, {"_include": ["TestObject:reference_field"]})
 
-        assert len(with_includes) == 3
-        assert with_includes[0] == original[0]
-        assert with_includes[1] == original[1]
-        assert with_includes[2] == FhirTestObject("referenced")
+        assert len(includes) == 1
+        assert list(includes)[0] == FhirTestObject("referenced")
 
     def test_same_reference_from_different_include_not_duplicated(self):
         original = [FhirTestObject("base"), FhirTestObject("base2")]
@@ -74,12 +69,10 @@ class TestIncludeQueryParam(unittest.TestCase):
             x.other_reference = FhirReference(FhirTestObject("referenced"))
 
         includes = ["TestObject:reference_field", "TestObject:other_reference"]
-        with_includes = add_includes_to_response(original, {"_include": includes})
+        include_refs = get_references_to_include(original, {"_include": includes})
 
-        assert len(with_includes) == 3
-        assert with_includes[0] == original[0]
-        assert with_includes[1] == original[1]
-        assert with_includes[2] == FhirTestObject("referenced")
+        assert len(include_refs) == 1
+        assert list(include_refs)[0] == FhirTestObject("referenced")
 
     def test_multiple_references(self):
         original = [FhirTestObject("base"), FhirTestObject("base2")]
@@ -89,18 +82,17 @@ class TestIncludeQueryParam(unittest.TestCase):
         original[1].other_reference = FhirReference(FhirTestObject("referenced1"))
 
         includes = ["TestObject:reference_field", "TestObject:other_reference"]
-        with_includes = add_includes_to_response(original, {"_include": includes})
+        include_refs = get_references_to_include(original, {"_include": includes})
 
-        self.assertCountEqual(with_includes, [original[0], original[1], FhirTestObject("referenced1"),
-                                                FhirTestObject("referenced2"), FhirTestObject("referenced3")])
+        self.assertCountEqual(include_refs, [FhirTestObject("referenced1"), FhirTestObject("referenced2"), FhirTestObject("referenced3")])
 
     def test_no_includes(self):
         original = FhirTestObject("base")
         original.reference_field = FhirReference(FhirTestObject("referenced"))
 
-        with_includes = add_includes_to_response([original], {"not_include": "test"})
+        includes = get_references_to_include([original], {"not_include": "test"})
 
-        assert with_includes == [original]
+        assert len(includes) == 0
 
 
 class TestRevIncludeQueryParam(unittest.TestCase):
@@ -113,37 +105,34 @@ class TestRevIncludeQueryParam(unittest.TestCase):
         related_entries = [FhirTestObject("related")]
         related_entries[0].reference_field = FhirReference(main_response)
 
-        with_includes = add_revincludes_to_response([main_response],
+        includes = get_revincludes([main_response],
                                                     {"_revinclude": ["TestObject:reference_field"]},
                                                     related_entries)
 
-        assert len(with_includes) == 2
-        assert with_includes[0] == main_response
-        assert with_includes[1] == FhirTestObject("related")
+        assert len(includes) == 1
+        assert list(includes)[0] == FhirTestObject("related")
 
     def test_revinclude_unknown_resource_ignored(self):
         main_response = FhirTestObject("base")
         related_entries = [FhirTestObject("related")]
         related_entries[0].reference_field = FhirReference(main_response)
 
-        with_includes = add_revincludes_to_response([main_response],
+        includes = get_revincludes([main_response],
                                                     {"_revinclude": ["Unknown:reference_field"]},
                                                     related_entries)
 
-        assert len(with_includes) == 1
-        assert with_includes[0] == main_response
+        assert len(includes) == 0
 
     def test_revinclude_unknown_field_ignored(self):
         main_response = FhirTestObject("base")
         related_entries = [FhirTestObject("related")]
         related_entries[0].reference_field = FhirReference(main_response)
 
-        with_includes = add_revincludes_to_response([main_response],
+        includes = get_revincludes([main_response],
                                                     {"_revinclude": ["TestObject:unknown"]},
                                                     related_entries)
 
-        assert len(with_includes) == 1
-        assert with_includes[0] == main_response
+        assert len(includes) == 0
 
     def test_same_reference_not_duplicated(self):
         main_response = FhirTestObject("base")
@@ -152,12 +141,11 @@ class TestRevIncludeQueryParam(unittest.TestCase):
         related_entries[0].other_reference = FhirReference(main_response)
 
         includes = ["TestObject:reference_field", "TestObject:other_reference"]
-        with_includes = add_revincludes_to_response([main_response], {"_revinclude": includes},
+        included_refs = get_revincludes([main_response], {"_revinclude": includes},
                                                     related_entries)
 
-        assert len(with_includes) == 2
-        assert with_includes[0] == main_response
-        assert with_includes[1] == FhirTestObject("related")
+        assert len(included_refs) == 1
+        assert list(included_refs)[0] == FhirTestObject("related")
 
     def test_multiple_references(self):
         main_response = FhirTestObject("base")
@@ -165,12 +153,12 @@ class TestRevIncludeQueryParam(unittest.TestCase):
         related_entries[0].reference_field = FhirReference(main_response)
         related_entries[1].reference_field = FhirReference(main_response)
 
-        with_includes = add_revincludes_to_response([main_response],
+        includes = get_revincludes([main_response],
                                                     {"_revinclude": ["TestObject:reference_field"]},
                                                     related_entries)
 
-        assert len(with_includes) == 3
-        self.assertCountEqual(with_includes, [main_response, FhirTestObject("related"), FhirTestObject("related2")])
+        assert len(includes) == 2
+        self.assertCountEqual(includes, [FhirTestObject("related"), FhirTestObject("related2")])
 
     def test_ignore_unrelated_entries(self):
         main_response = FhirTestObject("base")
@@ -178,23 +166,22 @@ class TestRevIncludeQueryParam(unittest.TestCase):
         related_entries[0].reference_field = FhirReference(FhirTestObject("something_else"))
         related_entries[1].reference_field = FhirReference(main_response)
 
-        with_includes = add_revincludes_to_response([main_response],
+        includes = get_revincludes([main_response],
                                                     {"_revinclude": ["TestObject:reference_field"]},
                                                     related_entries)
 
-        assert len(with_includes) == 2
-        assert with_includes[0] == main_response
-        assert with_includes[1] == FhirTestObject("related2")
+        assert len(includes) == 1
+        assert list(includes)[0] == FhirTestObject("related2")
 
     def test_no_includes(self):
         main_response = FhirTestObject("base")
         related_entries = [FhirTestObject("related")]
         related_entries[0].reference_field = FhirReference(main_response)
 
-        with_includes = add_revincludes_to_response([main_response],
+        includes = get_revincludes([main_response],
                                                     {"not_include": "test"},
                                                     related_entries)
 
-        assert with_includes == [main_response]
+        assert len(includes) == 0
 
 # Include extra items we're not matching

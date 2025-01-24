@@ -3,19 +3,21 @@ from ldap.nhs_person import NhsOrgPerson
 
 
 class FhirOrganisation(FhirReferable):
-    identifier: str
+    id: str
+    identifier: [FhirIdentifier]
     name: str
 
     def __init__(self, org_person: NhsOrgPerson):
-        super().__init__("Organisation")
-        self.identifier = org_person.nhs_id_code
+        super().__init__("Organization")
+        self.id = org_person.nhs_id_code
+        self.identifier = [FhirIdentifier("https://fhir.nhs.uk/Id/ods-organization-code", org_person.nhs_id_code)]
         self.name = org_person.org_name
 
     def get_reference(self) -> str:
-        return f"Organisation/{self.identifier}"
+        return f"Organization/{self.id}"
 
     def get_identifier(self) -> FhirIdentifier:
-        return FhirIdentifier("https://fhir.nhs.uk/Id/ods-organization-code", self.identifier)
+        return self.identifier[0]
 
     def get_display(self) -> str:
         return self.name

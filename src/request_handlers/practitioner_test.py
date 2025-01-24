@@ -6,10 +6,11 @@ from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 
 from fhir.fhir_practitioner import FhirPractitioner
 from hcw_exception import HcwException
-from ldap.nhs_person import NhsPerson
+from ldap.nhs_person import NhsPerson, NhsOrgPersonRole, NhsOrgPerson
 from request_handlers.practitioner import PractitionerHandler
 
 import request_handlers.practitioner
+import request_handlers.practitioner_role
 
 
 def assert_valid_ldaps_user(response):
@@ -17,16 +18,33 @@ def assert_valid_ldaps_user(response):
     assert response.resourceType == "Practitioner"
     assert response.active
 
-    assert len(response.identifier) == 1
+    assert len(response.identifier) == 10
     assert response.identifier[0].system == "https://fhir.nhs.uk/Id/sds-user-id"
     assert response.identifier[0].value == "uid"
+    assert response.identifier[1].system == "https://fhir.nhs.uk/Id/rpsgb-membership-number"
+    assert response.identifier[1].value == "rpsgb-number"
+    assert response.identifier[2].system == "https://fhir.nhs.uk/Id/gmc-number"
+    assert response.identifier[2].value == "gmc-number"
+    assert response.identifier[3].system == "https://fhir.nhs.uk/Id/gdp-number"
+    assert response.identifier[3].value == "gdp-number"
+    assert response.identifier[4].system == "https://fhir.nhs.uk/Id/gdc-number"
+    assert response.identifier[4].value == "gdc-number"
+    assert response.identifier[5].system == "https://fhir.nhs.uk/Id/rcn-number"
+    assert response.identifier[5].value == "rcn-number"
+    assert response.identifier[6].system == "https://fhir.nhs.uk/Id/nmc-number"
+    assert response.identifier[6].value == "nmc-number"
+    assert response.identifier[7].system == "https://fhir.nhs.uk/Id/gmp-number"
+    assert response.identifier[7].value == "gmp-number"
+    assert response.identifier[8].system == "https://fhir.nhs.uk/Id/consultant-code"
+    assert response.identifier[8].value == "consultant-code"
+    assert response.identifier[9].system == "https://fhir.nhs.uk/Id/nacs-practitioner-code"
+    assert response.identifier[9].value == "nacs-practitioner-code"
 
     assert len(response.name) == 1
     assert response.name[0].use == "usual"
-    assert response.name[0].prefix == "Mr"
+    assert response.name[0].prefix == ["Mr"]
     assert response.name[0].family == "Smith"
-    assert response.name[0].given == "Bob John James"
-
+    assert response.name[0].given == ["Bob John James"]
 
 def assert_valid_sandbox_user(response):
     assert response.id == 123
@@ -55,9 +73,42 @@ def mock_ldap(uid: Optional[str] = "uid", sn: Optional[str] = "Smith",
         "nhsMiddleNames": nhs_middle_names,
         "personalTitle": title,
         "nhsPersonStatus": status,
+        "nhsPrinOcc": "specialty",
+        "nhsRPSGB": "rpsgb-number",
+        "nhsGMC": "gmc-number",
+        "nhsGDP": "gdp-number",
+        "nhsGDC": "gdc-number",
+        "nhsRCN": "rcn-number",
+        "nhsNMC": "nmc-number",
+        "nhsGMP": "gmp-number",
+        "nhsConsultant": "consultant-code",
+        "nhsOcsPrCode": "nacs-practitioner-code"
     })
-    ldap_connection_mock.return_value.search_active_nhs_person.return_value = [nhs_person, [], []]
+    org_person_role = NhsOrgPersonRole({
+        "uniqueIdentifier": "123",
+        "nhsBusinessFunctionsCodes": ["R0001", "R0002"],
+        "nhsBusinessFunctions": ["B0001", "B0002"],
+        "nhsJobRole": "Job Role",
+        "nhsJobRoleCode": "job-role-code",
+        "nhsIDCode": "id-code",
+        "nhsSiteNames": ["site-1", "site-2"],
+        "nhsSiteCodes": ["1", "2"],
+        "nhsOpenDate": "20200101",
+        "nhsCloseDate": "30000101"
+    })
+    nhs_org_person = NhsOrgPerson({
+        "uniqueIdentifier": "org-person-id",
+        "nhsOpenDate": "20000101",
+        "nhsIDCode": "id-code",
+        "o": "nhs",
+    })
+
+    org_person_role.practitioner = nhs_person
+    org_person_role.org_person = nhs_org_person
+
+    ldap_connection_mock.return_value.search_active_nhs_person.return_value = [nhs_person, [nhs_org_person], [org_person_role]]
     request_handlers.practitioner.get_connection = ldap_connection_mock
+    request_handlers.practitioner_role.get_connection = ldap_connection_mock
 
     return ldap_connection_mock
 
@@ -87,9 +138,9 @@ def test_worker_handler_ldap_string_responses():
     nhs_person = NhsPerson({
         "uid": "uid",
         "sn": "Smith",
-        "givenName": "Bob",
+        "givenName": ["Bob"],
         "nhsMiddleNames": "John James",
-        "personalTitle": "Mr",
+        "personalTitle": ["Mr"],
         "nhsPersonStatus": "1",
     })
     ldap_connection_mock.return_value.search_active_nhs_person.return_value = [nhs_person, [], []]
@@ -108,8 +159,8 @@ def test_worker_handler_ldap_string_responses():
     assert len(response.name) == 1
     assert response.name[0].use == "usual"
     assert response.name[0].family == "Smith"
-    assert response.name[0].given == "Bob John James"
-    assert response.name[0].prefix == "Mr"
+    assert response.name[0].given == ["Bob John James"]
+    assert response.name[0].prefix == ["Mr"]
 
 
 def test_missing_id():
@@ -124,7 +175,7 @@ def test_missing_id():
 
 def test_ldap_returns_error():
     ldap_connection_mock = mock_ldap()
-    ldap_connection_mock.return_value.search_active_nhs_person.side_effect = HcwException(500, "LDAP Error")
+    ldap_connection_mock.return_value.search_active_nhs_person.side_effect = HcwException(500, "LDAP Error", "exception")
 
     with pytest.raises(HcwException) as e:
         practitioner_get("uid")
@@ -144,7 +195,7 @@ class TestLdapMissingField:
         response = practitioner_get("uid")
 
         assert response.id == ""
-        assert response.identifier[0].value == ""
+        assert not any(filter(lambda x : x.system == "https://fhir.nhs.uk/Id/sds-user-id", response.identifier))
 
     def test_ldap_response_with_no_sn(self):
         mock_ldap(sn=None)
@@ -159,39 +210,39 @@ class TestLdapMissingField:
         response = practitioner_get("uid")
 
         # Just middle names
-        assert response.name[0].given == "John James"
+        assert response.name[0].given == ["John James"]
 
     def test_ldap_response_with_single_middle_name(self):
         mock_ldap(nhs_middle_names="Middle")
 
         response = practitioner_get("uid")
 
-        assert response.name[0].given == "Bob Middle"
+        assert response.name[0].given == ["Bob Middle"]
 
     def test_ldap_response_with_no_middle_name(self):
         mock_ldap(nhs_middle_names=None)
 
         response = practitioner_get("uid")
 
-        assert response.name[0].given == "Bob"
+        assert response.name[0].given == ["Bob"]
 
     def test_ldap_response_with_empty_middle_names(self):
         mock_ldap(nhs_middle_names="")
 
         response = practitioner_get("uid")
 
-        assert response.name[0].given == "Bob"
+        assert response.name[0].given == ["Bob"]
 
     def test_ldap_response_with_no_first_or_middle_name(self):
         mock_ldap(given_name=None, nhs_middle_names=None)
 
         response = practitioner_get("uid")
 
-        assert response.name[0].given == ""
+        assert response.name[0].given == [""]
 
     def test_ldap_response_with_no_title(self):
         mock_ldap(title=None)
 
         response = practitioner_get("uid")
 
-        assert response.name[0].prefix == ""
+        assert not hasattr(response.name[0], "prefix")

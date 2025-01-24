@@ -10,12 +10,15 @@ from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from pydantic.schema import timedelta
 
+from fhir.error.fhir_issue import FhirIssue
+from fhir.error.fhir_operation_outcome import FhirOperationOutcome
+from fhir.fhir_codeable_concept import FhirCodeableConcept
+from fhir.fhir_object import FhirObject
 from hcw_exception import HcwException
 from logs.log import Log
 from request_handlers.handlers import RequestRouter
 
 logger = Log("main")
-
 
 def lambda_handler(event_dict: dict, context: LambdaContext) -> dict:
     """
@@ -42,21 +45,29 @@ def lambda_handler(event_dict: dict, context: LambdaContext) -> dict:
     except HcwException as e:
         logger.error(str(e))
 
+        issue = FhirIssue("error", e.fhir_code,
+                            FhirCodeableConcept("https://fhir.nhs.uk/STU3/ValueSet/Spine-ErrorOrWarningCode-1", str(e.status_code), e.return_message))
+        error_response = FhirOperationOutcome(issue)
+
         full_response = {
             "isBase64Encoded": False,
             "statusCode": e.status_code,
             "headers": response_headers,
-            "body": json.dumps({"error": e.return_message})
+            "body": jsonpickle.encode(error_response, unpicklable=False),
         }
     except Exception as e:
         logger.error(str(e))
         logger.error(traceback.format_exc())
 
+        issue = FhirIssue("error", "exception",
+                            FhirCodeableConcept("https://fhir.nhs.uk/STU3/ValueSet/Spine-ErrorOrWarningCode-1", "500", "Internal Server Error"))
+        error_response = FhirOperationOutcome(issue)
+
         full_response = {
             "isBase64Encoded": False,
             "statusCode": 500,
             "headers": response_headers,
-            "body": json.dumps({"error": "Internal Server Error"})
+            "body": jsonpickle.encode(error_response, unpicklable=False)
         }
 
     end_time = datetime.now()

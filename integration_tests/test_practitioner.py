@@ -6,7 +6,7 @@ from typing import Optional
 from example_practitioners import PractitionerExample, KNOWN_USER, NO_PREFIX_OR_MIDDLE_NAME, get_practitioners_example, \
     MULTIPLE_MIDDLE_NAMES, SINGLE_ROLE
 from utils.integration_test_base import IntegrationTest
-from utils.response_checks import check_practitioner_entry, check_practitioner_role_entry
+from utils.response_checks import check_practitioner_entry, check_practitioner_role_entry, check_bundle, check_entry_wrapper
 
 
 class TestWorker(IntegrationTest):
@@ -21,8 +21,9 @@ class TestWorker(IntegrationTest):
         assert response.status_code == 200
 
         response_json = response.json()
-        assert len(response_json) > 0
-        check_practitioner_entry(response_json[0], practitioner)
+        check_bundle(response_json, 1)
+        main_entry = [x for x in response_json["entry"] if x["search"]["mode"] == "match"][0]
+        check_practitioner_entry(main_entry["resource"], practitioner)
 
     @staticmethod
     def check_response_includes_practitioner_roles(response, practitioner: PractitionerExample):
@@ -30,10 +31,11 @@ class TestWorker(IntegrationTest):
 
         for role in practitioner.roles:
             found_entry = False
-            for entry in response_json:
-                if entry["resourceType"] == "PractitionerRole" and entry["id"] == role.role_profile_id:
+            for entry in response_json["entry"]:
+                entry_resource = entry["resource"]
+                if entry_resource["resourceType"] == "PractitionerRole" and entry_resource["id"] == role.role_profile_id:
                     found_entry = True
-                    check_practitioner_role_entry(entry, practitioner, role)
+                    check_practitioner_role_entry(entry_resource, practitioner, role)
 
             assert found_entry
 
@@ -53,7 +55,19 @@ class TestWorker(IntegrationTest):
         response = self.send_worker_get(999)
 
         assert response.status_code == 404
-        assert response.json() == {"error": "User with id 999 not found"}
+        assert response.json() == {
+            "resourceType": "OperationOutcome",
+            "issue": [{
+                "code": "unknown",
+                "severity": "error",
+                "details": {
+                    "coding": [{
+                        "code": "404",
+                        "display": "User with id 999 not found",
+                        "system": "https://fhir.nhs.uk/STU3/ValueSet/Spine-ErrorOrWarningCode-1"}]
+                }
+            }]
+        }
 
     def test_wrong_url(self):
         response = self.send_request(self.access_token, "invalid_url")
@@ -71,7 +85,19 @@ class TestWorker(IntegrationTest):
         response = self.send_worker_get("invalid_id!@£⚠️")
 
         assert response.status_code == 404
-        assert response.json() == {"error": "User with id invalid_id!@£⚠️ not found"}
+        assert response.json() == {
+            "resourceType": "OperationOutcome",
+            "issue": [{
+                "code": "unknown",
+                "severity": "error",
+                "details": {
+                    "coding": [{
+                        "code": "404",
+                        "display": "User with id invalid_id!@£⚠️ not found",
+                        "system": "https://fhir.nhs.uk/STU3/ValueSet/Spine-ErrorOrWarningCode-1"}]
+                }
+            }]
+        }
 
     def test_without_auth(self):
         response = self.send_request(None, "Practitioner", {"identifier": KNOWN_USER})

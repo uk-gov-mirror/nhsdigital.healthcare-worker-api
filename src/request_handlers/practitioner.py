@@ -17,15 +17,16 @@ class PractitionerHandler(BaseHandler[FhirPractitioner]):
         worker_id = event.query_string_parameters.get("identifier")
 
         if not worker_id:
-            raise HcwException(400, "Missing practitioner identifier")
+            raise HcwException(400, "Missing practitioner identifier", "invalid")
 
         nhs_person, org_persons, org_roles = get_connection().search_active_nhs_person(worker_id)
 
         if nhs_person.nhs_person_status != "1":
-            raise HcwException(400, "User inactive")
+            raise HcwException(400, "User inactive", "business-rule")
 
         practitioner = FhirPractitioner(nhs_person)
-        practitioner_roles = [FhirPractitionerRole(org_role) for org_role in org_roles]
+        practitioner_roles = [FhirPractitionerRole(nhs_person, org_role) for org_role in org_roles]
 
         logger.info("Returning worker from practitioner GET")
+
         return HandlerResponse([practitioner], practitioner_roles)

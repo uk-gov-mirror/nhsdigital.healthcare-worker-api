@@ -1,7 +1,7 @@
-from fhir.fhir_object import FhirObject
+from fhir.fhir_object_with_url import FhirObjectWithUrl
 
 
-class FhirStatus(FhirObject):
+class FhirStatus(FhirObjectWithUrl):
     ok: bool
 
     def __init__(self, ok: bool):
@@ -13,3 +13,7 @@ class FhirStatus(FhirObject):
 
     def __hash__(self) -> int:
         return hash(self.ok)
+
+    @property
+    def url(self):
+        return None

@@ -36,6 +36,7 @@ resource "aws_lambda_function" "hcw-app" {
       LDAP_CREDENTIALS_SECRET_ID = data.aws_secretsmanager_secret.ldap_credentials.arn
       LDAP_GATEWAY_URL           = var.ldap_gateway_url
       SANDBOX_MODE               = var.sandbox_mode
+      BASE_URL                   = "https://${var.apim_environment}.api.service.nhs.uk/healthcare-worker"
     }
   }
 }

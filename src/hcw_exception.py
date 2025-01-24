@@ -6,13 +6,15 @@ logger = Log("hcw_exception")
 class HcwException(Exception):
     status_code: int
     return_message: str
+    fhir_code: str
 
-    def __init__(self, status_code: int, message: str, return_message: str = None):
+    def __init__(self, status_code: int, message: str, fhir_code: str, return_message: str = None):
         super().__init__(message)
 
         self.status_code = status_code
         self.message = message
         self.return_message = return_message
+        self.fhir_code = fhir_code
 
         if not self.return_message:
             # We might want to log more information in the exception (seen only in our logs) and the message we
