@@ -53,6 +53,7 @@ def test_handle_unknown_endpoint():
         RequestRouter().handle_event("/UnknownEndpoint", MagicMock())
 
     assert e.value.status_code == 404
-    assert e.value.fhir_code == "unknown"
-    assert e.value.return_message == "There is no defined handler for the provided endpoint /UnknownEndpoint"
+    assert e.value.code is "MSG_UNKNOWN_OPERATION"
+    assert e.value.fhir_code == "not-supported"
+    assert e.value.return_message == "unknown FHIR http operation"
 

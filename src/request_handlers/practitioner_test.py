@@ -170,12 +170,12 @@ def test_missing_id():
         practitioner_get(None)
 
     assert e.value.status_code == 400
-    assert e.value.message == "Missing practitioner identifier"
+    assert e.value.message == "Resource Id Missing"
 
 
 def test_ldap_returns_error():
     ldap_connection_mock = mock_ldap()
-    ldap_connection_mock.return_value.search_active_nhs_person.side_effect = HcwException(500, "LDAP Error", "exception")
+    ldap_connection_mock.return_value.search_active_nhs_person.side_effect = HcwException(500, None, "LDAP Error", "exception")
 
     with pytest.raises(HcwException) as e:
         practitioner_get("uid")

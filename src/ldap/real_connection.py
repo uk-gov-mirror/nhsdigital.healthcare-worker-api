@@ -73,22 +73,22 @@ class RealHcwLdapConnection(HcwLdapConnection):
 
             bound = connection.bind()
             if not bound:
-                raise HcwException(500, "Could not bind to LDAP server", "exception")
+                raise HcwException(500, None, "Could not bind to LDAP server", "exception")
 
             self.bind_time = datetime.now()
 
             return connection
         except LDAPException as e:
-            raise HcwException(500, f"Error connecting to LDAP: {e}", "exception", "Error connecting to LDAP")
+            raise HcwException(500, None, f"Error connecting to LDAP: {e}", "exception", "Error connecting to LDAP")
 
     @staticmethod
     def check_response(uid, success, result):
         result_code = result["result"]
         if result_code == LdapErrorCode.NOT_FOUND:
-            raise HcwException(404, f"User with id {uid} not found", "unknown")
+            raise HcwException(404, "MSG_NO_MATCH", f"No Resource found matching the query {uid}", "not-found")
 
         if not success:
-            raise HcwException(500, f"Unknown error from LDAP request. Result: {result}", "exception",
+            raise HcwException(500, None, f"Unknown error from LDAP request. Result: {result}", "exception",
                                 "Unknown error from LDAP request")
 
     @staticmethod
@@ -146,4 +146,4 @@ class RealHcwLdapConnection(HcwLdapConnection):
                 logger.info("LDAP connection re-established")
                 return self.search_active_nhs_person(uid, allow_retry=False)
             else:
-                raise HcwException(500, f"LDAP connection error and retry failed {e}", "exception","Error connecting to LDAP")
+                raise HcwException(500, None, f"LDAP connection error and retry failed {e}", "exception","Error connecting to LDAP")

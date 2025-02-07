@@ -29,7 +29,7 @@ def test_worker(request_router_mock, jsonpickle_mock, log_mock):
 @patch("main.Log")
 @patch("main.RequestRouter")
 def test_worker_hcw_exception(request_router_mock, log_mock):
-    request_router_mock.return_value.handle_event.side_effect = HcwException(500, "Unknown error", "exception")
+    request_router_mock.return_value.handle_event.side_effect = HcwException(500, None, "Unknown error", "exception")
 
     response = lambda_handler({"resource": EXAMPLE_PATH}, LambdaContext())
 
@@ -44,8 +44,8 @@ def test_worker_hcw_exception(request_router_mock, log_mock):
                 "code": "exception",
                 "details": {
                     "coding": [{
-                        "system": "https://fhir.nhs.uk/STU3/ValueSet/Spine-ErrorOrWarningCode-1",
-                        "code": "500",
+                        "system": "http://hl7.org/fhir/operation-outcome",
+                        "code": None,
                         "display": "Unknown error"}]
                 }
             }]
@@ -97,12 +97,12 @@ def test_worker_unknown_endpoint(request_router_mock, log_mock):
             "resourceType": "OperationOutcome",
             "issue": [{
                 "severity": "error",
-                "code": "unknown",
+                "code": "not-supported",
                 "details": {
                     "coding": [{
-                        "system": "https://fhir.nhs.uk/STU3/ValueSet/Spine-ErrorOrWarningCode-1",
-                        "code": "404",
-                        "display": "There is no defined handler for the provided endpoint /NotFound"}]
+                        "system": "http://hl7.org/fhir/operation-outcome",
+                        "code": "MSG_UNKNOWN_OPERATION",
+                        "display": "unknown FHIR http operation"}]
                 }
             }]
         })
