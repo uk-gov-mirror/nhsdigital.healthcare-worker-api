@@ -87,7 +87,7 @@ def test_connect_fail():
             RealHcwLdapConnection()
 
         assert e.value.status_code == 500
-        assert e.value.code is None
+        assert e.value.code is "SERVICE_ERROR"
         assert e.value.message == "Error connecting to LDAP: Connection error"
         assert e.value.return_message == "Error connecting to LDAP"
 
@@ -181,8 +181,8 @@ class TestLdapSearch:
                 conn.search_active_nhs_person("123")
 
             assert e.value.status_code == 404
-            assert e.value.code == "MSG_NO_MATCH"
-            assert e.value.message == "No Resource found matching the query 123"
+            assert e.value.code == "RESOURCE_NOT_FOUND"
+            assert e.value.message == "Resource not found"
 
     def test_search_missing_values(self):
         boto3, _, _, connection, _ = setup_ldap_connection_mock()
@@ -224,7 +224,7 @@ class TestLdapSearch:
                 conn.search_active_nhs_person("123")
 
             assert e.value.status_code == 500
-            assert e.value.code is None
+            assert e.value.code == "SERVICE_ERROR"
             assert e.value.return_message == "Unknown error from LDAP request"
 
     def test_search_filters_inactive_roles(self):

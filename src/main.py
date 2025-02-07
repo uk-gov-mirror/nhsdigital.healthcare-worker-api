@@ -46,7 +46,7 @@ def lambda_handler(event_dict: dict, context: LambdaContext) -> dict:
         logger.error(str(e))
 
         issue = FhirIssue("error", e.fhir_code,
-                            FhirCodeableConcept("http://hl7.org/fhir/operation-outcome", e.code, e.return_message))
+                            FhirCodeableConcept("https://fhir.nhs.uk/CodeSystem/NHSD-API-ErrorOrWarningCode", e.code, e.return_message))
         error_response = FhirOperationOutcome(issue)
 
         full_response = {

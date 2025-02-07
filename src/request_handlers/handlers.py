@@ -21,7 +21,7 @@ logger = Log("handlers")
 
 class UnknownHandlerException(HcwException):
     def __init__(self, endpoint):
-        super().__init__(404, "MSG_UNKNOWN_OPERATION", f"unknown FHIR http operation", "not-supported")
+        super().__init__(404, "RESOURCE_NOT_FOUND", f"There is no defined handler for the provided endpoint {endpoint}", "not-supported")
 
 
 class RequestRouter:

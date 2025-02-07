@@ -4,6 +4,8 @@ logger = Log("hcw_exception")
 
 
 class HcwException(Exception):
+    SERVICE_ERROR = "SERVICE_ERROR"
+
     status_code: int
     code: str
     return_message: str

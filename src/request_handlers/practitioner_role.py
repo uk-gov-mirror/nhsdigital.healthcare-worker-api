@@ -24,6 +24,6 @@ class PractitionerRoleHandler(BaseHandler[FhirPractitionerRole]):
             # This functionality will be covered under HCW-163
             pass
         else:
-            raise HcwException(400, "MSG_RESOURCE_ID_MISSING", "Resource Id Missing", "unknown")
+            raise HcwException(400, "MISSING_VALUE", "Query filters missing", "unknown")
 
 

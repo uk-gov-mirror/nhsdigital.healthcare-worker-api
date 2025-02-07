@@ -170,7 +170,7 @@ def test_missing_id():
         practitioner_get(None)
 
     assert e.value.status_code == 400
-    assert e.value.message == "Resource Id Missing"
+    assert e.value.message == "Practitioner id missing"
 
 
 def test_ldap_returns_error():

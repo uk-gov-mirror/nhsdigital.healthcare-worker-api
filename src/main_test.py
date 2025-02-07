@@ -29,7 +29,7 @@ def test_worker(request_router_mock, jsonpickle_mock, log_mock):
 @patch("main.Log")
 @patch("main.RequestRouter")
 def test_worker_hcw_exception(request_router_mock, log_mock):
-    request_router_mock.return_value.handle_event.side_effect = HcwException(500, None, "Unknown error", "exception")
+    request_router_mock.return_value.handle_event.side_effect = HcwException(500, "FhirCode", "Unknown error", "exception")
 
     response = lambda_handler({"resource": EXAMPLE_PATH}, LambdaContext())
 
@@ -44,8 +44,8 @@ def test_worker_hcw_exception(request_router_mock, log_mock):
                 "code": "exception",
                 "details": {
                     "coding": [{
-                        "system": "http://hl7.org/fhir/operation-outcome",
-                        "code": None,
+                        "system": "https://fhir.nhs.uk/CodeSystem/NHSD-API-ErrorOrWarningCode",
+                        "code": "FhirCode",
                         "display": "Unknown error"}]
                 }
             }]
@@ -100,9 +100,9 @@ def test_worker_unknown_endpoint(request_router_mock, log_mock):
                 "code": "not-supported",
                 "details": {
                     "coding": [{
-                        "system": "http://hl7.org/fhir/operation-outcome",
-                        "code": "MSG_UNKNOWN_OPERATION",
-                        "display": "unknown FHIR http operation"}]
+                        "system": "https://fhir.nhs.uk/CodeSystem/NHSD-API-ErrorOrWarningCode",
+                        "code": "RESOURCE_NOT_FOUND",
+                        "display": "There is no defined handler for the provided endpoint /NotFound"}]
                 }
             }]
         })
