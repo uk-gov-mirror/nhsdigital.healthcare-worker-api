@@ -62,9 +62,9 @@ class TestWorker(IntegrationTest):
                 "severity": "error",
                 "details": {
                     "coding": [{
-                        "code": "MSG_NO_MATCH",
-                        "display": "No Resource found matching the query 999",
-                        "system": "http://hl7.org/fhir/operation-outcome"}]
+                        "code": "RESOURCE_NOT_FOUND",
+                        "display": "Resource not found",
+                        "system": "https://fhir.nhs.uk/CodeSystem/NHSD-API-ErrorOrWarningCode"}]
                 }
             }]
         }
@@ -92,9 +92,9 @@ class TestWorker(IntegrationTest):
                 "severity": "error",
                 "details": {
                     "coding": [{
-                        "code": "MSG_NO_MATCH",
-                        "display": "No Resource found matching the query invalid_id!@£⚠️",
-                        "system": "http://hl7.org/fhir/operation-outcome"}]
+                        "code": "RESOURCE_NOT_FOUND",
+                        "display": "Resource not found",
+                        "system": "https://fhir.nhs.uk/CodeSystem/NHSD-API-ErrorOrWarningCode"}]
                 }
             }]
         }
