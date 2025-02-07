@@ -28,7 +28,7 @@ class Log:
         :param event: Lambda event with details like correlation id
         """
         global correlation_id
-        correlation_id = event.resolved_headers_field.get("X-Correlation-ID", f"no-id-{uuid4()}")
+        correlation_id = event.resolved_headers_field.get("X-Correlation-ID", [f"no-id-{uuid4()}"])[0]
 
     @staticmethod
     def cleanup():
@@ -43,7 +43,7 @@ class Log:
         General purpose info logging for information that could be useful in developer logs.
         :param message: Message to be logged
         """
-        log_message = f"Correlation-ID: {correlation_id}, {message}"
+        log_message = {"Correlation-ID": correlation_id, "message": message}
         self.logger.info(log_message)
 
     def warning(self, message: str):
@@ -51,7 +51,7 @@ class Log:
         Logs a warning message for tracking in developer logs and possibly alerting.
         :param message: Message to be logged
         """
-        log_message = f"Correlation-ID: {correlation_id}, {message}"
+        log_message = {"Correlation-ID": correlation_id, "message": message}
         self.logger.warning(log_message)
 
     def error(self, message: str):
@@ -59,5 +59,5 @@ class Log:
         Logs an error message for tracking in developer logs and possibly alerting.
         :param message: Message to be logged
         """
-        log_message = f"Correlation-ID: {correlation_id}, {message}"
+        log_message = {"Correlation-ID": correlation_id, "message": message}
         self.logger.error(log_message)

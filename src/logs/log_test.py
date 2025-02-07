@@ -19,8 +19,8 @@ def test_log_save_details(uuid4_mock):
 
     logger.save_event_details(event)
 
-    event.resolved_headers_field.get.assert_called_with("X-Correlation-ID", f"no-id-{uuid4_mock.return_value}")
-    assert logs.log.correlation_id == event.resolved_headers_field.get.return_value
+    event.resolved_headers_field.get.assert_called_with("X-Correlation-ID", [f"no-id-{uuid4_mock.return_value}"])
+    assert logs.log.correlation_id == event.resolved_headers_field.get.return_value.__getitem__.return_value
 
 
 def test_log_cleanup():
@@ -39,7 +39,7 @@ def test_log_info(logging):
 
     logger.info("logging message")
 
-    logging.getLogger.return_value.info.assert_called_with("Correlation-ID: correlation_id, logging message")
+    logging.getLogger.return_value.info.assert_called_with({"Correlation-ID": "correlation_id", "message": "logging message"})
 
 
 @patch("logs.log.logging")
@@ -49,4 +49,4 @@ def test_log_error(logging):
 
     logger.error("logging message")
 
-    logging.getLogger.return_value.error.assert_called_with("Correlation-ID: correlation_id, logging message")
+    logging.getLogger.return_value.error.assert_called_with({"Correlation-ID": "correlation_id", "message": "logging message"})
