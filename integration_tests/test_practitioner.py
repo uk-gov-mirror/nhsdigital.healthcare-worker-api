@@ -58,13 +58,13 @@ class TestWorker(IntegrationTest):
         assert response.json() == {
             "resourceType": "OperationOutcome",
             "issue": [{
-                "code": "unknown",
+                "code": "not-found",
                 "severity": "error",
                 "details": {
                     "coding": [{
-                        "code": "404",
-                        "display": "User with id 999 not found",
-                        "system": "https://fhir.nhs.uk/STU3/ValueSet/Spine-ErrorOrWarningCode-1"}]
+                        "code": "MSG_NO_MATCH",
+                        "display": "No Resource found matching the query 999",
+                        "system": "http://hl7.org/fhir/operation-outcome"}]
                 }
             }]
         }
@@ -88,13 +88,13 @@ class TestWorker(IntegrationTest):
         assert response.json() == {
             "resourceType": "OperationOutcome",
             "issue": [{
-                "code": "unknown",
+                "code": "not-found",
                 "severity": "error",
                 "details": {
                     "coding": [{
-                        "code": "404",
-                        "display": "User with id invalid_id!@£⚠️ not found",
-                        "system": "https://fhir.nhs.uk/STU3/ValueSet/Spine-ErrorOrWarningCode-1"}]
+                        "code": "MSG_NO_MATCH",
+                        "display": "No Resource found matching the query invalid_id!@£⚠️",
+                        "system": "http://hl7.org/fhir/operation-outcome"}]
                 }
             }]
         }
