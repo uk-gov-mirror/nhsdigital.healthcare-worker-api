@@ -120,8 +120,6 @@ class RealHcwLdapConnection(HcwLdapConnection):
             success, result, response, request = self.connection.search(f"uid={uid},ou=people,o=nhs",
                                                                         "(objectclass=*)",
                                                                         attributes=return_attributes)
-            if response:
-                logger.info(f"Found response of {response}")
             logger.info(f"Received LDAP response, success: {success}")
 
             self.check_response(uid, success, result)

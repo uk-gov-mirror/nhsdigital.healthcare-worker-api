@@ -37,3 +37,7 @@ variable "subdomain" {
 variable "account_id" {
   type = string
 }
+
+variable "hec_token_secret_id" {
+  type = string
+}

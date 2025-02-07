@@ -2,6 +2,8 @@ locals {
   is_pr   = length(regexall("pr-.*", local.env)) > 0
   is_mgmt = length(regexall("mgmt*", local.env)) > 0 || local.env == "management"
   is_sand = var.sandbox
+
+  include_vpc = !local.is_pr && !local.is_mgmt && !local.is_sand
 }
 
 terraform {
@@ -89,13 +91,18 @@ module "vpc" {
   ldap_gateway_cidr_block = var.ldap_gateway_cidr_block
   transit_gateway_id      = data.aws_ec2_transit_gateway.transit_gateway.id
 
-  count = !local.is_pr && !local.is_mgmt && !local.is_sand ? 1 : 0
+  count = local.include_vpc ? 1 : 0
 }
 
 module "deploy" {
   source = "./deploy"
 
   count = local.is_mgmt ? 1 : 0
+}
+
+data "aws_secretsmanager_secret" "hec_token" {
+  count = !local.include_vpc ? 1 : 0
+  name  = "hec_token"
 }
 
 module "app" {
@@ -112,6 +119,7 @@ module "app" {
   ldap_gateway_url     = var.ldap_gateway_url
   provisioned_capacity = var.provisioned_capacity
   vpc_env              = var.vpc_env
+  hec_token_secret_id  = local.include_vpc ? module.vpc[0].hec_token_secret_id : data.aws_secretsmanager_secret.hec_token[0].id
 
   count = !local.is_mgmt ? 1 : 0
 }
