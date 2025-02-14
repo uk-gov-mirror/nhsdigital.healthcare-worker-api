@@ -148,6 +148,13 @@ x-nhsd-apim:
     security:
       type: mtls
       secret: hcw-mtls
+  ratelimiting:
+    proxy:
+      timeunit: "second"
+      limit: 2
+    app_default:
+      timeunit: "minute"
+      limit: 30
 paths:
   /Practitioner:
     get:
