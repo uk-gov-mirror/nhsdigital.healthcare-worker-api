@@ -25,8 +25,6 @@ def get_connection():
         else:
             ldap_connection = RealHcwLdapConnection()
 
-    logger.info(f"LDAP connection bind time = {ldap_connection.bind_time}")
-
     return ldap_connection
 
 
