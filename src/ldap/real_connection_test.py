@@ -91,6 +91,16 @@ def test_connect_fail():
         assert e.value.return_message == "Error connecting to LDAP"
 
 
+def test_healthcheck():
+    boto3, _, _, connection, _ = setup_ldap_connection_mock()
+
+    with patch.dict(os.environ, environment_variables()):
+        mock_secrets(boto3)
+        conn = RealHcwLdapConnection()
+
+        conn.healthcheck()
+
+
 class TestLdapSearch:
     full_ldap_response_example = [{
             "attributes": {
