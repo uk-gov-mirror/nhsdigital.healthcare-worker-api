@@ -92,7 +92,7 @@ def test_connect_fail():
 
 
 def test_healthcheck():
-    boto3, _, _, connection, _ = setup_ldap_connection_mock()
+    boto3, _, _, _, _ = setup_ldap_connection_mock()
 
     with patch.dict(os.environ, environment_variables()):
         mock_secrets(boto3)

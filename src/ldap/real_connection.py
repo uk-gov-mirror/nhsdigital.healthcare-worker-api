@@ -18,6 +18,7 @@ from logs.log import Log
 
 logger = Log("ldap_connection")
 
+LDAP_CONNECTION_ERROR_MESSAGE = "Error connecting to LDAP"
 
 class LdapErrorCode(IntEnum):
     NOT_FOUND = 32
@@ -79,7 +80,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
 
             return connection
         except LDAPException as e:
-            raise HcwException(500, f"Error connecting to LDAP: {e}", "exception", "Error connecting to LDAP")
+            raise HcwException(500, f"Error connecting to LDAP: {e}", "exception", LDAP_CONNECTION_ERROR_MESSAGE)
 
     @staticmethod
     def check_response(uid, success, result):
@@ -109,7 +110,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
 
     def healthcheck(self, allow_retry = True):
         try:
-            self.connection.search(f"uid=1,ou=people,o=nhs", "(objectclass=*)")
+            self.connection.search("uid=1,ou=people,o=nhs", "(objectclass=*)")
         except LDAPException as e:
             if allow_retry:
                 logger.warning(f"Got an LDAP connection error {e}. Attempting to reconnect.")
@@ -117,7 +118,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
                 logger.info("LDAP connection re-established")
                 return self.healthcheck(allow_retry=False)
             else:
-                raise HcwException(500, f"LDAP connection error and retry failed {e}", "exception","Error connecting to LDAP")
+                raise HcwException(500, f"LDAP connection error and retry failed {e}", "exception", LDAP_CONNECTION_ERROR_MESSAGE)
 
 
     def search_active_nhs_person(self, uid: str, allow_retry: bool = True) -> [NhsPerson, list[NhsOrgPerson], list[NhsOrgPersonRole]]:
@@ -157,4 +158,4 @@ class RealHcwLdapConnection(HcwLdapConnection):
                 logger.info("LDAP connection re-established")
                 return self.search_active_nhs_person(uid, allow_retry=False)
             else:
-                raise HcwException(500, f"LDAP connection error and retry failed {e}", "exception","Error connecting to LDAP")
+                raise HcwException(500, f"LDAP connection error and retry failed {e}", "exception", LDAP_CONNECTION_ERROR_MESSAGE)
