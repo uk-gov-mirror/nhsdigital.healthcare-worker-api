@@ -55,3 +55,5 @@ cc2d9e1a3f0950cfca2753f459c2867631aa0ed1:integration_tests/config/int.py:generic
 906b8c2b2d493e396d087a844fbe919fd914d753:postman/pr.json:private-key:37
 b07b666ebb2147b25132b027c16b8eafa596b7d0:integration_tests/locals.properties:generic-api-key:4
 95f76ffbf2076c1960fb4376c6684c8ca796df55:integration_tests/locals.properties:generic-api-key:4
+6bd49350f9bdb6fc560c20f7a3ac0cd9abe3a53f:nft/ec2_startup.bash:generic-api-key:12
+6bd49350f9bdb6fc560c20f7a3ac0cd9abe3a53f:nft/.nft.env:generic-api-key:8
