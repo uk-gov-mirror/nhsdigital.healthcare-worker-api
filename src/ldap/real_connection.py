@@ -107,6 +107,19 @@ class RealHcwLdapConnection(HcwLdapConnection):
     def get_org_roles(response) -> list[dict[str, str]]:
         return list(RealHcwLdapConnection.find_by_type(response, "nhsOrgPersonRole"))
 
+    def healthcheck(self, allow_retry = True):
+        try:
+            self.connection.search(f"uid=1,ou=people,o=nhs", "(objectclass=*)")
+        except LDAPException as e:
+            if allow_retry:
+                logger.warning(f"Got an LDAP connection error {e}. Attempting to reconnect.")
+                self.connection = self.connect()
+                logger.info("LDAP connection re-established")
+                return self.healthcheck(allow_retry=False)
+            else:
+                raise HcwException(500, f"LDAP connection error and retry failed {e}", "exception","Error connecting to LDAP")
+
+
     def search_active_nhs_person(self, uid: str, allow_retry: bool = True) -> [NhsPerson, list[NhsOrgPerson], list[NhsOrgPersonRole]]:
         try:
             logger.info("Searching LDAP for nhsPerson")

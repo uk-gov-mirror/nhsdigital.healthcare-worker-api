@@ -10,7 +10,7 @@ logger = Log("StatusHandler")
 class StatusHandler(BaseHandler[FhirStatus]):
     def get(self, event: APIGatewayProxyEvent) -> HandlerResponse[FhirStatus]:
         try:
-            get_connection()
+            get_connection().healthcheck()
         except Exception as e:
             logger.error(f"Could not fetch ldap connection in status connection, returned error {e}")
             return HandlerResponse([FhirStatus(False)], [])
