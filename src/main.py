@@ -13,7 +13,6 @@ from pydantic.schema import timedelta
 from fhir.error.fhir_issue import FhirIssue
 from fhir.error.fhir_operation_outcome import FhirOperationOutcome
 from fhir.fhir_codeable_concept import FhirCodeableConcept
-from fhir.fhir_object import FhirObject
 from hcw_exception import HcwException
 from logs.log import Log
 from request_handlers.handlers import RequestRouter

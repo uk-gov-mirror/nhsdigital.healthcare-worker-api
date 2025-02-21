@@ -215,6 +215,8 @@ resource "aws_cloudwatch_log_subscription_filter" "cloudwatch_log_filter" {
   destination_arn = aws_kinesis_firehose_delivery_stream.splunk_logs_delivery.arn
   log_group_name  = "/aws/lambda/hcw-app-${var.env}"
   filter_pattern  = ""
+
+  depends_on = [aws_lambda_function.hcw-app]
 }
 
 data "archive_file" "splunk_transform" {
