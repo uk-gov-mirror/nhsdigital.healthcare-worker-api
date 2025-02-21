@@ -14,4 +14,6 @@ class StatusHandler(BaseHandler[FhirStatus]):
         except Exception as e:
             logger.error(f"Could not fetch ldap connection in status connection, returned error {e}")
             return HandlerResponse([FhirStatus(False)], [])
+
+        logger.info("Returning happy response to status check")
         return HandlerResponse([FhirStatus(True)], [])
