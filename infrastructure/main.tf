@@ -90,6 +90,7 @@ module "vpc" {
 
   ldap_gateway_cidr_block = var.ldap_gateway_cidr_block
   transit_gateway_id      = data.aws_ec2_transit_gateway.transit_gateway.id
+  ldap_service_endpoint   = var.ldap_service_endpoint
 
   count = local.include_vpc ? 1 : 0
 }

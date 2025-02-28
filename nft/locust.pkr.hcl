@@ -12,7 +12,7 @@ source "amazon-ebs" "hcw-nft" {
   instance_type = "t2.micro"
   region        = "eu-west-2"
 
-  vpc_id = "vpc-035b2e3600afb9273"
+  vpc_id = "vpc-0d91534a28e04e169"
   ssh_interface = "public_ip"
   associate_public_ip_address = true
 
@@ -48,7 +48,7 @@ build {
 
   # Copying the integration tests because we're making use of their utils package
   provisioner "file" {
-    source = "../integration_tests/utils"
+    source = "../integration_tests"
     destination = "/home/ubuntu/nft/"
   }
 

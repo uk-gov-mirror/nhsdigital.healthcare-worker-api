@@ -29,4 +29,6 @@ resource "aws_route" "ldap_gateway" {
 
   transit_gateway_id     = var.transit_gateway_id
   destination_cidr_block = var.ldap_gateway_cidr_block
+
+  depends_on = [aws_ec2_transit_gateway_vpc_attachment.vpn_transit_gateway_attachment]
 }

@@ -5,7 +5,7 @@ from uuid import uuid4
 from locust import HttpUser, task, between
 from locust.log import setup_logging
 
-from utils.generate_access_token import generate_access_token
+from integration_tests.utils.generate_access_token import generate_access_token
 
 setup_logging("INFO")
 
@@ -16,7 +16,9 @@ class HcwTest(HttpUser):
     wait_time = between(5, 10)
 
     def on_start(self):
-        self.access_token, self.token_expires_at = generate_access_token(os.environ["CLIENT_ID"], silent=True)
+        client_id = os.environ["CLIENT_ID"]
+        realm_url = os.environ["REALM_URL"]
+        self.access_token, self.token_expires_at = generate_access_token(client_id, realm_url, silent=True)
 
     @task
     def practitioner_get(self):

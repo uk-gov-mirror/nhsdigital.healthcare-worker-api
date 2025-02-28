@@ -32,6 +32,10 @@ variable "ldap_gateway_url" {
   type = string
 }
 
+variable "ldap_service_endpoint" {
+  type = string
+}
+
 variable "subdomain" {
   type = string
 }

@@ -24,3 +24,7 @@ variable "ldap_gateway_cidr_block" {}
 variable "subdomain" {
   type = string
 }
+
+variable "ldap_service_endpoint" {
+  type = string
+}

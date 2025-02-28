@@ -6,6 +6,7 @@ vpc_env          = "ft"
 
 ldap_gateway_cidr_block = "192.168.209.0/25"
 ldap_gateway_url        = "proxy-in.nhsref-1.auth-ptl.cis2.spineservices.nhs.uk"
+ldap_service_endpoint   = "com.amazonaws.vpce.eu-west-2.vpce-svc-0c49a7333a967bfa5"
 
 subdomain       = "dev"
 db_status_check = true

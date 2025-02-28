@@ -85,6 +85,19 @@ resource "aws_vpc_endpoint" "vpc_lambda_to_secretsmanager" {
   }
 }
 
+resource "aws_vpc_endpoint" "vpc_lambda_to_cis1_ldap" {
+  vpc_id              = aws_vpc.lambda.id
+  service_name        = var.ldap_service_endpoint
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = aws_subnet.private.*.id
+  security_group_ids  = [aws_security_group.ldap_endpoint.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name = "${var.env}-vpc-lambda-to-cis1-ldap"
+  }
+}
+
 data "aws_iam_policy_document" "flow_log_cloudwatch_assume_role" {
   statement {
     principals {
