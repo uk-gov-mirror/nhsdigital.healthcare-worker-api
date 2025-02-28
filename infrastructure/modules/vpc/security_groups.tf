@@ -62,7 +62,7 @@ resource "aws_security_group" "ldap_endpoint" {
     from_port       = 636
     to_port         = 636
     protocol        = "tcp"
-    security_groups = [aws_security_group.vpc_lambda.id]
+    prefix_list_ids = [aws_vpc_endpoint.vpc_lambda_to_cis1_ldap.prefix_list_id]
     description     = "LDAPS calls to SDS"
   }
 
