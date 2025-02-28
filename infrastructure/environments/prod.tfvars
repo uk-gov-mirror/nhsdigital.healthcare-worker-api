@@ -6,7 +6,8 @@ vpc_env          = "prod"
 
 sandbox = false
 
-subdomain = "prod"
+subdomain       = "prod"
+db_status_check = false
 
 provisioned_capacity = 1
 include_nft_vpc      = false

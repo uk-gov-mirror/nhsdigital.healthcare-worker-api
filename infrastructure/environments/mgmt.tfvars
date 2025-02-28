@@ -7,7 +7,8 @@ vpc_env          = ""
 ldap_gateway_cidr_block = "192.168.209.0/25"
 ldap_gateway_url        = ""
 
-subdomain = ""
+subdomain       = ""
+db_status_check = true
 
 provisioned_capacity = 0
 include_nft_vpc      = false

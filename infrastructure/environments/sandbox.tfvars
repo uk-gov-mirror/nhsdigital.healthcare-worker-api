@@ -7,4 +7,5 @@ vpc_env          = "int"
 ldap_gateway_cidr_block = "192.168.209.0/25"
 ldap_gateway_url        = "proxy-in.nhsref-1.auth-ptl.cis2.spineservices.nhs.uk"
 
-sandbox = true
+sandbox         = true
+db_status_check = true

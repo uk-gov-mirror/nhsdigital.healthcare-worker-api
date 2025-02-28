@@ -41,3 +41,7 @@ variable "account_id" {
 variable "hec_token_secret_id" {
   type = string
 }
+
+variable "db_status_check" {
+  type = bool
+}

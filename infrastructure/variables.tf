@@ -51,3 +51,7 @@ variable "sandbox" {
 variable "vpc_env" {
   type = string
 }
+
+variable "db_status_check" {
+  type = bool
+}

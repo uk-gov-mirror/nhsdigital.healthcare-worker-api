@@ -37,6 +37,7 @@ resource "aws_lambda_function" "hcw-app" {
       LDAP_GATEWAY_URL           = var.ldap_gateway_url
       SANDBOX_MODE               = var.sandbox_mode
       BASE_URL                   = "https://${var.apim_environment}.api.service.nhs.uk/healthcare-worker"
+      DB_STATUS_CHECK            = var.db_status_check
     }
   }
 }

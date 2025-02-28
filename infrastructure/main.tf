@@ -120,6 +120,7 @@ module "app" {
   provisioned_capacity = var.provisioned_capacity
   vpc_env              = var.vpc_env
   hec_token_secret_id  = local.include_vpc ? module.vpc[0].hec_token_secret_id : data.aws_secretsmanager_secret.hec_token[0].id
+  db_status_check      = var.db_status_check
 
   count = !local.is_mgmt ? 1 : 0
 }

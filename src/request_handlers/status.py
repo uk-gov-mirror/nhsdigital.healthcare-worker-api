@@ -1,3 +1,5 @@
+import os
+
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
 
 from fhir.fhir_status import FhirStatus
@@ -10,7 +12,8 @@ logger = Log("StatusHandler")
 class StatusHandler(BaseHandler[FhirStatus]):
     def get(self, event: APIGatewayProxyEvent) -> HandlerResponse[FhirStatus]:
         try:
-            get_connection().healthcheck()
+            if os.environ["DB_STATUS_CHECK"] == "true":
+                get_connection().healthcheck()
         except Exception as e:
             logger.error(f"Could not fetch ldap connection in status connection, returned error {e}")
             return HandlerResponse([FhirStatus(False)], [])
