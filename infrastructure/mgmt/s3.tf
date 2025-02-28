@@ -31,7 +31,8 @@ resource "aws_s3_bucket_policy" "build_artifacts_bucket_policy" {
       Principal = {
         AWS = [
           "arn:aws:iam::711387117641:root",
-          "arn:aws:iam::535002889321:root"
+          "arn:aws:iam::535002889321:root",
+          "arn:aws:iam::266735814611:root"
         ]
       }
       Action   = ["s3:Get*", "s3:Put*"]
@@ -41,7 +42,8 @@ resource "aws_s3_bucket_policy" "build_artifacts_bucket_policy" {
       Principal = {
         AWS = [
           "arn:aws:iam::711387117641:root",
-          "arn:aws:iam::535002889321:root"
+          "arn:aws:iam::535002889321:root",
+          "arn:aws:iam::266735814611:root"
         ]
       }
       Action   = "s3:ListBucket"

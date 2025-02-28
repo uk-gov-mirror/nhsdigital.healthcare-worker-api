@@ -35,7 +35,7 @@ class IntegrationTest:
     def resource(self):
         env = get_current_env()
         if not isinstance(env, SandboxEnvironmentConfig):
-            self.access_token, _ = generate_access_token(env)
+            self.access_token, _ = generate_access_token(env.client_id, env.realm_url)
         else:
             self.access_token = "no_auth_required"
 

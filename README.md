@@ -74,11 +74,13 @@ deployed until you merge to develop.
 | AWS Account               | Terraform Workspace | Environments File | Notes                                                                                                                                               |
 |---------------------------|---------------------|-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
 | management (209479271736) | management          | mgmt.tfvars       | Anything common between all environments (e.g. VPN connection). Deployed on merge to develop.                                                       |
-| dev (535002889321)        | mgmt                | dev.tfvars        | Resources shared between environments, but specific to the account (e.g. app deployment role). Deployed on merge to develop.                        |
-| dev (535002889321)        | pr-*                | dev.tfvars        | App deployment of lambda and associated resources. Deployed on push to an open PR, contains latest app code from the relevant branch.               |
-| dev (535002889321)        | ft                  | dev.tfvars        | App deployment of lambda and associated resources. Deployed on merge to develop.                                                                    |
-| int (711387117641)        | int                 | int.tfvars        | App deployment of lambda and associated resources. Deployed on run from static env deployment pipeline.                                             |
-| int (711387117641)        | mgmt-int            | int.tfvars        | Resources shared between environments, but specific to the account (e.g. app deployment role). Deployed on run from static env deployment pipeline. |
+| dev  (535002889321)       | mgmt                | dev.tfvars        | Resources shared between environments, but specific to the account (e.g. app deployment role). Deployed on merge to develop.                        |
+| dev  (535002889321)       | pr-*                | dev.tfvars        | App deployment of lambda and associated resources. Deployed on push to an open PR, contains latest app code from the relevant branch.               |
+| dev  (535002889321)       | ft                  | dev.tfvars        | App deployment of lambda and associated resources. Deployed on merge to develop.                                                                    |
+| int  (711387117641)       | int                 | int.tfvars        | App deployment of lambda and associated resources. Deployed on run from static env deployment pipeline.                                             |
+| int  (711387117641)       | mgmt-int            | int.tfvars        | Resources shared between environments, but specific to the account (e.g. app deployment role). Deployed on run from static env deployment pipeline. |
+| prod (266735814611)       | prod                | prod.tfvars       | App deployment of lambda and associated resource for production.                                                                                    |
+| prod (266735814611)       | mgmt-prod           | prod.tfvars       | Deployment resources for production environment                                                                                                     |
 
 ## Environments & Pipelines
 

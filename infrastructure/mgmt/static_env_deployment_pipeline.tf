@@ -70,7 +70,8 @@ resource "aws_kms_key" "kms_key" {
         Principal = {
           AWS = [
             "arn:aws:iam::711387117641:root",
-            "arn:aws:iam::535002889321:root"
+            "arn:aws:iam::535002889321:root",
+            "arn:aws:iam::266735814611:root"
           ]
         }
         Action = [
@@ -249,6 +250,55 @@ resource "aws_codepipeline" "static_env_deployment_pipeline" {
           {
             name  = "branch"
             value = "int"
+            type  = "PLAINTEXT"
+          }
+        ])
+      }
+    }
+  }
+
+  stage {
+    name = "Prod-Approval"
+    action {
+      category = "Approval"
+      name     = "Prod-Approval"
+      owner    = "AWS"
+      provider = "Manual"
+      version  = "1"
+    }
+  }
+
+  stage {
+    name = "Prod-Deploy"
+
+    action {
+      name     = "Prod-Deploy"
+      category = "Build"
+      owner    = "AWS"
+      provider = "CodeBuild"
+      version  = "1"
+
+      input_artifacts = ["source_output"]
+
+      role_arn = "arn:aws:iam::266735814611:role/CodeBuildDeployJobRole"
+
+      configuration = {
+        ProjectName = "hcw-api-deploy"
+
+        EnvironmentVariables = jsonencode([
+          {
+            name  = "environment_name"
+            value = "int"
+            type  = "PLAINTEXT"
+          },
+          {
+            name  = "account_name"
+            value = "int"
+            type  = "PLAINTEXT"
+          },
+          {
+            name  = "app_s3_filename"
+            value = "#{variables.commit_id}.zip"
             type  = "PLAINTEXT"
           }
         ])

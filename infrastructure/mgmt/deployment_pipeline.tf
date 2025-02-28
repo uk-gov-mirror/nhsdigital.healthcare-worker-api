@@ -53,7 +53,8 @@ resource "aws_iam_policy" "codepipeline_policy" {
         "Action" : "sts:AssumeRole",
         "Resource" : [
           "arn:aws:iam::711387117641:role/CodeBuildDeployJobRole",
-          "arn:aws:iam::535002889321:role/CodeBuildDeployJobRole"
+          "arn:aws:iam::535002889321:role/CodeBuildDeployJobRole",
+          "arn:aws:iam::266735814611:role/CodeBuildDeployJobRole"
         ]
       },
       {

@@ -28,8 +28,8 @@ def get_connection():
     return ldap_connection
 
 
-if "UNIT_TESTING" not in os.environ:
-    # Unfortunately doing this during unit testing is difficult because it triggers during the import before we have
-    # any mocking. But having it here moves the initial connection creation to the lambda start instead of the first
-    # request, which greatly improves performance for that request if we have provisioned concurrency.
-    ldap_connection = get_connection()
+# if "UNIT_TESTING" not in os.environ:
+#     # Unfortunately doing this during unit testing is difficult because it triggers during the import before we have
+#     # any mocking. But having it here moves the initial connection creation to the lambda start instead of the first
+#     # request, which greatly improves performance for that request if we have provisioned concurrency.
+#     ldap_connection = get_connection()
