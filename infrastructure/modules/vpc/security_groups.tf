@@ -51,11 +51,11 @@ resource "aws_security_group" "ldap_endpoint" {
   vpc_id      = aws_vpc.lambda.id
 
   egress {
-    from_port   = 636
-    to_port     = 636
-    protocol    = "tcp"
+    from_port       = 636
+    to_port         = 636
+    protocol        = "tcp"
     security_groups = [aws_security_group.vpc_lambda.id]
-    description = "LDAPS calls to SDS"
+    description     = "LDAPS calls to SDS"
   }
 
   tags = {
