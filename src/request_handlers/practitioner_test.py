@@ -93,12 +93,12 @@ def mock_ldap(uid: Optional[str] = "uid", sn: Optional[str] = "Smith",
         "nhsIDCode": "id-code",
         "nhsSiteNames": ["site-1", "site-2"],
         "nhsSiteCodes": ["1", "2"],
-        "nhsOpenDate": "20200101",
+        "nhsOrgOpenDate": "20200101",
         "nhsCloseDate": "30000101"
     })
     nhs_org_person = NhsOrgPerson({
         "uniqueIdentifier": "org-person-id",
-        "nhsOpenDate": "20000101",
+        "nhsOrgOpenDate": "20000101",
         "nhsIDCode": "id-code",
         "o": "nhs",
     })
