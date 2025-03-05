@@ -64,3 +64,5 @@ f7a2458a889d4ce93898353b06d589c67dc4ee71:integration_tests/locals.properties:gen
 111e151d5f1a3b699d61b0c3482512d2ee26db18:nft/ec2_startup.bash:generic-api-key:12
 3873d556905df3596f4c7f0da984eafa07b82321:nft/.nft.env:generic-api-key:8
 3873d556905df3596f4c7f0da984eafa07b82321:nft/ec2_startup.bash:generic-api-key:12
+ae20e5244ec5ecbea7c2a3cfcb363f98515358c3:nft/.nft.env:generic-api-key:8
+ae20e5244ec5ecbea7c2a3cfcb363f98515358c3:nft/ec2_startup.bash:generic-api-key:12
