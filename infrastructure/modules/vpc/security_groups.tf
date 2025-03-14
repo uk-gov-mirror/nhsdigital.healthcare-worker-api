@@ -15,6 +15,14 @@ resource "aws_security_group" "vpc_lambda" {
     description = "HTTPS API calls including AWS"
   }
 
+  egress {
+    from_port   = 636
+    to_port     = 636
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+    description = "LDAP to SDS"
+  }
+
   tags = {
     Name = "${var.env}-vpc-lambda-sg"
   }
@@ -49,6 +57,14 @@ resource "aws_security_group" "ldap_endpoint" {
   name        = "${var.env}-vpc-ldap-endpoint-sg"
   description = "security group for the ldap vpc endpoint inside the vpc"
   vpc_id      = aws_vpc.lambda.id
+
+  ingress {
+    from_port       = 636
+    to_port         = 636
+    protocol        = "tcp"
+    security_groups = [aws_security_group.vpc_lambda.id]
+    description     = "LDAPS calls to SDS"
+  }
 
   egress {
     from_port       = 636
