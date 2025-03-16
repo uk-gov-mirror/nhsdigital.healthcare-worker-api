@@ -59,7 +59,6 @@ class RealHcwLdapConnection(HcwLdapConnection):
 
         secret_id = os.environ["LDAP_CREDENTIALS_SECRET_ID"]
         logger.info(f"Using secret ID: {secret_id}")
-        
         try:
             ldap_credentials = self.get_secret(secret_id)
             logger.info("Fetched secrets")
@@ -75,7 +74,6 @@ class RealHcwLdapConnection(HcwLdapConnection):
             if "LDAP_GATEWAY_URL" not in os.environ:
                 logger.error("LDAP_GATEWAY_URL not in environment variables")
                 raise HcwException(500, "LDAP_GATEWAY_URL not configured", "exception")
-            
             ldap_url = os.environ["LDAP_GATEWAY_URL"]
             logger.info(f"Connecting to LDAP server: {ldap_url}")
 
@@ -87,7 +85,6 @@ class RealHcwLdapConnection(HcwLdapConnection):
                     validate=CERT_REQUIRED
                 )
                 logger.info("TLS configuration created")
-                
                 server = Server(ldap_url, use_ssl=True, tls=tls)
                 logger.info("LDAP server object created")
 
@@ -147,10 +144,8 @@ class RealHcwLdapConnection(HcwLdapConnection):
                                     "nhsBusinessFunctionsCodes", "nhsJobRole", "nhsJobRoleCode", "nhsBusinessFunctions",
                                     "nhsCloseDate", "nhsGMC", "nhsGDP", "nhsGDC", "nhsRCN",
                                     "nhsNMC", "nhsConsultant", "nhsGMP", "nhsOcsPrCode"]
-            
             search_base = f"uid={uid},ou=people,o=nhs"
             logger.info(f"Search base: {search_base}")
-            
             logger.info("Executing LDAP search")
             success, result, response, request = self.connection.search(search_base,
                                                                         "(objectclass=*)",
@@ -162,10 +157,8 @@ class RealHcwLdapConnection(HcwLdapConnection):
             logger.info("Processing LDAP response")
             practitioner = NhsPerson(self.get_nhs_person(response))
             logger.info(f"Found practitioner: {practitioner.uid}, {practitioner.given_name} {practitioner.sn}")
-            
             org_persons = [NhsOrgPerson(r) for r in self.get_org_person(response)]
             logger.info(f"Found {len(org_persons)} organization persons")
-            
             roles = [NhsOrgPersonRole(r) for r in self.get_org_roles(response)]
             logger.info(f"Found {len(roles)} roles")
 
@@ -175,7 +168,6 @@ class RealHcwLdapConnection(HcwLdapConnection):
                     role.org_person = next(filter(lambda op: op.nhs_id_code == role.nhs_id_code, org_persons))
                     role.practitioner = practitioner
                     active_roles.append(role)
-            
             logger.info(f"Found {len(active_roles)} active roles")
             return practitioner, org_persons, active_roles
 

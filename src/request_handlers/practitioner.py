@@ -14,10 +14,8 @@ logger = Log("practitioner_handler")
 class PractitionerHandler(BaseHandler[FhirPractitioner]):
     def get(self, event: APIGatewayProxyEvent) -> HandlerResponse[FhirPractitioner]:
         logger.info("Performing practitioner GET")
-        
         # Log query parameters
         logger.info(f"Query parameters: {event.query_string_parameters}")
-        
         worker_id = event.query_string_parameters.get("identifier")
         logger.info(f"Worker ID from query parameters: {worker_id}")
 
@@ -29,7 +27,6 @@ class PractitionerHandler(BaseHandler[FhirPractitioner]):
         try:
             connection = get_connection()
             logger.info("Successfully got LDAP connection")
-            
             logger.info(f"Searching for NHS person with ID: {worker_id}")
             nhs_person, org_persons, org_roles = connection.search_active_nhs_person(worker_id)
             logger.info(f"Successfully retrieved NHS person: {nhs_person.uid}, {nhs_person.given_name} {nhs_person.sn}")
@@ -40,14 +37,12 @@ class PractitionerHandler(BaseHandler[FhirPractitioner]):
 
             logger.info("Creating FHIR Practitioner resource")
             practitioner = FhirPractitioner(nhs_person)
-            
             logger.info(f"Creating FHIR PractitionerRole resources for {len(org_roles)} roles")
             practitioner_roles = [FhirPractitionerRole(nhs_person, org_role) for org_role in org_roles]
             logger.info(f"Created {len(practitioner_roles)} PractitionerRole resources")
 
             logger.info("Returning worker from practitioner GET")
             return HandlerResponse([practitioner], practitioner_roles)
-            
         except Exception as e:
             logger.error(f"Error in practitioner GET: {e}")
             raise

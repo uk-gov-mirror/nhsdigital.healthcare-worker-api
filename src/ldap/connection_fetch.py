@@ -18,7 +18,6 @@ def get_connection():
     global ldap_connection
 
     logger.info("get_connection called")
-    
     # Check if we need a new connection
     if not ldap_connection:
         logger.info("No existing LDAP connection, creating new one")
@@ -29,10 +28,8 @@ def get_connection():
     else:
         logger.info("Using existing LDAP connection")
         return ldap_connection
-    
     # Create a new connection
     logger.info("Creating new ldap connection instance")
-    
     if "SANDBOX_MODE" in os.environ and os.environ["SANDBOX_MODE"].lower() == "true":
         logger.info("Using MockHcwLdapConnection (SANDBOX_MODE=true)")
         ldap_connection = MockHcwLdapConnection()
