@@ -17,13 +17,28 @@ ldap_connection: Optional[HcwLdapConnection] = None
 def get_connection():
     global ldap_connection
 
-    if (not ldap_connection or ldap_connection.connection.closed
-            or ldap_connection.bind_time < datetime.now() - timedelta(minutes=5)):
-        logger.info("Creating new ldap connection instance")
-        if "SANDBOX_MODE" in os.environ and os.environ["SANDBOX_MODE"].lower() == "true":
-            ldap_connection = MockHcwLdapConnection()
-        else:
-            ldap_connection = RealHcwLdapConnection()
+    logger.info("get_connection called")
+    
+    # Check if we need a new connection
+    if not ldap_connection:
+        logger.info("No existing LDAP connection, creating new one")
+    elif ldap_connection.connection.closed:
+        logger.info("Existing LDAP connection is closed, creating new one")
+    elif ldap_connection.bind_time < datetime.now() - timedelta(minutes=5):
+        logger.info("Existing LDAP connection is older than 5 minutes, creating new one")
+    else:
+        logger.info("Using existing LDAP connection")
+        return ldap_connection
+    
+    # Create a new connection
+    logger.info("Creating new ldap connection instance")
+    
+    if "SANDBOX_MODE" in os.environ and os.environ["SANDBOX_MODE"].lower() == "true":
+        logger.info("Using MockHcwLdapConnection (SANDBOX_MODE=true)")
+        ldap_connection = MockHcwLdapConnection()
+    else:
+        logger.info("Using RealHcwLdapConnection")
+        ldap_connection = RealHcwLdapConnection()
 
     return ldap_connection
 

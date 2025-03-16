@@ -28,12 +28,20 @@ class RealHcwLdapConnection(HcwLdapConnection):
     bind_time: datetime
 
     def __init__(self):
+        logger.info("Initializing RealHcwLdapConnection")
         self.client = boto3.client("secretsmanager", config=Config(region_name="eu-west-2"))
         self.connection = self.connect()
         logger.info("LDAP connection established")
 
     def get_secret(self, secret_id) -> dict:
-        return json.loads(self.client.get_secret_value(SecretId=secret_id)["SecretString"])
+        logger.info(f"Getting secret from SecretManager: {secret_id}")
+        try:
+            secret_value = self.client.get_secret_value(SecretId=secret_id)
+            logger.info("Secret retrieved successfully")
+            return json.loads(secret_value["SecretString"])
+        except Exception as e:
+            logger.error(f"Error retrieving secret: {e}")
+            raise
 
     @staticmethod
     def save_secret_to_file(secret: str) -> str:
@@ -46,40 +54,62 @@ class RealHcwLdapConnection(HcwLdapConnection):
     def connect(self) -> Optional[Connection]:
         logger.info("About to fetch secrets")
         if "LDAP_CREDENTIALS_SECRET_ID" not in os.environ:
-            logger.error("Could not form LDAP connection")
+            logger.error("Could not form LDAP connection - LDAP_CREDENTIALS_SECRET_ID not in environment variables")
             return None
 
-        ldap_credentials = self.get_secret(os.environ["LDAP_CREDENTIALS_SECRET_ID"])
-        logger.info("Fetched secrets")
-
-        server_cert_filename = self.save_secret_to_file(ldap_credentials["LDAP_SERVER_CERT"])
-        mtls_client_private_key_filename = self.save_secret_to_file(ldap_credentials["MTLS_CLIENT_KEY"])
-        mtls_client_cert_filename = self.save_secret_to_file(ldap_credentials["MTLS_CLIENT_CERT"])
-        logger.info("Saved secrets to tmp file")
-
-        username = ldap_credentials["LDAP_USERNAME"]
-        password = ldap_credentials["PASSWORD"]
-
+        secret_id = os.environ["LDAP_CREDENTIALS_SECRET_ID"]
+        logger.info(f"Using secret ID: {secret_id}")
+        
         try:
-            tls = Tls(
-                local_private_key_file=mtls_client_private_key_filename,
-                local_certificate_file=mtls_client_cert_filename,
-                ca_certs_file=server_cert_filename,
-                validate=CERT_REQUIRED
-            )
-            server = Server(os.environ["LDAP_GATEWAY_URL"], use_ssl=True, tls=tls)
+            ldap_credentials = self.get_secret(secret_id)
+            logger.info("Fetched secrets")
 
-            connection = Connection(server, user=username, password=password, client_strategy=SAFE_SYNC)
+            server_cert_filename = self.save_secret_to_file(ldap_credentials["LDAP_SERVER_CERT"])
+            mtls_client_private_key_filename = self.save_secret_to_file(ldap_credentials["MTLS_CLIENT_KEY"])
+            mtls_client_cert_filename = self.save_secret_to_file(ldap_credentials["MTLS_CLIENT_CERT"])
+            logger.info("Saved secrets to tmp files")
 
-            bound = connection.bind()
-            if not bound:
-                raise HcwException(500, "Could not bind to LDAP server", "exception")
+            username = ldap_credentials["LDAP_USERNAME"]
+            logger.info(f"Using LDAP username: {username}")
 
-            self.bind_time = datetime.now()
+            if "LDAP_GATEWAY_URL" not in os.environ:
+                logger.error("LDAP_GATEWAY_URL not in environment variables")
+                raise HcwException(500, "LDAP_GATEWAY_URL not configured", "exception")
+            
+            ldap_url = os.environ["LDAP_GATEWAY_URL"]
+            logger.info(f"Connecting to LDAP server: {ldap_url}")
 
-            return connection
-        except LDAPException as e:
-            raise HcwException(500, f"Error connecting to LDAP: {e}", "exception", "Error connecting to LDAP")
+            try:
+                tls = Tls(
+                    local_private_key_file=mtls_client_private_key_filename,
+                    local_certificate_file=mtls_client_cert_filename,
+                    ca_certs_file=server_cert_filename,
+                    validate=CERT_REQUIRED
+                )
+                logger.info("TLS configuration created")
+                
+                server = Server(ldap_url, use_ssl=True, tls=tls)
+                logger.info("LDAP server object created")
+
+                logger.info("Attempting to create connection")
+                connection = Connection(server, user=username, password=ldap_credentials["PASSWORD"], client_strategy=SAFE_SYNC)
+                logger.info("Connection object created, attempting to bind")
+
+                bound = connection.bind()
+                if not bound:
+                    logger.error(f"Could not bind to LDAP server. Result: {connection.result}")
+                    raise HcwException(500, f"Could not bind to LDAP server. Result: {connection.result}", "exception")
+
+                logger.info("Successfully bound to LDAP server")
+                self.bind_time = datetime.now()
+
+                return connection
+            except LDAPException as e:
+                logger.error(f"LDAP Exception during connection: {e}")
+                raise HcwException(500, f"Error connecting to LDAP: {e}", "exception", "Error connecting to LDAP")
+        except Exception as e:
+            logger.error(f"Unexpected error during LDAP connection: {e}")
+            raise HcwException(500, f"Unexpected error during LDAP connection: {e}", "exception", "Error connecting to LDAP")
 
     @staticmethod
     def check_response(uid, success, result):
@@ -109,7 +139,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
 
     def search_active_nhs_person(self, uid: str, allow_retry: bool = True) -> [NhsPerson, list[NhsOrgPerson], list[NhsOrgPersonRole]]:
         try:
-            logger.info("Searching LDAP for nhsPerson")
+            logger.info(f"Searching LDAP for nhsPerson with uid: {uid}")
 
             # Removed "nhsPrinOcc", "nhsRPSGB"  "nhsSiteNames", "nhsSiteCodes"
             return_attributes = ["uid", "Sn", "givenName", "nhsMiddleNames", "personalTitle", "nhsPersonStatus",
@@ -117,16 +147,27 @@ class RealHcwLdapConnection(HcwLdapConnection):
                                     "nhsBusinessFunctionsCodes", "nhsJobRole", "nhsJobRoleCode", "nhsBusinessFunctions",
                                     "nhsCloseDate", "nhsGMC", "nhsGDP", "nhsGDC", "nhsRCN",
                                     "nhsNMC", "nhsConsultant", "nhsGMP", "nhsOcsPrCode"]
-            success, result, response, request = self.connection.search(f"uid={uid},ou=people,o=nhs",
+            
+            search_base = f"uid={uid},ou=people,o=nhs"
+            logger.info(f"Search base: {search_base}")
+            
+            logger.info("Executing LDAP search")
+            success, result, response, request = self.connection.search(search_base,
                                                                         "(objectclass=*)",
                                                                         attributes=return_attributes)
-            logger.info(f"Received LDAP response, success: {success}")
+            logger.info(f"Received LDAP response, success: {success}, result: {result}")
 
             self.check_response(uid, success, result)
 
+            logger.info("Processing LDAP response")
             practitioner = NhsPerson(self.get_nhs_person(response))
+            logger.info(f"Found practitioner: {practitioner.uid}, {practitioner.given_name} {practitioner.sn}")
+            
             org_persons = [NhsOrgPerson(r) for r in self.get_org_person(response)]
+            logger.info(f"Found {len(org_persons)} organization persons")
+            
             roles = [NhsOrgPersonRole(r) for r in self.get_org_roles(response)]
+            logger.info(f"Found {len(roles)} roles")
 
             active_roles = []
             for role in roles:
@@ -134,14 +175,20 @@ class RealHcwLdapConnection(HcwLdapConnection):
                     role.org_person = next(filter(lambda op: op.nhs_id_code == role.nhs_id_code, org_persons))
                     role.practitioner = practitioner
                     active_roles.append(role)
-
+            
+            logger.info(f"Found {len(active_roles)} active roles")
             return practitioner, org_persons, active_roles
 
         except LDAPException as e:
+            logger.error(f"LDAP Exception during search: {e}")
             if allow_retry:
                 logger.warning(f"Got an LDAP connection error {e}. Attempting to reconnect.")
                 self.connection = self.connect()
                 logger.info("LDAP connection re-established")
                 return self.search_active_nhs_person(uid, allow_retry=False)
             else:
+                logger.error(f"LDAP connection error and retry failed: {e}")
                 raise HcwException(500, f"LDAP connection error and retry failed {e}", "exception","Error connecting to LDAP")
+        except Exception as e:
+            logger.error(f"Unexpected error during LDAP search: {e}")
+            raise HcwException(500, f"Unexpected error during LDAP search: {e}", "exception", "Error during LDAP search")
