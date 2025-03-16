@@ -119,19 +119,12 @@ class RealHcwLdapConnection(HcwLdapConnection):
             except LDAPException as e:
                 logger.error(f"LDAP Exception during connection: {e}")
                 raise HcwException(500, f"Error connecting to LDAP: {e}", "exception", "Error connecting to LDAP")
+        except HcwException as e:
+            # Pass through HcwException without modification
+            raise e
         except Exception as e:
             logger.error(f"Unexpected error during LDAP connection: {e}")
-            raise HcwException(500, f"Unexpected error during LDAP connection: {e}", "exception", "Error connecting to LDAP")
-
-    @staticmethod
-    def check_response(uid, success, result):
-        result_code = result["result"]
-        if result_code == LdapErrorCode.NOT_FOUND:
-            raise HcwException(404, f"User with id {uid} not found", "unknown")
-
-        if not success:
-            raise HcwException(500, f"Unknown error from LDAP request. Result: {result}", "exception",
-                                "Unknown error from LDAP request")
+            raise HcwException(500, f"Error connecting to LDAP: {e}", "exception", "Error connecting to LDAP")
 
     @staticmethod
     def find_by_type(response, object_class):
@@ -169,7 +162,16 @@ class RealHcwLdapConnection(HcwLdapConnection):
                                                                         attributes=return_attributes)
             logger.info(f"Received LDAP response, success: {success}, result: {result}")
 
-            self.check_response(uid, success, result)
+            # Check for user not found (result code 32)
+            if not success and result.get("result") == LdapErrorCode.NOT_FOUND:
+                logger.error(f"User with id {uid} not found")
+                raise HcwException(404, f"User with id {uid} not found", "unknown")
+
+            # Check for other errors
+            if not success:
+                logger.error(f"Unknown error from LDAP request. Result: {result}")
+                raise HcwException(500, f"Unknown error from LDAP request. Result: {result}", "exception",
+                                    "Unknown error from LDAP request")
 
             logger.info("Processing LDAP response")
             practitioner = NhsPerson(self.get_nhs_person(response))
@@ -198,6 +200,9 @@ class RealHcwLdapConnection(HcwLdapConnection):
             else:
                 logger.error(f"LDAP connection error and retry failed: {e}")
                 raise HcwException(500, f"LDAP connection error and retry failed {e}", "exception","Error connecting to LDAP")
+        except HcwException as e:
+            # Pass through HcwException without modification
+            raise e
         except Exception as e:
             logger.error(f"Unexpected error during LDAP search: {e}")
             raise HcwException(500, f"Unexpected error during LDAP search: {e}", "exception", "Error during LDAP search")
