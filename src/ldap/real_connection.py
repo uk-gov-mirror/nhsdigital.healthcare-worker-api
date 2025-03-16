@@ -148,7 +148,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
 
             # Removed "nhsPrinOcc", "nhsRPSGB"  "nhsSiteNames", "nhsSiteCodes"
             return_attributes = ["uid", "Sn", "givenName", "nhsMiddleNames", "personalTitle", "nhsPersonStatus",
-                                    "objectclass", "uniqueIdentifier", "nhsOpenDate", "nhsIDCode", "o",
+                                    "objectclass", "uniqueIdentifier", "nhsOrgOpenDate", "nhsIDCode", "o",
                                     "nhsBusinessFunctionsCodes", "nhsJobRole", "nhsJobRoleCode", "nhsBusinessFunctions",
                                     "nhsCloseDate", "nhsGMC", "nhsGDP", "nhsGDC", "nhsRCN",
                                     "nhsNMC", "nhsConsultant", "nhsGMP", "nhsOcsPrCode"]

@@ -106,7 +106,7 @@ class TestLdapSearch:
             "attributes": {
                 "objectClass": ["nhsOrgPerson"],
                 "uniqueIdentifier": "orgPersonId",
-                "nhsOpenDate": "20240101",
+                "nhsOrgOpenDate": "20240101",
                 "o": "org",
                 "nhsIDCode": "Y51"
             }
@@ -119,7 +119,7 @@ class TestLdapSearch:
                 "nhsJobRole": "jobRole",
                 "nhsJobRoleCode": "jobRoleCode",
                 "nhsIDCode": "Y51",
-                "nhsOpenDate": "20200101",
+                "nhsOrgOpenDate": "20200101",
                 "nhsCloseDate": "29990101",
             }
         }]
@@ -136,7 +136,7 @@ class TestLdapSearch:
             practitioner, org_persons, roles = conn.search_active_nhs_person("123")
 
             expected_attributes = ["uid", "Sn", "givenName", "nhsMiddleNames", "personalTitle", "nhsPersonStatus",
-                                    "objectclass", "uniqueIdentifier", "nhsOpenDate", "nhsIDCode", "o",
+                                    "objectclass", "uniqueIdentifier", "nhsOrgOpenDate", "nhsIDCode", "o",
                                     "nhsBusinessFunctionsCodes", "nhsJobRole", "nhsJobRoleCode", "nhsBusinessFunctions",
                                     "nhsCloseDate", "nhsGMC", "nhsGDP", "nhsGDC", "nhsRCN",
                                     "nhsNMC", "nhsConsultant", "nhsGMP", "nhsOcsPrCode"]
