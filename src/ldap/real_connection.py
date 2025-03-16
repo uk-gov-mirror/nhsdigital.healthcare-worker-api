@@ -150,7 +150,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
             return_attributes = ["uid", "Sn", "givenName", "nhsMiddleNames", "personalTitle", "nhsPersonStatus",
                                     "objectclass", "uniqueIdentifier", "nhsOrgOpenDate", "nhsIDCode", "o",
                                     "nhsBusinessFunctionsCodes", "nhsJobRole", "nhsJobRoleCode", "nhsBusinessFunctions",
-                                    "nhsCloseDate", "nhsGMC", "nhsGDP", "nhsGDC", "nhsRCN",
+                                    "nhsOrgCloseDate", "nhsGMC", "nhsGDP", "nhsGDC", "nhsRCN",
                                     "nhsNMC", "nhsConsultant", "nhsGMP", "nhsOcsPrCode"]
             search_base = f"uid={uid},ou=people,o=nhs"
             logger.info(f"Search base: {search_base}")
