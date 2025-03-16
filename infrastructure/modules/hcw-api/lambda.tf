@@ -20,7 +20,7 @@ resource "aws_lambda_function" "hcw-app" {
   s3_bucket = data.aws_s3_bucket.app_deployment.id
   s3_key    = var.s3_filename
   handler   = "main.lambda_handler"
-  timeout   = 30
+  timeout   = 90
 
   source_code_hash = data.aws_s3_object.app_deployment_zip.etag
 
