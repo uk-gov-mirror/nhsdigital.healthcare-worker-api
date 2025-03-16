@@ -87,7 +87,6 @@ class RealHcwLdapConnection(HcwLdapConnection):
                 logger.info(f"TLS configuration: Using client key file: {mtls_client_private_key_filename}")
                 logger.info(f"TLS configuration: Using server cert file: {server_cert_filename}")
                 logger.info("TLS configuration: Validation set to CERT_REQUIRED")
-                
                 tls = Tls(
                     local_private_key_file=mtls_client_private_key_filename,
                     local_certificate_file=mtls_client_cert_filename,
@@ -95,7 +94,6 @@ class RealHcwLdapConnection(HcwLdapConnection):
                     validate=CERT_REQUIRED
                 )
                 logger.info("TLS configuration created")
-                
                 # Log server configuration
                 logger.info(f"Creating Server object with URL: '{ldap_url}', use_ssl=True")
                 server = Server(ldap_url, use_ssl=True, tls=tls)
@@ -110,7 +108,6 @@ class RealHcwLdapConnection(HcwLdapConnection):
                 # Attempt to bind and log the result
                 bound = connection.bind()
                 logger.info(f"Bind result: {bound}, Details: {connection.result}")
-                
                 if not bound:
                     logger.error(f"Could not bind to LDAP server. Result: {connection.result}")
                     raise HcwException(500, f"Could not bind to LDAP server. Result: {connection.result}", "exception")
