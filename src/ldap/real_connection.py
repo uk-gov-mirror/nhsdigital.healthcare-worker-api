@@ -69,15 +69,25 @@ class RealHcwLdapConnection(HcwLdapConnection):
             logger.info("Saved secrets to tmp files")
 
             username = ldap_credentials["LDAP_USERNAME"]
+            # Log username but mask the password
             logger.info(f"Using LDAP username: {username}")
+            # Log password length for debugging without exposing the actual password
+            password_length = len(ldap_credentials["PASSWORD"]) if "PASSWORD" in ldap_credentials else 0
+            logger.info(f"Password length: {password_length} characters")
 
             if "LDAP_GATEWAY_URL" not in os.environ:
                 logger.error("LDAP_GATEWAY_URL not in environment variables")
                 raise HcwException(500, "LDAP_GATEWAY_URL not configured", "exception")
             ldap_url = os.environ["LDAP_GATEWAY_URL"]
-            logger.info(f"Connecting to LDAP server: {ldap_url}")
+            logger.info(f"Connecting to LDAP server URL: '{ldap_url}'")
 
             try:
+                # Log TLS configuration details
+                logger.info(f"TLS configuration: Using client cert file: {mtls_client_cert_filename}")
+                logger.info(f"TLS configuration: Using client key file: {mtls_client_private_key_filename}")
+                logger.info(f"TLS configuration: Using server cert file: {server_cert_filename}")
+                logger.info("TLS configuration: Validation set to CERT_REQUIRED")
+                
                 tls = Tls(
                     local_private_key_file=mtls_client_private_key_filename,
                     local_certificate_file=mtls_client_cert_filename,
@@ -85,14 +95,22 @@ class RealHcwLdapConnection(HcwLdapConnection):
                     validate=CERT_REQUIRED
                 )
                 logger.info("TLS configuration created")
+                
+                # Log server configuration
+                logger.info(f"Creating Server object with URL: '{ldap_url}', use_ssl=True")
                 server = Server(ldap_url, use_ssl=True, tls=tls)
-                logger.info("LDAP server object created")
+                logger.info(f"LDAP server object created: {server}")
 
-                logger.info("Attempting to create connection")
+                # Log connection details
+                logger.info(f"Creating Connection with user: '{username}', client_strategy=SAFE_SYNC")
                 connection = Connection(server, user=username, password=ldap_credentials["PASSWORD"], client_strategy=SAFE_SYNC)
-                logger.info("Connection object created, attempting to bind")
+                logger.info(f"Connection object created: {connection}")
+                logger.info("Attempting to bind to LDAP server")
 
+                # Attempt to bind and log the result
                 bound = connection.bind()
+                logger.info(f"Bind result: {bound}, Details: {connection.result}")
+                
                 if not bound:
                     logger.error(f"Could not bind to LDAP server. Result: {connection.result}")
                     raise HcwException(500, f"Could not bind to LDAP server. Result: {connection.result}", "exception")
@@ -146,6 +164,8 @@ class RealHcwLdapConnection(HcwLdapConnection):
                                     "nhsNMC", "nhsConsultant", "nhsGMP", "nhsOcsPrCode"]
             search_base = f"uid={uid},ou=people,o=nhs"
             logger.info(f"Search base: {search_base}")
+            logger.info(f"LDAP server URL being used: {self.connection.server.host}")
+            logger.info(f"LDAP connection bound to: {self.connection.bound}")
             logger.info("Executing LDAP search")
             success, result, response, request = self.connection.search(search_base,
                                                                         "(objectclass=*)",
