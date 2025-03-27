@@ -6,6 +6,7 @@ vpc_env          = ""
 
 ldap_gateway_cidr_block = "192.168.209.0/25"
 ldap_gateway_url        = ""
+ldap_service_endpoint   = ""
 
 subdomain = ""
 
