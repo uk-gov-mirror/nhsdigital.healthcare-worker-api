@@ -116,7 +116,7 @@ class TestLdapSearch:
             "attributes": {
                 "objectClass": ["nhsOrgPerson"],
                 "uniqueIdentifier": "orgPersonId",
-                "nhsOpenDate": "20240101",
+                "nhsOrgOpenDate": "20240101",
                 "o": "org",
                 "nhsIDCode": "Y51"
             }
@@ -129,8 +129,8 @@ class TestLdapSearch:
                 "nhsJobRole": "jobRole",
                 "nhsJobRoleCode": "jobRoleCode",
                 "nhsIDCode": "Y51",
-                "nhsOpenDate": "20200101",
-                "nhsCloseDate": "29990101",
+                "nhsOrgOpenDate": "20200101",
+                "nhsOrgCloseDate": "29990101",
             }
         }]
 
@@ -146,9 +146,9 @@ class TestLdapSearch:
             practitioner, org_persons, roles = conn.search_active_nhs_person("123")
 
             expected_attributes = ["uid", "Sn", "givenName", "nhsMiddleNames", "personalTitle", "nhsPersonStatus",
-                                    "objectclass", "uniqueIdentifier", "nhsOpenDate", "nhsIDCode", "o",
+                                    "objectclass", "uniqueIdentifier", "nhsOrgOpenDate", "nhsIDCode", "o",
                                     "nhsBusinessFunctionsCodes", "nhsJobRole", "nhsJobRoleCode", "nhsBusinessFunctions",
-                                    "nhsCloseDate", "nhsGMC", "nhsGDP", "nhsGDC", "nhsRCN",
+                                    "nhsOrgCloseDate", "nhsGMC", "nhsGDP", "nhsGDC", "nhsRCN",
                                     "nhsNMC", "nhsConsultant", "nhsGMP", "nhsOcsPrCode"]
             connection.return_value.search.assert_called_with("uid=123,ou=people,o=nhs", "(objectclass=*)",
                                                                 attributes=expected_attributes)
@@ -242,7 +242,7 @@ class TestLdapSearch:
             conn = RealHcwLdapConnection()
 
             example = self.full_ldap_response_example.copy()
-            example[2]["attributes"]["nhsCloseDate"] = "20240501"  # Close date in the past
+            example[2]["attributes"]["nhsOrgCloseDate"] = "20240501"  # Close date in the past
             connection.return_value.search.return_value = True, {"result": 0}, example, ""
 
             practitioner, org_persons, roles = conn.search_active_nhs_person("123")

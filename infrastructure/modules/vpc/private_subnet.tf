@@ -23,12 +23,3 @@ resource "aws_route_table_association" "private" {
   subnet_id      = element(aws_subnet.private.*.id, count.index)
   route_table_id = aws_route_table.private.id
 }
-
-resource "aws_route" "ldap_gateway" {
-  route_table_id = aws_route_table.private.id
-
-  transit_gateway_id     = var.transit_gateway_id
-  destination_cidr_block = var.ldap_gateway_cidr_block
-
-  depends_on = [aws_ec2_transit_gateway_vpc_attachment.vpn_transit_gateway_attachment]
-}

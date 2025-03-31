@@ -25,7 +25,7 @@ class NhsOrgPerson:
 
     def __init__(self, org_person_attrs: dict[str, str]) -> None:
         self.org_person_id = from_list_or_string(org_person_attrs["uniqueIdentifier"])
-        self.joined = datetime.strptime(from_list_or_string(org_person_attrs["nhsOpenDate"]), "%Y%m%d").date()
+        self.joined = datetime.strptime(from_list_or_string(org_person_attrs["nhsOrgOpenDate"]), "%Y%m%d").date()
         self.ods_code = from_list_or_string(org_person_attrs["nhsIDCode"])
         self.org_name = from_list_or_string(org_person_attrs["o"])
         self.nhs_id_code = from_list_or_string(org_person_attrs["nhsIDCode"])
@@ -90,6 +90,6 @@ class NhsOrgPersonRole:
         self.nacs_site_names = role_attrs.get("nhsSiteNames", None)
         self.nacs_site_codes = role_attrs.get("nhsSiteCodes", None)
 
-        self.role_granted = datetime.strptime(from_list_or_string(role_attrs["nhsOpenDate"]), "%Y%m%d").date()
-        if role_attrs["nhsCloseDate"]:
-            self.role_stopped = datetime.strptime(from_list_or_string(role_attrs["nhsCloseDate"]), "%Y%m%d").date()
+        self.role_granted = datetime.strptime(from_list_or_string(role_attrs["nhsOrgOpenDate"]), "%Y%m%d").date()
+        if role_attrs["nhsOrgCloseDate"]:
+            self.role_stopped = datetime.strptime(from_list_or_string(role_attrs["nhsOrgCloseDate"]), "%Y%m%d").date()
