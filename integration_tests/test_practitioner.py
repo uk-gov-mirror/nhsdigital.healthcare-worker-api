@@ -41,6 +41,7 @@ class TestWorker(IntegrationTest):
 
     def test_get_practitioner(self):
         response = self.send_worker_get(KNOWN_USER)
+        print(response)
         self.check_valid_response(response, get_practitioners_example(KNOWN_USER))
 
     def test_get_practitioner_without_middle_name_or_prefix(self):
