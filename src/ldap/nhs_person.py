@@ -90,6 +90,6 @@ class NhsOrgPersonRole:
         self.nacs_site_names = role_attrs.get("nhsSiteNames", None)
         self.nacs_site_codes = role_attrs.get("nhsSiteCodes", None)
 
-        self.role_granted = datetime.strptime(from_list_or_string(role_attrs["nhsOrgOpenDate"]), "%Y%m%d").date()
-        if role_attrs["nhsCloseDate"]:
-            self.role_stopped = datetime.strptime(from_list_or_string(role_attrs["nhsCloseDate"]), "%Y%m%d").date()
+        self.role_granted = datetime.strptime(from_list_or_string(role_attrs["nhsOrgOrgOpenDate"]), "%Y%m%d").date()
+        if role_attrs["nhsOrgCloseDate"]:
+            self.role_stopped = datetime.strptime(from_list_or_string(role_attrs["nhsOrgCloseDate"]), "%Y%m%d").date()
