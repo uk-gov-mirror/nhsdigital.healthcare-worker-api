@@ -38,26 +38,29 @@ class Log:
         global correlation_id
         correlation_id = None
 
-    def info(self, message: str):
+    def info(self, message: str, code: str):
         """
         General purpose info logging for information that could be useful in developer logs.
         :param message: Message to be logged
+        :param code: Code to be logged
         """
-        log_message = {"Correlation-ID": correlation_id, "message": message}
+        log_message = {"Correlation-ID": correlation_id, "message": message, "code": code}
         self.logger.info(log_message)
 
-    def warning(self, message: str):
+    def warning(self, message: str, code:str):
         """
         Logs a warning message for tracking in developer logs and possibly alerting.
         :param message: Message to be logged
+        :param code: Code to be logged
         """
-        log_message = {"Correlation-ID": correlation_id, "message": message}
+        log_message = {"Correlation-ID": correlation_id, "message": message, "code": code}
         self.logger.warning(log_message)
 
-    def error(self, message: str):
+    def error(self, message: str, code:str):
         """
         Logs an error message for tracking in developer logs and possibly alerting.
         :param message: Message to be logged
+        :param code: Code to be logged
         """
-        log_message = {"Correlation-ID": correlation_id, "message": message}
+        log_message = {"Correlation-ID": correlation_id, "message": message, "code": code}
         self.logger.error(log_message)

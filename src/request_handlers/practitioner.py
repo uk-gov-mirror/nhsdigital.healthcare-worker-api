@@ -13,7 +13,7 @@ logger = Log("practitioner_handler")
 
 class PractitionerHandler(BaseHandler[FhirPractitioner]):
     def get(self, event: APIGatewayProxyEvent) -> HandlerResponse[FhirPractitioner]:
-        logger.info("Performing practitioner GET")
+        logger.info("Performing practitioner GET", "REQ_PRACT_START")
         worker_id = event.query_string_parameters.get("identifier")
 
         if not worker_id:
@@ -27,6 +27,6 @@ class PractitionerHandler(BaseHandler[FhirPractitioner]):
         practitioner = FhirPractitioner(nhs_person)
         practitioner_roles = [FhirPractitionerRole(nhs_person, org_role) for org_role in org_roles]
 
-        logger.info("Returning worker from practitioner GET")
+        logger.info("Returning worker from practitioner GET","REQ_PRACT_SUCCESS")
 
         return HandlerResponse([practitioner], practitioner_roles)

@@ -30,7 +30,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
     def __init__(self):
         self.client = boto3.client("secretsmanager", config=Config(region_name="eu-west-2"))
         self.connection = self.connect()
-        logger.info("LDAP connection established")
+        logger.info("LDAP connection established", "LDAP_CONN_SUCCESS")
 
     def get_secret(self, secret_id) -> dict:
         return json.loads(self.client.get_secret_value(SecretId=secret_id)["SecretString"])
@@ -44,18 +44,18 @@ class RealHcwLdapConnection(HcwLdapConnection):
         return filename
 
     def connect(self) -> Optional[Connection]:
-        logger.info("About to fetch secrets")
+        logger.info("About to fetch secrets", "SECRETS_CONN_START")
         if "LDAP_CREDENTIALS_SECRET_ID" not in os.environ:
-            logger.error("Could not form LDAP connection")
+            logger.error("Could not form LDAP connection","LDAP_CONN_ERROR")
             return None
 
         ldap_credentials = self.get_secret(os.environ["LDAP_CREDENTIALS_SECRET_ID"])
-        logger.info("Fetched secrets")
+        logger.info("Fetched secrets", "SECRETS_CONN_SUCCESS")
 
         server_cert_filename = self.save_secret_to_file(ldap_credentials["LDAP_SERVER_CERT"])
         mtls_client_private_key_filename = self.save_secret_to_file(ldap_credentials["MTLS_CLIENT_KEY"])
         mtls_client_cert_filename = self.save_secret_to_file(ldap_credentials["MTLS_CLIENT_CERT"])
-        logger.info("Saved secrets to tmp file")
+        logger.info("Saved secrets to tmp file","SECRETS_TMP_FILE")
 
         username = ldap_credentials["LDAP_USERNAME"]
         password = ldap_credentials["PASSWORD"]
@@ -109,7 +109,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
 
     def search_active_nhs_person(self, uid: str, allow_retry: bool = True) -> [NhsPerson, list[NhsOrgPerson], list[NhsOrgPersonRole]]:
         try:
-            logger.info("Searching LDAP for nhsPerson")
+            logger.info("Searching LDAP for nhsPerson","SEARCH_PERSON_START")
 
             # Removed "nhsPrinOcc", "nhsRPSGB"  "nhsSiteNames", "nhsSiteCodes"
             return_attributes = ["uid", "Sn", "givenName", "nhsMiddleNames", "personalTitle", "nhsPersonStatus",
@@ -120,7 +120,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
             success, result, response, request = self.connection.search(f"uid={uid},ou=people,o=nhs",
                                                                         "(objectclass=*)",
                                                                         attributes=return_attributes)
-            logger.info(f"Received LDAP response, success: {success}")
+            logger.info(f"Received LDAP response, success: {success}","SEARCH_PERSON_SUCCESS")
 
             self.check_response(uid, success, result)
 
@@ -139,9 +139,9 @@ class RealHcwLdapConnection(HcwLdapConnection):
 
         except LDAPException as e:
             if allow_retry:
-                logger.warning(f"Got an LDAP connection error {e}. Attempting to reconnect.")
+                logger.warning(f"Got an LDAP connection error {e}. Attempting to reconnect.","LDAP_RECON_START")
                 self.connection = self.connect()
-                logger.info("LDAP connection re-established")
+                logger.info("LDAP connection re-established", "LDAP_RECON_SUCCESS" )
                 return self.search_active_nhs_person(uid, allow_retry=False)
             else:
                 raise HcwException(500, f"LDAP connection error and retry failed {e}", "exception","Error connecting to LDAP")

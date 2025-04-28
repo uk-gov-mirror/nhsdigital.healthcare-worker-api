@@ -19,7 +19,7 @@ def get_connection():
 
     if (not ldap_connection or ldap_connection.connection.closed
             or ldap_connection.bind_time < datetime.now() - timedelta(minutes=5)):
-        logger.info("Creating new ldap connection instance")
+        logger.info("Creating new ldap connection instance", "LDAP_CONN_NEW")
         if "SANDBOX_MODE" in os.environ and os.environ["SANDBOX_MODE"].lower() == "true":
             ldap_connection = MockHcwLdapConnection()
         else:
