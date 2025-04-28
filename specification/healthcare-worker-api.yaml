@@ -151,7 +151,7 @@ x-nhsd-apim:
   ratelimiting:
     proxy:
       timeunit: "second"
-      limit: 5
+      limit: 10
 paths:
   /Practitioner:
     get:
