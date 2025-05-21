@@ -11,14 +11,14 @@ logger = Log("practitioner_role_handler")
 
 class PractitionerRoleHandler(BaseHandler[FhirPractitionerRole]):
     def get(self, event: APIGatewayProxyEvent) -> HandlerResponse[FhirPractitionerRole]:
-        logger.info("Performing practitioner role GET")
+        logger.info("Performing practitioner role GET","REQ_PRACTROLE_START")
         if "practitioner.identifier" in event.query_string_parameters:
             worker_id = event.query_string_parameters.get("practitioner.identifier")
             practitioner, _org_persons, roles = get_connection().search_active_nhs_person(worker_id)
 
             fhir_roles = [FhirPractitionerRole(practitioner, pr) for pr in roles]
 
-            logger.info("Returning worker from practitioner role GET from practitioner ID")
+            logger.info("Returning worker from practitioner role GET from practitioner ID","REQ_PRACTROLE_SUCCESS")
             return HandlerResponse(fhir_roles, [])
         elif "identifier" in event.query_string_parameters:
             # This functionality will be covered under HCW-163

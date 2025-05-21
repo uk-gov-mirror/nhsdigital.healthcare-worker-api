@@ -37,9 +37,9 @@ def test_log_info(logging):
     logger = Log("test_module")
     logs.log.correlation_id = "correlation_id"
 
-    logger.info("logging message")
+    logger.info("logging message","LOG_CODE")
 
-    logging.getLogger.return_value.info.assert_called_with({"Correlation-ID": "correlation_id", "message": "logging message"})
+    logging.getLogger.return_value.info.assert_called_with({"Correlation-ID": "correlation_id", "message": "logging message", "code": "LOG_CODE"})
 
 
 @patch("logs.log.logging")
@@ -47,6 +47,6 @@ def test_log_error(logging):
     logger = Log("test_module")
     logs.log.correlation_id = "correlation_id"
 
-    logger.error("logging message")
+    logger.error("logging message","LOG_CODE")
 
-    logging.getLogger.return_value.error.assert_called_with({"Correlation-ID": "correlation_id", "message": "logging message"})
+    logging.getLogger.return_value.error.assert_called_with({"Correlation-ID": "correlation_id", "message": "logging message", "code": "LOG_CODE"})
