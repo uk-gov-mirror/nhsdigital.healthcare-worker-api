@@ -20,7 +20,7 @@ cryptography = "^43.0.1"
 proxygen-cli = "^2.1.14"
 coverage = "^7.6.4"
 ldap3 = "^2.9.1"
-jsonpickle = "^4.0.0"
+jsonpickle = "^4.1.1"
 pytest-env = "^1.1.5"
 
 [tool.poetry.scripts]
