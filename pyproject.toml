@@ -9,7 +9,7 @@ packages = [{include = "*/*", from="src"}, {include = "*", from="src"}, {include
 [tool.poetry.dependencies]
 python = "^3.12"
 boto3 = "^1.35.33"
-pytest = "^8.3.3"
+pytest = "^8.4.0"
 aws-lambda-powertools = "^3.1.0"
 pydantic = "1.10.18"
 setuptools = "^80.9.0"
