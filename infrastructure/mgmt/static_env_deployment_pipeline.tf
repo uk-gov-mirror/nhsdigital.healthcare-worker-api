@@ -195,40 +195,6 @@ resource "aws_codepipeline" "static_env_deployment_pipeline" {
         ])
       }
     }
-
-    action {
-      name     = "Sand-Deploy"
-      category = "Build"
-      owner    = "AWS"
-      provider = "CodeBuild"
-      version  = "1"
-
-      input_artifacts = ["source_output"]
-
-      role_arn = "arn:aws:iam::711387117641:role/CodeBuildDeployJobRole"
-
-      configuration = {
-        ProjectName = "hcw-api-deploy"
-
-        EnvironmentVariables = jsonencode([
-          {
-            name  = "environment_name"
-            value = "sandbox"
-            type  = "PLAINTEXT"
-          },
-          {
-            name  = "account_name"
-            value = "sandbox"
-            type  = "PLAINTEXT"
-          },
-          {
-            name  = "app_s3_filename"
-            value = "#{variables.commit_id}.zip"
-            type  = "PLAINTEXT"
-          }
-        ])
-      }
-    }
   }
 
   stage {
