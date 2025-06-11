@@ -194,7 +194,7 @@ resource "aws_codepipeline" "static_env_deployment_pipeline" {
           }
         ])
       }
-    }  
+    } 
   }
 
   stage {
