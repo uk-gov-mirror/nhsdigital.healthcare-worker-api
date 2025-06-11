@@ -196,6 +196,10 @@ resource "aws_codepipeline" "static_env_deployment_pipeline" {
       }
     }
 
+/*
+
+Temporarily bypassing sandbox - see HCW-266
+
     action {
       name     = "Sand-Deploy"
       category = "Build"
@@ -230,7 +234,7 @@ resource "aws_codepipeline" "static_env_deployment_pipeline" {
       }
     }
   }
-
+*/
   stage {
     name = "Int-Integration-Test"
 
