@@ -198,32 +198,6 @@ resource "aws_codepipeline" "static_env_deployment_pipeline" {
   }
 
   stage {
-    name = "Int-Integration-Test"
-
-    action {
-      name     = "Integration-Test"
-      category = "Build"
-      owner    = "AWS"
-      provider = "CodeBuild"
-      version  = "1"
-
-      input_artifacts = ["source_output"]
-
-      configuration = {
-        ProjectName = "hcw-integration-tests"
-
-        EnvironmentVariables = jsonencode([
-          {
-            name  = "branch"
-            value = "int"
-            type  = "PLAINTEXT"
-          }
-        ])
-      }
-    }
-  }
-
-  stage {
     name = "Prod-Approval"
     action {
       category = "Approval"
