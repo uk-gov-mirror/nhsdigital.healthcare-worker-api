@@ -30,7 +30,7 @@ def lambda_handler(event_dict: dict, context: LambdaContext) -> dict:
     start_time = datetime.now()
     event = APIGatewayProxyEvent(event_dict)
     logger.save_event_details(event)
-    logger.info("New request received", "REQ_RECEIVED")
+    logger.info("New request received", "REQ_RECEIVED", "null")
 
     response_headers = {"Content-Type": "application/json"}
     try:
@@ -43,7 +43,7 @@ def lambda_handler(event_dict: dict, context: LambdaContext) -> dict:
             "body": jsonpickle.encode(response, unpicklable=False),
         }
     except HcwException as e:
-        logger.error(str(e), "RESP_ERROR_001")
+        logger.error(str(e), "RESP_ERROR_001", "null")
 
         issue = FhirIssue("error", e.fhir_code,
                             FhirCodeableConcept("https://fhir.nhs.uk/STU3/ValueSet/Spine-ErrorOrWarningCode-1", str(e.status_code), e.return_message))
@@ -56,8 +56,8 @@ def lambda_handler(event_dict: dict, context: LambdaContext) -> dict:
             "body": jsonpickle.encode(error_response, unpicklable=False),
         }
     except Exception as e:
-        logger.error(str(e), "RESP_ERROR_002")
-        logger.error(traceback.format_exc(),"RESP_ERROR_003")
+        logger.error(str(e), "RESP_ERROR_002", "null")
+        logger.error(traceback.format_exc(),"RESP_ERROR_003", "null")
 
         issue = FhirIssue("error", "exception",
                             FhirCodeableConcept("https://fhir.nhs.uk/STU3/ValueSet/Spine-ErrorOrWarningCode-1", "500", "Internal Server Error"))
@@ -72,7 +72,7 @@ def lambda_handler(event_dict: dict, context: LambdaContext) -> dict:
 
     end_time = datetime.now()
     debug_timing = {"ms": int((end_time - start_time) / timedelta(milliseconds=1))}
-    logger.info(f"Sending response after {json.dumps(debug_timing)}", "RESP_SENT_TIME")
+    logger.info(f"Sending response after {json.dumps(debug_timing)}", "RESP_SENT_TIME", "null")
     Log.cleanup()
     return full_response
 

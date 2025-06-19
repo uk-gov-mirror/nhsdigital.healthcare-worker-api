@@ -51,20 +51,20 @@ def get_references_to_include(response: [FhirObject], query_parameters: [str, [s
 def get_revincludes(response: [FhirObject], query_parameters: [str, [str]],
                                 related_entries: list[FhirObject]) -> [FhirObject]:
     includes = query_parameters.get("_revinclude")
-    logger.info(f"Revincludes = {includes}","REQ_REVINCLUDES")
+    logger.info(f"Revincludes = {includes}","REQ_REVINCLUDES", "null")
     if not includes:
         return []
 
     resources_to_include: set[FhirObject] = set()
     for entry in response:
         if isinstance(entry, FhirReferable):
-            logger.info(f"Checking for includes on {entry}", "REQ_REVINCLUDES_CHECK")
+            logger.info(f"Checking for includes on {entry}", "REQ_REVINCLUDES_CHECK", "null")
             for include in includes:
                 resource_type, field_reference_name, *_ = include.split(":")
                 matches = find_reverse_references_to_include(related_entries, resource_type,
                                                                 field_reference_name, entry.get_identifier())
 
                 resources_to_include = resources_to_include.union(matches)
-                logger.info("Added revinclude","REQ_REVINCLUDES_ADDED")
+                logger.info("Added revinclude","REQ_REVINCLUDES_ADDED", "null")
 
     return resources_to_include
