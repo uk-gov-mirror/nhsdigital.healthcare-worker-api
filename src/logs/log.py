@@ -38,29 +38,32 @@ class Log:
         global correlation_id
         correlation_id = None
 
-    def info(self, message: str, code: str):
+    def info(self, message: str, code: str, uuid: str):
         """
         General purpose info logging for information that could be useful in developer logs.
         :param message: Message to be logged
         :param code: Code to be logged
+        :param uuid: Unique identifier of the user being searched
         """
-        log_message = {"Correlation-ID": correlation_id, "message": message, "code": code}
+        log_message = {"Correlation-ID": correlation_id, "message": message, "code": code, "uuid": uuid}
         self.logger.info(log_message)
 
-    def warning(self, message: str, code:str):
+    def warning(self, message: str, code:str, uuid: str):
         """
         Logs a warning message for tracking in developer logs and possibly alerting.
         :param message: Message to be logged
         :param code: Code to be logged
+        :param uuid: Unique identifier of the user being searched
         """
-        log_message = {"Correlation-ID": correlation_id, "message": message, "code": code}
+        log_message = {"Correlation-ID": correlation_id, "message": message, "code": code, "uuid": uuid}
         self.logger.warning(log_message)
 
-    def error(self, message: str, code:str):
+    def error(self, message: str, code:str, uuid: str):
         """
         Logs an error message for tracking in developer logs and possibly alerting.
         :param message: Message to be logged
         :param code: Code to be logged
+        :param uuid: Unique identifier of the user being searched
         """
-        log_message = {"Correlation-ID": correlation_id, "message": message, "code": code}
+        log_message = {"Correlation-ID": correlation_id, "message": message, "code": code, "uuid": uuid}
         self.logger.error(log_message)
