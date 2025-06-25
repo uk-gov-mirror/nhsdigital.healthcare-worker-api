@@ -35,7 +35,7 @@ info:
     If you  have any other queries, [contact us](https://digital.nhs.uk/developer/help-and-support).
 
     ## Service level
-    This API is a sliver service during production, beta, meaning it is operational 24 hours a day, 7 days a week but only supported during business hours (8am to 6pm), Monday to Friday excluding bank holidays.
+    This API is a sliver service during private beta, meaning it is operational 24 hours a day, 7 days a week but only supported during business hours (8am to 6pm), Monday to Friday excluding bank holidays.
 
     For more details, see [service levels](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#service-levels).
 
@@ -49,7 +49,7 @@ info:
     You do not need to know much about FHIR to use this API - FHIR APIs are just RESTful APIs that follow specific rules. In particular:
     - resource names are capitalised and singular, for example `/Endpoint` not `/endpoints`
 
-    Errors handling in this API follows [NHS guidelines](https://nhsconnect.github.io/FHIR-SpineCore/resources_error_handling.html) and produces an [OperationOutcome](https://fhir.nhs.uk/STU3/StructureDefinition/Spine-OperationOutcome-1) FHIR resource response with appropriate HTTP code.
+    Error handling in this API follows [NHS guidelines](https://nhsconnect.github.io/FHIR-SpineCore/resources_error_handling.html) and produces an [OperationOutcome](https://fhir.nhs.uk/STU3/StructureDefinition/Spine-OperationOutcome-1) FHIR resource response with appropriate HTTP code.
 
     ## Network access
     This API is available on the internet and, indirectly, on the [Health and Social Care Network (HSCN).](https://digital.nhs.uk/services/health-and-social-care-network)
@@ -84,7 +84,6 @@ info:
 
     ### Sandbox testing
     Our [sandbox environment](https://digital.nhs.uk/developer/guides-and-documentation/testing#sandbox-testing):
-    * is for early developer testing
     * only covers a limited set of scenarios
     * is open-access, so does not allow you to test authorisation
 
@@ -227,8 +226,7 @@ paths:
         as input and returns all the roles associated with that practitioner.
 
         This endpoint supports the use of the _include query parameter to expose more information about referenced
-        organisations and practitioners. It must take the value of either PractitionerRole:organization or
-        PractitionerRole:practitioner, with multiple values supported.
+        organisations and practitioners. 
       parameters:
         - in: query
           name: practitioner.identifier
@@ -240,7 +238,7 @@ paths:
           explode: true
         - in: query
           name: _include
-          description: Include objects which are referenced by the ones being returned.
+          description: Accepted values of either PractitionerRole:organization or PractitionerRole:practitioner. If you want both, then add this parameter multiple times with different values. 
           required: false
           example: PractitionerRole:practitioner
           schema:
