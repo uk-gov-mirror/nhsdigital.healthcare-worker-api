@@ -265,6 +265,20 @@ paths:
                 properties:
                   practitioner:
                     $ref: '#/components/schemas/Bundle'
+        '400':
+          description: Missing or invalid query parameter(s).
+        '404':
+          description: Invalid endpoint path
+        '405':
+          description: Unsupported HTTP method. For this endpoint only GET is available
+        '410':
+          description: Resource closed. The requested care identity profile is no longer active.
+        '500':
+          description: Unhandled internal server error
+        '502':
+          description: Upstream system returned an unsupported response
+        '504':
+          description: Upstream server request has timed out
 components:
   securitySchemes:
     app-level3:
