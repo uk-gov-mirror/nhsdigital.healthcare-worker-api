@@ -154,11 +154,9 @@ paths:
         # Overview
         Use this endpoint to get details of healthcare workers in the Care Identity Service (CIS) directory.
 
-        This endpoint will return the matching Person object from the directory, which provides the following information:
-          * Name
-          * Title
+        This endpoint will return the basic details about the person. Future versions will include more data.
 
-        Only active objects, showing details will be returned. If the care identity itself is closed, a 410 response will be returned (see below).
+        Only active accounts will be returned. If the care identity itself is closed, a 410 response will be provided (see below).
 
         This endpoint supports the use of the _revinclude query parameter to expose more information about practitioner roles.
 
@@ -183,8 +181,8 @@ paths:
           description: This is an arbitrary string value that allows you to relate a number of requests together. This does not have to be unique to the request.
           schema:
             type: string
-            format: uuid
-          example: 6d3d3674-7ce5-11ec-90d6-0242ac120003
+            format: string
+          example: MyTransactionID.ABC.20240101.001
         - in: header
           name: X-Request-Id
           description: Unique identifier for the request, used for tracking and logging purposes.
@@ -248,8 +246,8 @@ paths:
           description: This is an arbitrary string value that allows you to relate a number of requests together. This does not have to be unique to the request.
           schema:
             type: string
-            format: uuid
-          example: 6d3d3674-7ce5-11ec-90d6-0242ac120003
+            format: string
+          example: MyTransactionID.ABC.20240101.001
         - in: header
           name: X-Request-Id
           description: Unique identifier for the request, used for tracking and logging purposes.
