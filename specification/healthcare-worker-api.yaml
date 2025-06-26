@@ -224,7 +224,7 @@ paths:
         as input and returns all the roles associated with that practitioner.
 
         This endpoint supports the use of the _include query parameter to expose more information about referenced
-        organisations and practitioners. 
+        organisations and practitioners.
       parameters:
         - in: query
           name: practitioner.identifier
@@ -236,7 +236,7 @@ paths:
           explode: true
         - in: query
           name: _include
-          description: Accepted values of either PractitionerRole:organization or PractitionerRole:practitioner. If you want both, then add this parameter multiple times with different values. 
+          description: Accepted values of either PractitionerRole:organization or PractitionerRole:practitioner. If you want both, then add this parameter multiple times with different values.
           required: false
           example: PractitionerRole:practitioner
           schema:
