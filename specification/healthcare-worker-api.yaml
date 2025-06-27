@@ -28,15 +28,14 @@ info:
     * [Healthcare Worker - FHIR API](https://digital.nhs.uk/developer/api-catalogue/healthcare-fhir-api)
 
     ## API status and roadmap
-    This API is [in alpha](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#statuses).
+    This API is [in production, beta](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#statuses).
 
     To see our roadmap, or to suggest, comment or vote on features for this API, see our [interactive product backlog](https://nhs-digital-api-management.featureupvote.com/suggestions/204411/healthcare-professionals-api).
 
     If you  have any other queries, [contact us](https://digital.nhs.uk/developer/help-and-support).
 
     ## Service level
-    This API is a bronze service during alpha, meaning it is operational and supported only during business hours (8am to 6pm), Monday to Friday excluding bank holidays.
-    Once in beta the API will be a silver service, meaning it is operational 24/7 and supported only during business hours (8am to 6pm), Monday to Friday excluding bank holidays.
+    This API is a silver service during private beta, meaning it is operational 24 hours a day, 7 days a week but only supported during business hours (8am to 6pm), Monday to Friday excluding bank holidays.
 
     For more details, see [service levels](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#service-levels).
 
@@ -50,7 +49,7 @@ info:
     You do not need to know much about FHIR to use this API - FHIR APIs are just RESTful APIs that follow specific rules. In particular:
     - resource names are capitalised and singular, for example `/Endpoint` not `/endpoints`
 
-    Errors handling in this API follows [NHS guidelines](https://nhsconnect.github.io/FHIR-SpineCore/resources_error_handling.html) and produces an [OperationOutcome](https://fhir.nhs.uk/STU3/StructureDefinition/Spine-OperationOutcome-1) FHIR resource response with appropriate HTTP code
+    Error handling in this API follows [NHS guidelines](https://nhsconnect.github.io/FHIR-SpineCore/resources_error_handling.html) and produces an [OperationOutcome](https://fhir.nhs.uk/STU3/StructureDefinition/Spine-OperationOutcome-1) FHIR resource response with appropriate HTTP code.
 
     ## Network access
     This API is available on the internet and, indirectly, on the [Health and Social Care Network (HSCN).](https://digital.nhs.uk/services/health-and-social-care-network)
@@ -85,7 +84,6 @@ info:
 
     ### Sandbox testing
     Our [sandbox environment](https://digital.nhs.uk/developer/guides-and-documentation/testing#sandbox-testing):
-    * is for early developer testing
     * only covers a limited set of scenarios
     * is open-access, so does not allow you to test authorisation
 
@@ -93,14 +91,9 @@ info:
 
     ### Integration testing
     Our [integration test environment](https://digital.nhs.uk/developer/guides-and-documentation/testing#integration-testing):
-    - is for formal integration testing.
+    - is for early developer testing
+    - used to confirm you are ready for production
     - includes application authentication
-
-    ### Deployment and user acceptance testing
-    Our deployment environment is for testing applications in-situ before live deployments and also for user acceptance testing (UAT) with NHS organisations.
-
-    This environment is for use by developers who are using the SDS FHIR API alongside some of our older APIs where the deployment environment is already in use,
-    for example, developers who have migrated from the [Query Accredited System Information API](https://digital.nhs.uk/developer/api-catalogue/query-accredited-system-information-soap).
 
     ## Related APIs
     The following APIs are related to this one:- [Spine Directory Service - LDAP API](https://digital.nhs.uk/developer/api-catalogue/spine-directory-service-ldap) - Access details of organisations, people and systems registered in the Spine Directory Service (SDS) using our LDAP API. This API is only available on HSCN, doesn't use the FHIR standard and is being considered for deprecation.
@@ -159,23 +152,18 @@ paths:
       operationId: getPractitioner
       description: |
         # Overview
-        Use this endpoint to get details of healthcare workers in the CIS directory.
+        Use this endpoint to get details of healthcare workers in the Care Identity Service (CIS) directory.
 
-        This endpoint will return the matching Person object from the directory, which provides the following information:
-          * Name
-          * Title
+        This endpoint will return the basic details about the person. Future versions will include more data.
 
-        Only active objects, showing details will be returned. If the care identity itself is closed, a 410 response will be returned (see below).
+        Only active accounts will be returned. If the care identity itself is closed, a 410 response will be provided (see below).
 
         This endpoint supports the use of the _revinclude query parameter to expose more information about practitioner roles.
-        It must take the value of either PractitionerRole:practitioner.
 
-        To get the information, you must supply:
-          * CIS unique identifier (sometimes known as SDS user ID or smartcard ID)
       parameters:
         - in: query
           name: identifier
-          description: SDS user ID which uniquely identifies a person.
+          description: CIS unique identifier (sometimes known as the UUID, SDS user ID or smartcard ID).
           required: true
           example: 123456789012
           schema:
@@ -190,11 +178,18 @@ paths:
             type: string
         - in: header
           name: X-Correlation-Id
-          description: UUID for request tracking
+          description: This is an arbitrary string value that allows you to relate a number of requests together. This does not have to be unique to the request.
+          schema:
+            type: string
+            format: string
+          example: MyTransactionID.ABC.20240101.001
+        - in: header
+          name: X-Request-Id
+          description: Unique identifier for the request, used for tracking and logging purposes.
           schema:
             type: string
             format: uuid
-          example: 6d3d3674-7ce5-11ec-90d6-0242ac120003
+          example: 6d3d3674-7ce5-11ec-90d6-0242ac121234
       responses:
         '200':
           description: Successful operation
@@ -225,16 +220,15 @@ paths:
       operationId: getPractitionerRole
       description: |
         # Overview
-        Use this endpoint to get details of healthcare worker roles in the CIS directory. It takes a practitioner's
-        id as input and returns all the roles associated with that practitioner.
+        Use this endpoint to get details of healthcare worker roles in the Care Identity Service (CIS) directory. It takes a CIS unique identifier
+        as input and returns all the roles associated with that practitioner.
 
         This endpoint supports the use of the _include query parameter to expose more information about referenced
-        organisations and practitioners. It must take the value of either PractitionerRole:organization or
-        PractitionerRole:practitioner, with multiple values supported.
+        organisations and practitioners.
       parameters:
         - in: query
           name: practitioner.identifier
-          description: SDS user ID which uniquely identifies a person.
+          description: CIS unique identifier (sometimes known as the UUID, SDS user ID or smartcard ID)
           required: true
           example: 123456789012
           schema:
@@ -242,19 +236,25 @@ paths:
           explode: true
         - in: query
           name: _include
-          description: Include objects which are referenced by the ones being returned.
+          description: Accepted values of either PractitionerRole:organization or PractitionerRole:practitioner. If you want both, then add this parameter multiple times with different values.
           required: false
           example: PractitionerRole:practitioner
           schema:
             type: string
         - in: header
           name: X-Correlation-Id
-          description: UUID for request tracking
+          description: This is an arbitrary string value that allows you to relate a number of requests together. This does not have to be unique to the request.
+          schema:
+            type: string
+            format: string
+          example: MyTransactionID.ABC.20240101.001
+        - in: header
+          name: X-Request-Id
+          description: Unique identifier for the request, used for tracking and logging purposes.
           schema:
             type: string
             format: uuid
-          required: true
-          example: 6d3d3674-7ce5-11ec-90d6-0242ac120003
+          example: 6d3d3674-7ce5-11ec-90d6-0242ac121234
       responses:
         '200':
           description: Successful operation
@@ -265,6 +265,20 @@ paths:
                 properties:
                   practitioner:
                     $ref: '#/components/schemas/Bundle'
+        '400':
+          description: Missing or invalid query parameter(s).
+        '404':
+          description: Invalid endpoint path
+        '405':
+          description: Unsupported HTTP method. For this endpoint only GET is available
+        '410':
+          description: Resource closed. The requested care identity profile is no longer active.
+        '500':
+          description: Unhandled internal server error
+        '502':
+          description: Upstream system returned an unsupported response
+        '504':
+          description: Upstream server request has timed out
 components:
   securitySchemes:
     app-level3:
