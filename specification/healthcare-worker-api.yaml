@@ -316,93 +316,95 @@ components:
           type: string
           description: Either "match" or "include". Match indicates a direct match to the query. Include indicates that the entry is linked to one of the matching entries, and that the relevant link was requested in the search.
     Practitioner:
-      type: object
-      properties:
-        resourceType:
-          type: string
-          default: Practitioner
-        id:
-          type: string
-          description: Auto generated unique ID for the person.
-          example: 123456789012
-        identifier:
-          type: array
-          description: Auto generated unique ID for the person.
-          items:
-            type: object
-            properties:
-              system:
-                type: string
-                default: https://fhir.nhs.uk/Id/sds-user-id
-              value:
-                type: string
-                example: 123456789012
-        active:
-          type: boolean
-          description: Describes the active status of the Practitioner record in the directory.
-          example: True
-        name:
-          type: array
-          description: Person's name details.
-          items:
-            type: object
-            properties:
-              use:
-                type: string
-                description: Identifies the purpose for this name.
-                default: usual
-              family:
-                type: string
-                description: That part of a person's name which is used to describe family, clan, tribal group, or marital association.
-                example: Smith
-              given:
-                type: string
-                description: The forenames or given names of a person. Includes middle names.
-                example: Jane Alison
-              prefix:
-                type: string
-                description: Standard form of address used to precede a person's name
+      example:
+        type: object
+        properties:
+          resourceType:
+            type: string
+            default: Practitioner
+          id:
+            type: string
+            description: Auto generated unique ID for the person.
+            example: 123456789012
+          identifier:
+            type: array
+            description: Auto generated unique ID for the person.
+            items:
+              type: object
+              properties:
+                system:
+                  type: string
+                  default: https://fhir.nhs.uk/Id/sds-user-id
+                value:
+                  type: string
+                  example: 123456789012
+          active:
+            type: boolean
+            description: Describes the active status of the Practitioner record in the directory.
+            example: True
+          name:
+            type: array
+            description: Person's name details.
+            items:
+              type: object
+              properties:
+                use:
+                  type: string
+                  description: Identifies the purpose for this name.
+                  default: usual
+                family:
+                  type: string
+                  description: That part of a person's name which is used to describe family, clan, tribal group, or marital association.
+                  example: Smith
+                given:
+                  type: string
+                  description: The forenames or given names of a person. Includes middle names.
+                  example: Jane Alison
+                prefix:
+                  type: string
+                  description: Standard form of address used to precede a person's name
                 example: Ms
     PractitionerRole:
-      type: object
-      properties:
-        resourceType:
-          type: string
-          default: PractitionerRole
-        id:
-          type: string
-          description: Id of the practitioner role
-        identifier:
-          type: array
-          description: Auto generated unique ID for the role.
-          items:
+      example:
+        type: object
+        properties:
+          resourceType:
+            type: string
+            default: PractitionerRole
+          id:
+            type: string
+            description: Id of the practitioner role
+          identifier:
+            type: array
+            description: Auto generated unique ID for the role.
+            items:
+              type: object
+              properties:
+                system:
+                  type: string
+                  default: https://fhir.nhs.uk/Id/sds-role-profile-id
+                value:
+                  type: string
+                  example: 123456789012
+          active:
+            type: boolean
+            description: Describes the active status of the Practitioner record in the directory.
+            example: True
+          practitioner:
+            $ref: '#/components/schemas/Reference'
+        organization:
+            $ref: '#/components/schemas/Reference'
+          period:
             type: object
             properties:
-              system:
-                type: string
-                default: https://fhir.nhs.uk/Id/sds-role-profile-id
-              value:
-                type: string
-                example: 123456789012
-        active:
-          type: boolean
-          description: Describes the active status of the Practitioner record in the directory.
-          example: True
-        practitioner:
-          $ref: '#/components/schemas/Reference'
-        organization:
-          $ref: '#/components/schemas/Reference'
-        period:
-          type: object
-          properties:
-              start:
-                type: string
-              end:
-                type: string
-        code:
-          type: array
-          items:
-            $ref: '#/components/schemas/CodeableConcept'
+                start:
+                  type: string
+                end:
+                  type: string
+          code:
+            type: array
+            items:
+              $ref: '#/components/schemas/CodeableConcept'
     Reference:
       type: object
       properties:
