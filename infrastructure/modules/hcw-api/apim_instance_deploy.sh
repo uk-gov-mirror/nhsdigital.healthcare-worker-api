@@ -20,12 +20,6 @@ else
   echo "No name suffix set"
 fi
 
-# Remove mTLS security for sandbox environment
-if [[ "$environment_name" == "sandbox" ]]; then
-  echo "Removing mTLS security for sandbox environment"
-  yq -i 'del(.x-nhsd-apim.target.security)' temp_spec.yaml
-fi
-
 source ./modules/hcw-api/proxygen-setup.sh "$apim_private_key_secret_arn"
 
 # Deploy proxygen instance
