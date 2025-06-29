@@ -4,7 +4,14 @@ data "aws_secretsmanager_secret" "apim_account_private_key" {
 
 locals {
   api_gateway_domain = "${var.subdomain}.healthcare-worker.care-identity-service2.nhs.uk"
-  api_gateway_url    = var.is_pr ? "https://${local.api_gateway_domain}/${var.env}" : "https://${local.api_gateway_domain}"
+  # Use raw API Gateway URL when no custom domain (empty subdomain)
+  api_gateway_url = var.subdomain != "" ? (
+    # Custom domain path (existing logic)
+    var.is_pr ? "https://${local.api_gateway_domain}/${var.env}" : "https://${local.api_gateway_domain}"
+  ) : (
+    # Use the built-in invoke URL for environments without custom domains
+    aws_api_gateway_stage.live.invoke_url
+  )
 }
 
 resource "null_resource" "apim_instance_deploy" {

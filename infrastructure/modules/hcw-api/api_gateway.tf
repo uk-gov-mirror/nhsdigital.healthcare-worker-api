@@ -170,6 +170,8 @@ resource "aws_cloudwatch_log_group" "gateway_log_group" {
 }
 
 resource "aws_api_gateway_base_path_mapping" "domain_name_mapping" {
+  count = var.subdomain != "" ? 1 : 0
+  
   api_id      = aws_api_gateway_rest_api.app_api.id
   stage_name  = aws_api_gateway_stage.live.stage_name
   domain_name = local.api_gateway_domain
