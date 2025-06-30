@@ -50,7 +50,7 @@ resource "aws_api_gateway_rest_api" "app_api" {
     types = ["REGIONAL"]
   }
 
-  disable_execute_api_endpoint = true
+  disable_execute_api_endpoint = var.subdomain != "" ? true : false
 }
 
 resource "aws_api_gateway_method" "root_get" {
