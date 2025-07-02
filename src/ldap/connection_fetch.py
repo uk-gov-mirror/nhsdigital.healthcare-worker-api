@@ -14,15 +14,24 @@ logger = Log("connection_fetch")
 ldap_connection: Optional[HcwLdapConnection] = None
 
 
+def is_sandbox_mode() -> bool:
+    """
+    Check if we're running in sandbox mode.
+    """
+    return os.environ.get("SANDBOX_MODE", "false").lower() == "true"
+
+
 def get_connection():
     global ldap_connection
 
     if (not ldap_connection or ldap_connection.connection.closed
             or ldap_connection.bind_time < datetime.now() - timedelta(minutes=5)):
         logger.info("Creating new ldap connection instance", "LDAP_CONN_NEW", "null")
-        if "SANDBOX_MODE" in os.environ and os.environ["SANDBOX_MODE"].lower() == "true":
+        if is_sandbox_mode():
+            logger.info("Using mock connection for sandbox mode", "LDAP_CONN_MOCK", "null")
             ldap_connection = MockHcwLdapConnection()
         else:
+            logger.info("Using real LDAP connection", "LDAP_CONN_REAL", "null")
             ldap_connection = RealHcwLdapConnection()
 
     return ldap_connection

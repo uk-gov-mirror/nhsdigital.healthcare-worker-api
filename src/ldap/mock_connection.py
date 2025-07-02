@@ -3,11 +3,19 @@ The MockHcwLdapConnection class contains hardcoded data to return when in sandbo
 real ldaps connection so we have no chance of returning PID from the LDAPS instance.
 """
 
+from datetime import datetime
+
 from ldap.connection import HcwLdapConnection
 from ldap.nhs_person import NhsPerson, NhsOrgPerson, NhsOrgPersonRole
 
 
 class MockHcwLdapConnection(HcwLdapConnection):
+    def __init__(self):
+        # Create simple mock connection object that satisfies connection pooling checks
+        # This ensures the connection appears "open" and "recently bound"
+        self.connection = type('MockConnection', (), {'closed': False})()
+        self.bind_time = datetime.now()
+
     def search_active_nhs_person(self, uid: str) -> [NhsPerson, list[NhsOrgPerson], list[NhsOrgPersonRole]]:
         return NhsPerson({
             "uid": "123",
