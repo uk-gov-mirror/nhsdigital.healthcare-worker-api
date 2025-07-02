@@ -205,7 +205,7 @@ paths:
         '404':
           description: Invalid endpoint path
         '405':
-          description: Unsupported HTTP method. For this endpoint only GET is available
+          description: Unsupported HTTP method. For this endpoint only GET is available.
         '410':
           description: Resource closed. The requested care identity profile is no longer active.
         '500':
