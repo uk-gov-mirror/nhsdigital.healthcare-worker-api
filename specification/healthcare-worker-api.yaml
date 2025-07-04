@@ -148,119 +148,288 @@ x-nhsd-apim:
 paths:
   /Practitioner:
     get:
-      summary: Retrieve practitioner resources
+      summary: Get healthcare worker details
+      operationId: getPractitioner
+      description: |
+        # Overview
+        Use this endpoint to get details of healthcare workers in the Care Identity Service (CIS) directory.
+
+        This endpoint will return the basic details about the person. Future versions will include more data.
+
+        Only active accounts will be returned. If the care identity itself is closed, a 410 response will be provided (see below).
+
+        This endpoint supports the use of the _revinclude query parameter to expose more information about practitioner roles.
+
+      parameters:
+        - in: query
+          name: identifier
+          description: CIS unique identifier (sometimes known as the UUID, SDS user ID or smartcard ID).
+          required: true
+          example: 123456789012
+          schema:
+            type: string
+          explode: true
+        - in: query
+          name: _revinclude
+          description: Include objects which reference the one being returned.
+          required: false
+          example: PractitionerRole:practitioner
+          schema:
+            type: string
+        - in: header
+          name: X-Correlation-Id
+          description: This is an arbitrary string value that allows you to relate a number of requests together. This does not have to be unique to the request.
+          schema:
+            type: string
+            format: string
+          example: MyTransactionID.ABC.20240101.001
+        - in: header
+          name: X-Request-Id
+          description: Unique identifier for the request, used for tracking and logging purposes.
+          schema:
+            type: string
+            format: uuid
+          example: 6d3d3674-7ce5-11ec-90d6-0242ac121234
       responses:
         '200':
-          description: OK
+          description: Successful operation
           content:
             application/fhir+json:
               schema:
                 type: object
                 properties:
-                  resourceType:
-                    type: string
-                    example: Bundle
-                  type:
-                    type: string
-                    example: searchset
-                  entry:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        resource:
-                          $ref: '#/components/schemas/Practitioner'
+                  practitioner:
+                    $ref: '#/components/schemas/Bundle'
+        '400':
+          description: Missing or invalid query parameter(s).
+        '404':
+          description: Invalid endpoint path
+        '405':
+          description: Unsupported HTTP method. For this endpoint only GET is available
+        '410':
+          description: Resource closed. The requested care identity profile is no longer active.
+        '500':
+          description: Unhandled internal server error
+        '502':
+          description: Upstream system returned an unsupported response
+        '504':
+          description: Upstream server request has timed out
+  /PractitionerRole:
+    get:
+      summary: Get healthcare worker role details
+      operationId: getPractitionerRole
+      description: |
+        # Overview
+        Use this endpoint to get details of healthcare worker roles in the Care Identity Service (CIS) directory. It takes a CIS unique identifier
+        as input and returns all the roles associated with that practitioner.
 
+        This endpoint supports the use of the _include query parameter to expose more information about referenced
+        organisations and practitioners.
+      parameters:
+        - in: query
+          name: practitioner.identifier
+          description: CIS unique identifier (sometimes known as the UUID, SDS user ID or smartcard ID)
+          required: true
+          example: 123456789012
+          schema:
+            type: string
+          explode: true
+        - in: query
+          name: _include
+          description: Accepted values of either PractitionerRole:organization or PractitionerRole:practitioner. If you want both, then add this parameter multiple times with different values.
+          required: false
+          example: PractitionerRole:practitioner
+          schema:
+            type: string
+        - in: header
+          name: X-Correlation-Id
+          description: This is an arbitrary string value that allows you to relate a number of requests together. This does not have to be unique to the request.
+          schema:
+            type: string
+            format: string
+          example: MyTransactionID.ABC.20240101.001
+        - in: header
+          name: X-Request-Id
+          description: Unique identifier for the request, used for tracking and logging purposes.
+          schema:
+            type: string
+            format: uuid
+          example: 6d3d3674-7ce5-11ec-90d6-0242ac121234
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/fhir+json:
+              schema:
+                type: object
+                properties:
+                  practitioner:
+                    $ref: '#/components/schemas/Bundle'
+        '400':
+          description: Missing or invalid query parameter(s).
+        '404':
+          description: Invalid endpoint path
+        '405':
+          description: Unsupported HTTP method. For this endpoint only GET is available
+        '410':
+          description: Resource closed. The requested care identity profile is no longer active.
+        '500':
+          description: Unhandled internal server error
+        '502':
+          description: Upstream system returned an unsupported response
+        '504':
+          description: Upstream server request has timed out
 components:
   securitySchemes:
     app-level3:
-      type: oauth2
-      flows:
-        clientCredentials:
-          tokenUrl: https://identity.prod.api.platform.nhs.uk/token
-          scopes:
-            'urn:nhsd:apim:app:level3:ers-api': Access to ERS API
-
+      $ref: https://proxygen.prod.api.platform.nhs.uk/components/securitySchemes/app-level3
   schemas:
-    Practitioner:
+    Bundle:
       type: object
       properties:
         resourceType:
           type: string
-          example: Practitioner
-        id:
+          default: Bundle
+        type:
           type: string
-          example: example-id
-        identifier:
+          default: searchset
+        total:
+          type: number
+          description: Total count of matching entries, does not includes extra included entries from link relationships
+        entry:
           type: array
           items:
-            $ref: '#/components/schemas/Identifier'
-        name:
-          type: array
-          items:
+            $ref: "#/components/schemas/SearchEntry"
+    SearchEntry:
+      type: object
+      properties:
+        search:
+          $ref: "#/components/schemas/SearchDetails"
+        resource:
+          oneOf:
+            - $ref: "#/components/schemas/Practitioner"
+            - $ref: "#/components/schemas/PractitionerRole"
+    SearchDetails:
+      type: object
+      properties:
+        mode:
+          type: string
+          description: Either "match" or "include". Match indicates a direct match to the query. Include indicates that the entry is linked to one of the matching entries, and that the relevant link was requested in the search.
+    Practitioner:
+      example:
+        type: object
+        properties:
+          resourceType:
+            type: string
+            default: Practitioner
+          id:
+            type: string
+            description: Auto generated unique ID for the person.
+            example: 123456789012
+          identifier:
+            type: array
+            description: Auto generated unique ID for the person.
+            items:
+              type: object
+              properties:
+                system:
+                  type: string
+                  default: https://fhir.nhs.uk/Id/sds-user-id
+                value:
+                  type: string
+                  example: 123456789012
+          active:
+            type: boolean
+            description: Describes the active status of the Practitioner record in the directory.
+            example: True
+          name:
+            type: array
+            description: Person's name details.
+            items:
+              type: object
+              properties:
+                use:
+                  type: string
+                  description: Identifies the purpose for this name.
+                  default: usual
+                family:
+                  type: string
+                  description: That part of a person's name which is used to describe family, clan, tribal group, or marital association.
+                  example: Smith
+                given:
+                  type: string
+                  description: The forenames or given names of a person. Includes middle names.
+                  example: Jane Alison
+                prefix:
+                  type: string
+                  description: Standard form of address used to precede a person's name
+                example: Ms
+    PractitionerRole:
+      example:
+        type: object
+        properties:
+          resourceType:
+            type: string
+            default: PractitionerRole
+          id:
+            type: string
+            description: Id of the practitioner role
+          identifier:
+            type: array
+            description: Auto generated unique ID for the role.
+            items:
+              type: object
+              properties:
+                system:
+                  type: string
+                  default: https://fhir.nhs.uk/Id/sds-role-profile-id
+                value:
+                  type: string
+                  example: 123456789012
+          active:
+            type: boolean
+            description: Describes the active status of the Practitioner record in the directory.
+            example: True
+          practitioner:
+            $ref: '#/components/schemas/Reference'
+        organization:
+            $ref: '#/components/schemas/Reference'
+            period:
             type: object
             properties:
-              family:
-                type: string
-                example: Smith
-              given:
-                type: array
-                items:
+                start:
                   type: string
-                  example: John
-
-    PractitionerRole:
+                end:
+                  type: string
+            code:
+            type: array
+            items:
+              $ref: '#/components/schemas/CodeableConcept'
+    Reference:
       type: object
       properties:
         resourceType:
           type: string
-          example: PractitionerRole
-        practitioner:
-          $ref: '#/components/schemas/Reference'
-        organization:
-          $ref: '#/components/schemas/Reference'
-        code:
-          type: array
-          items:
-            $ref: '#/components/schemas/CodeableConcept'
-
-    Identifier:
-      type: object
-      properties:
+          default: Identifier
         system:
           type: string
         value:
           type: string
-
-    Reference:
-      type: object
-      properties:
-        reference:
-          type: string
-          example: Practitioner/example-id
-        type:
-          type: string
-        identifier:
-          $ref: '#/components/schemas/Identifier'
-        display:
-          type: string
-
     CodeableConcept:
       type: object
       properties:
-        coding:
-          type: array
-          items:
-            type: object
-            properties:
-              system:
-                type: string
-              code:
-                type: string
-              display:
-                type: string
-        text:
+        resourceType:
           type: string
-
-security:
-  - app-level3: []
+          default: CodeableConcept
+        coding:
+          type: object
+          properties:
+            resourceType:
+              type: string
+              default: Coding
+            system:
+              type: string
+            code:
+              type: string
+            display:
+              type: string
