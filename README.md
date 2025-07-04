@@ -191,10 +191,9 @@ an access token. This repository includes a script for generating a valid access
 
 ### Public App Documentation
 
-The [public app documentation](https://digital.nhs.uk/developer/api-catalogue/healthcare-worker) is taken from the OAS
+The [public app documentation](https://digital.nhs.uk/developer/api-catalogue/healthcare-fhir-api) is taken from the OAS
 file at specification/healthcare-worker-api.yaml. Merging to develop will publish the specification to the
-[UAT catalogue](https://uat2.nhsd.io/developer/api-catalogue/healthcare-worker), and deploying to INT will deploy to the
-main public catalogue.
+[UAT catalogue](https://uat2.nhsd.io/developer/api-catalogue/healthcare-fhir-api), needs AWS VPN to access UAT catalogue, and deploying to INT will deploy to the main public catalogue.
 
 ### Pipeline tokens
 
