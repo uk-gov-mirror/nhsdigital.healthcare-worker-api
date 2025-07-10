@@ -224,9 +224,9 @@ resource "aws_iam_policy" "CWLtoSubscriptionFilterPolicy" {
             "Sid": "",
             "Effect": "Allow",
             "Action": "logs:PutLogEvents",
-            "Resource": [ 
-              "arn:aws:logs:eu-west-2:${var.account_id}:log-group:${aws_cloudwatch_log_group.apigw_access_logs_group.name}:*"
-              ] 
+            "Resource": [
+                "arn:aws:logs:eu-west-2:${var.account_id}:log-group:${aws_cloudwatch_log_group.apigw_access_logs_group.name}:*"
+            ]
         },
         {
             "Sid": "AllowPutAPIGSubFilter",
@@ -235,8 +235,8 @@ resource "aws_iam_policy" "CWLtoSubscriptionFilterPolicy" {
                 "logs:PutSubscriptionFilter"
             ],
             "Resource": [
-              "arn:aws:logs:eu-west-2:${var.account_id}:log-group:${aws_cloudwatch_log_group.apigw_access_logs_group.name}:*",
-              "arn:aws:logs:eu-west-2:693466633220:destination:api_gateway_log_destination"
+                "arn:aws:logs:eu-west-2:${var.account_id}:log-group:${aws_cloudwatch_log_group.apigw_access_logs_group.name}:*",
+                "arn:aws:logs:eu-west-2:693466633220:destination:api_gateway_log_destination"
             ]
         }
     ]
