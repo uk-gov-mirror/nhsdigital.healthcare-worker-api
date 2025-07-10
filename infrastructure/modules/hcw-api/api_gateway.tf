@@ -150,9 +150,8 @@ resource "aws_api_gateway_stage" "live" {
   stage_name    = "live"
 
   access_log_settings {
-    #destination_arn = "arn:aws:logs:eu-west-2:${var.account_id}:log-group:/API-Gateway-Access-Logs_${aws_api_gateway_rest_api.app_api.id}/live"
+    destination_arn = "arn:aws:logs:eu-west-2:${var.account_id}:log-group:/API-Gateway-Access-Logs_${aws_api_gateway_rest_api.app_api.id}/live"
     #format          = "{ \"requestId\":\"$context.requestId\", \"extendedRequestId\":\"$context.extendedRequestId\",\"ip\": \"$context.identity.sourceIp\", \"caller\":\"$context.identity.caller\", \"user\":\"$context.identity.user\", \"requestTime\":\"$context.requestTime\", \"httpMethod\":\"$context.httpMethod\", \"resourcePath\":\"$context.resourcePath\", \"status\":\"$context.status\", \"protocol\":\"$context.protocol\", \"responseLength\":\"$context.responseLength\" }"
-    destination_arn = aws_cloudwatch_log_group.apigw_access_logs_group.arn
     format = jsonencode({
       "requestId" : "$context.requestId", "ip" : "$context.identity.sourceIp", "caller" : "$context.identity.caller", "user" : "$context.identity.user", "requestTime" : "$context.requestTime", "httpMethod" : "$context.httpMethod", "resourcePath" : "$context.resourcePath", "status" : "$context.status", "protocol" : "$context.protocol", "responseLength" : "$context.responseLength", "accountId" : "$context.accountId", "apiId" : "$context.apiId", "stage" : "$context.stage", "api_key" : "$context.identity.apiKey"
     })
@@ -206,14 +205,6 @@ ROLE
 
 }
 
-resource "aws_cloudwatch_log_group" "apigw_access_logs_group" {
-  name              = "${var.account_id}-API-LOGS"
-  retention_in_days = 30
-  tags = {
-    Name = "${var.account_id}-API-LOGS"
-  }
-}
-
 resource "aws_iam_policy" "CWLtoSubscriptionFilterPolicy" {
   name   = "${var.env}-cim-CWLtoSubscriptionFilterPolicy"
   policy = <<EOF
@@ -225,7 +216,7 @@ resource "aws_iam_policy" "CWLtoSubscriptionFilterPolicy" {
             "Effect": "Allow",
             "Action": "logs:PutLogEvents",
             "Resource": [
-                "arn:aws:logs:eu-west-2:${var.account_id}:log-group:${aws_cloudwatch_log_group.apigw_access_logs_group.name}:*"
+                "arn:aws:logs:eu-west-2:${var.account_id}:log-group:/API-Gateway-Access-Logs_${aws_api_gateway_rest_api.app_api.id}/live:*"
             ]
         },
         {
@@ -235,7 +226,7 @@ resource "aws_iam_policy" "CWLtoSubscriptionFilterPolicy" {
                 "logs:PutSubscriptionFilter"
             ],
             "Resource": [
-                "arn:aws:logs:eu-west-2:${var.account_id}:log-group:${aws_cloudwatch_log_group.apigw_access_logs_group.name}:*",
+                "arn:aws:logs:eu-west-2:${var.account_id}:log-group:/API-Gateway-Access-Logs_${aws_api_gateway_rest_api.app_api.id}/live:*",
                 "arn:aws:logs:eu-west-2:693466633220:destination:api_gateway_log_destination"
             ]
         }
@@ -256,7 +247,7 @@ resource "aws_cloudwatch_log_subscription_filter" "apigw_ext_access_log_filter" 
   name            = "apigw_access_logs"
   role_arn        = aws_iam_role.CWLtoSubscriptionFilterRole.arn
   destination_arn = "arn:aws:logs:eu-west-2:693466633220:destination:api_gateway_log_destination"
-  log_group_name  = aws_cloudwatch_log_group.apigw_access_logs_group.name
+  log_group_name  = "/API-Gateway-Access-Logs_${aws_api_gateway_rest_api.app_api.id}/live"
   filter_pattern  = ""
   depends_on = [
     aws_iam_role_policy_attachment.CWLtoSubscriptionFilter,
