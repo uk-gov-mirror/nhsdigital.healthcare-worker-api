@@ -8,7 +8,7 @@ ldap_gateway_cidr_block = "192.168.209.0/25"
 ldap_gateway_url        = "ldap.nis1.national.ncrs.nhs.uk"
 ldap_service_endpoint   = "com.amazonaws.vpce.eu-west-2.vpce-svc-081bbb9dcda68a972"
 
-subdomain = "sand"
+subdomain = ""
 
 provisioned_capacity = 0
 include_nft_vpc      = false
