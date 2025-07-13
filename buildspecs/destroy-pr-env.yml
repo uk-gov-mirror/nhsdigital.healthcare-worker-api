@@ -23,12 +23,11 @@ phases:
       - |
         if expr "${CODEBUILD_SOURCE_VERSION}" : "pr/.*"  >/dev/null; then
           export env_name="${CODEBUILD_SOURCE_VERSION/\//-}"
-          
           # Clean up proxygen instance first, before destroying terraform infrastructure
           echo "Cleaning up proxygen instance for ${env_name}"
           cd infrastructure
           ./modules/hcw-api/apim_instance_delete.sh "${env_name}" "internal-dev" "${apim_private_key_secret_arn}"
-          
+
           # Now proceed with terraform cleanup
           terraform init
 
