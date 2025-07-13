@@ -116,6 +116,12 @@ resource "aws_codebuild_project" "hcw-api-destroy-pr-env" {
     compute_type = "BUILD_GENERAL1_SMALL"
     image        = "aws/codebuild/amazonlinux2-x86_64-standard:5.0"
     type         = "LINUX_CONTAINER"
+
+    environment_variable {
+      name  = "apim_private_key_secret_arn"
+      value = aws_secretsmanager_secret.apim_account_private_key.arn
+      type  = "PLAINTEXT"
+    }
   }
 
   artifacts {
