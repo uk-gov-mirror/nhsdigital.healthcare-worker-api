@@ -13,4 +13,6 @@ subdomain = "dev"
 provisioned_capacity = 0
 include_nft_vpc      = true
 
+log_group_retention = 7
+
 sandbox = false

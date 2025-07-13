@@ -40,6 +40,13 @@ resource "aws_lambda_function" "hcw-app" {
       BASE_URL                   = "https://${var.apim_environment}.api.service.nhs.uk/healthcare-worker"
     }
   }
+
+  depends_on = [aws_cloudwatch_log_group.lambda_log_group]
+}
+
+resource "aws_cloudwatch_log_group" "lambda_log_group" {
+  name              = "/aws/lambda/hcw-app-${var.env}"
+  retention_in_days = var.log_group_retention
 }
 
 resource "aws_lambda_provisioned_concurrency_config" "provisioned_capacity" {

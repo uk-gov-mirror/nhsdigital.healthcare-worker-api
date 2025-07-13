@@ -13,4 +13,6 @@ subdomain = "int"
 provisioned_capacity = 0
 include_nft_vpc      = false
 
+log_group_retention = 14
+
 sandbox = false

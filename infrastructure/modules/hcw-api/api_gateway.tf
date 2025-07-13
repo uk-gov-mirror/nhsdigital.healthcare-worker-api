@@ -166,7 +166,13 @@ resource "aws_lambda_permission" "apigw_lambda" {
 }
 
 resource "aws_cloudwatch_log_group" "gateway_log_group" {
-  name = "API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.app_api.id}/${aws_api_gateway_stage.live.stage_name}"
+  name              = "API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.app_api.id}/${aws_api_gateway_stage.live.stage_name}"
+  retention_in_days = var.log_group_retention
+}
+
+resource "aws_cloudwatch_log_group" "gateway_access_log_group" {
+  name              = "/API-Gateway-Access-Logs_${aws_api_gateway_rest_api.app_api.id}/live"
+  retention_in_days = var.log_group_retention
 }
 
 resource "aws_api_gateway_base_path_mapping" "domain_name_mapping" {
