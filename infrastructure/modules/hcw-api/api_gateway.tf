@@ -183,6 +183,7 @@ resource "aws_api_gateway_base_path_mapping" "domain_name_mapping" {
 
 ##### CSOC API Gateway Access logs #####
 resource "aws_iam_role" "CWLtoSubscriptionFilterRole" {
+  count       = var.env == "dev" ? 1 : 0
   name        = "${var.env}-CWLtoSubscriptionFilterRole"
   description = "Role for CloudWatch Log Group subscription"
   tags = {
@@ -206,6 +207,7 @@ ROLE
 }
 
 resource "aws_iam_policy" "CWLtoSubscriptionFilterPolicy" {
+  count  = var.env == "dev" ? 1 : 0
   name   = "${var.env}-cim-CWLtoSubscriptionFilterPolicy"
   policy = <<EOF
 {
@@ -239,13 +241,15 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "CWLtoSubscriptionFilter" {
-  role       = aws_iam_role.CWLtoSubscriptionFilterRole.name
-  policy_arn = aws_iam_policy.CWLtoSubscriptionFilterPolicy.arn
+  count      = var.env == "dev" ? 1 : 0
+  role       = aws_iam_role.CWLtoSubscriptionFilterRole[count.index].name
+  policy_arn = aws_iam_policy.CWLtoSubscriptionFilterPolicy[count.index].arn
 }
 
 resource "aws_cloudwatch_log_subscription_filter" "apigw_ext_access_log_filter" {
+  count           = var.env == "dev" ? 1 : 0
   name            = "apigw_access_logs"
-  role_arn        = aws_iam_role.CWLtoSubscriptionFilterRole.arn
+  role_arn        = aws_iam_role.CWLtoSubscriptionFilterRole[count.index].arn
   destination_arn = "arn:aws:logs:eu-west-2:693466633220:destination:api_gateway_log_destination"
   log_group_name  = "/API-Gateway-Access-Logs_${aws_api_gateway_rest_api.app_api.id}/live"
   filter_pattern  = ""
