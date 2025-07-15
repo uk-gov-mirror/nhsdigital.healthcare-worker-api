@@ -58,17 +58,18 @@ phases:
         fi
       - terraform workspace select -or-create ${environment_name}
       - terraform plan -var-file="environments/${account_name}.tfvars" -var "app_s3_filename=${app_s3_filename}" -out tf.plan
-      
+
       # Import existing log groups that may have been auto-created by AWS
       # This prevents "already exists" errors when transitioning to Terraform management
-      terraform import -var-file="environments/${account_name}.tfvars" -var "app_s3_filename=${app_s3_filename}" 'module.app[0].aws_cloudwatch_log_group.lambda_log_group' "/aws/lambda/hcw-app-${environment_name}" 2>/dev/null || true
-      terraform import -var-file="environments/${account_name}.tfvars" -var "app_s3_filename=${app_s3_filename}" 'module.app[0].aws_cloudwatch_log_group.log_transformer_log_group' "/aws/lambda/log-transformer-${environment_name}" 2>/dev/null || true
-      
+      - terraform import -var-file="environments/${account_name}.tfvars" -var "app_s3_filename=${app_s3_filename}" 'module.app[0].aws_cloudwatch_log_group.lambda_log_group' "/aws/lambda/hcw-app-${environment_name}" 2>/dev/null || true
+      - terraform import -var-file="environments/${account_name}.tfvars" -var "app_s3_filename=${app_s3_filename}" 'module.app[0].aws_cloudwatch_log_group.log_transformer_log_group' "/aws/lambda/log-transformer-${environment_name}" 2>/dev/null || true
+
       # For API Gateway access logs, we need to get the actual API Gateway ID first
-      if terraform state show 'module.app[0].aws_api_gateway_rest_api.app_api' >/dev/null 2>&1; then
-        API_GW_ID=$(terraform state show 'module.app[0].aws_api_gateway_rest_api.app_api' | grep 'id.*=' | head -1 | cut -d'"' -f2)
-        terraform import -var-file="environments/${account_name}.tfvars" -var "app_s3_filename=${app_s3_filename}" 'module.app[0].aws_cloudwatch_log_group.gateway_access_log_group' "/API-Gateway-Access-Logs_${API_GW_ID}/live" 2>/dev/null || true
-      fi
-      
-      terraform apply tf.plan
+      - |
+        if terraform state show 'module.app[0].aws_api_gateway_rest_api.app_api' >/dev/null 2>&1; then
+          API_GW_ID=$(terraform state show 'module.app[0].aws_api_gateway_rest_api.app_api' | grep 'id.*=' | head -1 | cut -d'"' -f2)
+          terraform import -var-file="environments/${account_name}.tfvars" -var "app_s3_filename=${app_s3_filename}" 'module.app[0].aws_cloudwatch_log_group.gateway_access_log_group' "/API-Gateway-Access-Logs_${API_GW_ID}/live" 2>/dev/null || true
+        fi
+
+      - terraform apply tf.plan
 
