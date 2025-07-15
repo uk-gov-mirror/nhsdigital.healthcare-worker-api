@@ -61,6 +61,7 @@ phases:
 
       # Import existing log groups that may have been auto-created by AWS
       # This prevents "already exists" errors when transitioning to Terraform management
+      # We're doing this in a separate step to avoid the "terraform import" command failing if the log group already exists
       - |
         terraform import -var-file="environments/${account_name}.tfvars" \
           -var "app_s3_filename=${app_s3_filename}" \
