@@ -65,6 +65,7 @@ resource "aws_s3_bucket_public_access_block" "block_public_access" {
 }
 
 data "aws_s3_object" "truststore_version" {
+  count  = var.subdomain != "" ? 1 : 0
   bucket = aws_s3_bucket.truststore.id
   key    = "gw_mtls_truststore.pem"
 }
@@ -78,7 +79,11 @@ resource "aws_api_gateway_domain_name" "domain" {
   }
 
   mutual_tls_authentication {
-    truststore_uri = "s3://hcw-truststore-${var.subdomain}/gw_mtls_truststore.pem?versionId=${data.aws_s3_object.truststore_version.version_id}"
+    truststore_uri = (
+      length(data.aws_s3_object.truststore_version) > 0 &&
+      data.aws_s3_object.truststore_version[0].version_id != null &&
+      data.aws_s3_object.truststore_version[0].version_id != "null"
+    ) ? "s3://hcw-truststore-${var.subdomain}/gw_mtls_truststore.pem?versionId=${data.aws_s3_object.truststore_version[0].version_id}" : "s3://hcw-truststore-${var.subdomain}/gw_mtls_truststore.pem"
   }
 
   security_policy = "TLS_1_2"
