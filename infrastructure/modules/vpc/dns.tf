@@ -81,7 +81,7 @@ resource "aws_api_gateway_domain_name" "domain" {
   mutual_tls_authentication {
     truststore_uri = "s3://hcw-truststore-${var.subdomain}/gw_mtls_truststore.pem"
     truststore_version = try(
-      data.aws_s3_object.truststore_version[0].version_id != "null" ? 
+      data.aws_s3_object.truststore_version[0].version_id != "null" ?
         data.aws_s3_object.truststore_version[0].version_id : null,
       null
     )
