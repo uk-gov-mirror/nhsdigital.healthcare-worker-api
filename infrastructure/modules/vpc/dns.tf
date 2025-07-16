@@ -64,6 +64,11 @@ resource "aws_s3_bucket_public_access_block" "block_public_access" {
   restrict_public_buckets = true
 }
 
+data "aws_s3_object" "truststore_version" {
+  bucket = aws_s3_bucket.truststore.id
+  key    = "gw_mtls_truststore.pem"
+}
+
 resource "aws_api_gateway_domain_name" "domain" {
   domain_name              = aws_route53_zone.hosted_zone.name
   regional_certificate_arn = aws_acm_certificate_validation.cert_validation.certificate_arn
@@ -73,7 +78,7 @@ resource "aws_api_gateway_domain_name" "domain" {
   }
 
   mutual_tls_authentication {
-    truststore_uri = "s3://hcw-truststore-${var.subdomain}/gw_mtls_truststore.pem"
+    truststore_uri = "s3://hcw-truststore-${var.subdomain}/gw_mtls_truststore.pem?versionId=${data.aws_s3_object.truststore_version.version_id}"
   }
 
   security_policy = "TLS_1_2"
