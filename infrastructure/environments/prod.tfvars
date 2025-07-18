@@ -4,8 +4,8 @@ apim_environment = "prod"
 vpc_cidr_block   = "10.20.3.0/24"
 vpc_env          = "prod"
 
-ldap_gateway_url        = "ldap.national.ncrs.nhs.uk"
-ldap_service_endpoint   = "com.amazonaws.vpce.eu-west-2.vpce-svc-0b0bddeae560b94c7"
+ldap_gateway_url      = "ldap.national.ncrs.nhs.uk"
+ldap_service_endpoint = "com.amazonaws.vpce.eu-west-2.vpce-svc-0b0bddeae560b94c7"
 
 subdomain = "prod"
 

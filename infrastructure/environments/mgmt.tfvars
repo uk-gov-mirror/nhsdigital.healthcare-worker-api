@@ -4,8 +4,8 @@ apim_environment = ""
 vpc_cidr_block   = "10.20.1.0/24"
 vpc_env          = ""
 
-ldap_gateway_url        = ""
-ldap_service_endpoint   = ""
+ldap_gateway_url      = ""
+ldap_service_endpoint = ""
 
 subdomain = ""
 

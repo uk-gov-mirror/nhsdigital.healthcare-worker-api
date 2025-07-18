@@ -79,7 +79,7 @@ module "vpc" {
   env            = local.env
   subdomain      = var.subdomain
 
-  ldap_service_endpoint   = var.ldap_service_endpoint
+  ldap_service_endpoint = var.ldap_service_endpoint
 
   count = local.include_vpc ? 1 : 0
 }
