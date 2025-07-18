@@ -72,15 +72,6 @@ module "management" {
   count = local.env == "management" ? 1 : 0
 }
 
-data "aws_ec2_transit_gateway" "transit_gateway" {
-  provider = aws.management
-
-  filter {
-    name   = "tag:Name"
-    values = ["cim_vpn_transit_gateway"]
-  }
-}
-
 module "vpc" {
   source         = "./modules/vpc"
   account        = var.account
@@ -88,8 +79,6 @@ module "vpc" {
   env            = local.env
   subdomain      = var.subdomain
 
-  ldap_gateway_cidr_block = var.ldap_gateway_cidr_block
-  transit_gateway_id      = data.aws_ec2_transit_gateway.transit_gateway.id
   ldap_service_endpoint   = var.ldap_service_endpoint
 
   count = local.include_vpc ? 1 : 0
