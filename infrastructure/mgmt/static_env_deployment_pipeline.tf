@@ -262,12 +262,12 @@ resource "aws_codepipeline" "static_env_deployment_pipeline" {
         EnvironmentVariables = jsonencode([
           {
             name  = "environment_name"
-            value = "int"
+            value = "prod"
             type  = "PLAINTEXT"
           },
           {
             name  = "account_name"
-            value = "int"
+            value = "prod"
             type  = "PLAINTEXT"
           },
           {
