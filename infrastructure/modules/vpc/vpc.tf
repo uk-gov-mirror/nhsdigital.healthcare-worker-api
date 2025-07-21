@@ -109,12 +109,6 @@ data "aws_iam_policy_document" "flow_log_cloudwatch_assume_role" {
   }
 }
 
-resource "aws_ec2_transit_gateway_vpc_attachment" "vpn_transit_gateway_attachment" {
-  subnet_ids         = aws_subnet.private.*.id
-  transit_gateway_id = var.transit_gateway_id
-  vpc_id             = aws_vpc.lambda.id
-}
-
 resource "aws_secretsmanager_secret" "ldap_credentials" {
   name = "ldap_credentials"
 }

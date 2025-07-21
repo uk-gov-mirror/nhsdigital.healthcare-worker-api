@@ -15,12 +15,6 @@ variable "log_group_retention" {
   default = 30
 }
 
-variable "transit_gateway_id" {
-  type = string
-}
-
-variable "ldap_gateway_cidr_block" {}
-
 variable "subdomain" {
   type = string
 }
