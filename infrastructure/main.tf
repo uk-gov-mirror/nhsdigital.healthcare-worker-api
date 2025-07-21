@@ -91,6 +91,7 @@ module "vpc" {
   ldap_gateway_cidr_block = var.ldap_gateway_cidr_block
   transit_gateway_id      = data.aws_ec2_transit_gateway.transit_gateway.id
   ldap_service_endpoint   = var.ldap_service_endpoint
+  log_group_retention     = var.log_group_retention
 
   count = local.include_vpc ? 1 : 0
 }
@@ -121,6 +122,7 @@ module "app" {
   provisioned_capacity = var.provisioned_capacity
   vpc_env              = var.vpc_env
   hec_token_secret_id  = local.include_vpc ? module.vpc[0].hec_token_secret_id : data.aws_secretsmanager_secret.hec_token[0].id
+  log_group_retention  = var.log_group_retention
 
   count = !local.is_mgmt ? 1 : 0
 }
