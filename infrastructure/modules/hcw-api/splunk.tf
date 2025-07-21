@@ -236,6 +236,13 @@ resource "aws_lambda_function" "log_transformer" {
   source_code_hash = data.archive_file.splunk_transform.output_sha512
 
   timeout = "600"
+
+  depends_on = [aws_cloudwatch_log_group.log_transformer_log_group]
+}
+
+resource "aws_cloudwatch_log_group" "log_transformer_log_group" {
+  name              = "/aws/lambda/log-transformer-${var.env}"
+  retention_in_days = var.log_group_retention
 }
 
 resource "aws_iam_role" "log_transformer_role" {

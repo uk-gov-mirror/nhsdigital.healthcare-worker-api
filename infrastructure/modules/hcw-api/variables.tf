@@ -41,3 +41,9 @@ variable "account_id" {
 variable "hec_token_secret_id" {
   type = string
 }
+
+variable "log_group_retention" {
+  description = "Number of days to retain CloudWatch log groups"
+  type        = number
+  default     = 30
+}

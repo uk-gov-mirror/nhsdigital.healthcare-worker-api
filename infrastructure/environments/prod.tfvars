@@ -12,4 +12,6 @@ subdomain = "prod"
 provisioned_capacity = 1
 include_nft_vpc      = false
 
+log_group_retention = 14
+
 sandbox = false

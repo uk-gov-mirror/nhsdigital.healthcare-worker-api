@@ -44,6 +44,12 @@ variable "include_nft_vpc" {
   type = bool
 }
 
+variable "log_group_retention" {
+  description = "Number of days to retain CloudWatch log groups"
+  type        = number
+  default     = 30
+}
+
 variable "sandbox" {
   type = bool
 }
