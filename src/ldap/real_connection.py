@@ -1,5 +1,6 @@
 import json
 import os
+import time
 import uuid
 from datetime import datetime
 from enum import IntEnum
@@ -28,38 +29,96 @@ class RealHcwLdapConnection(HcwLdapConnection):
     bind_time: datetime
 
     def __init__(self):
+        init_start_time = time.time()
+        logger.info("Starting LDAP connection initialization", "LDAP_INIT_START", "null")
+        
+        # Time the boto3 client creation
+        client_start = time.time()
         self.client = boto3.client("secretsmanager", config=Config(region_name="eu-west-2"))
+        client_duration = time.time() - client_start
+        logger.info(f"boto3 client creation took {client_duration:.2f}s", "BOTO3_CLIENT_TIMING", "null")
+        
+        # Time the connection establishment
+        connect_start = time.time()
         self.connection = self.connect()
+        connect_duration = time.time() - connect_start
+        logger.info(f"LDAP connection establishment took {connect_duration:.2f}s", "LDAP_CONNECT_TIMING", "null")
+        
+        total_init_duration = time.time() - init_start_time
+        logger.info(f"Total LDAP initialization took {total_init_duration:.2f}s", "LDAP_INIT_TOTAL_TIMING", "null")
         logger.info("LDAP connection established", "LDAP_CONN_SUCCESS", "null")
 
     def get_secret(self, secret_id) -> dict:
-        return json.loads(self.client.get_secret_value(SecretId=secret_id)["SecretString"])
+        logger.info(f"Requesting secret: {secret_id}", "SECRET_REQUEST_START", "null")
+        
+        call_start = time.time()
+        try:
+            response = self.client.get_secret_value(SecretId=secret_id)
+            call_duration = time.time() - call_start
+            
+            logger.info(f"get_secret_value call took {call_duration:.2f}s", "SECRET_CALL_TIMING", "null")
+            
+            # Time the JSON parsing
+            parse_start = time.time()
+            result = json.loads(response["SecretString"])
+            parse_duration = time.time() - parse_start
+            
+            logger.info(f"JSON parsing took {parse_duration:.2f}s", "SECRET_PARSE_TIMING", "null")
+            
+            # Log secret size (without exposing content)
+            secret_size = len(response["SecretString"])
+            logger.info(f"Secret size: {secret_size} bytes", "SECRET_SIZE_INFO", "null")
+            
+            return result
+            
+        except Exception as e:
+            call_duration = time.time() - call_start
+            logger.error(f"get_secret_value failed after {call_duration:.2f}s: {e}", "SECRET_CALL_ERROR", "null")
+            raise
 
     @staticmethod
     def save_secret_to_file(secret: str) -> str:
+        file_start = time.time()
         filename = f"/tmp/{uuid.uuid4()}.pem"  # NOSONAR python:S5443
         with open(filename, "w") as f:
             f.write(secret)
-
+        file_duration = time.time() - file_start
+        logger.info(f"File write took {file_duration:.2f}s, size: {len(secret)} bytes", "FILE_WRITE_TIMING", "null")
         return filename
 
     def connect(self) -> Optional[Connection]:
+        connect_start_time = time.time()
         logger.info("About to fetch secrets", "SECRETS_CONN_START", "null")
+        
+        # Time the environment check
+        env_check_start = time.time()
         if "LDAP_CREDENTIALS_SECRET_ID" not in os.environ:
             logger.error("Could not form LDAP connection","LDAP_CONN_ERROR", "null")
             return None
+        env_check_duration = time.time() - env_check_start
+        logger.info(f"Environment check took {env_check_duration:.2f}s", "ENV_CHECK_TIMING", "null")
 
+        # Time the actual secret fetch
+        secret_fetch_start = time.time()
         ldap_credentials = self.get_secret(os.environ["LDAP_CREDENTIALS_SECRET_ID"])
+        secret_fetch_duration = time.time() - secret_fetch_start
+        logger.info(f"Secret fetch took {secret_fetch_duration:.2f}s", "SECRET_FETCH_TIMING", "null")
         logger.info("Fetched secrets", "SECRETS_CONN_SUCCESS", "null")
 
+        # Time the file operations
+        file_ops_start = time.time()
         server_cert_filename = self.save_secret_to_file(ldap_credentials["LDAP_SERVER_CERT"])
         mtls_client_private_key_filename = self.save_secret_to_file(ldap_credentials["MTLS_CLIENT_KEY"])
         mtls_client_cert_filename = self.save_secret_to_file(ldap_credentials["MTLS_CLIENT_CERT"])
+        file_ops_duration = time.time() - file_ops_start
+        logger.info(f"All file operations took {file_ops_duration:.2f}s", "FILE_OPS_TIMING", "null")
         logger.info("Saved secrets to tmp file","SECRETS_TMP_FILE", "null")
 
         username = ldap_credentials["LDAP_USERNAME"]
         password = ldap_credentials["PASSWORD"]
 
+        # Time the TLS and connection setup
+        tls_setup_start = time.time()
         try:
             tls = Tls(
                 local_private_key_file=mtls_client_private_key_filename,
@@ -68,17 +127,28 @@ class RealHcwLdapConnection(HcwLdapConnection):
                 validate=CERT_REQUIRED
             )
             server = Server(os.environ["LDAP_GATEWAY_URL"], use_ssl=True, tls=tls)
-
             connection = Connection(server, user=username, password=password, client_strategy=SAFE_SYNC)
+            tls_setup_duration = time.time() - tls_setup_start
+            logger.info(f"TLS and server setup took {tls_setup_duration:.2f}s", "TLS_SETUP_TIMING", "null")
 
+            # Time the actual bind operation
+            bind_start = time.time()
             bound = connection.bind()
+            bind_duration = time.time() - bind_start
+            logger.info(f"LDAP bind operation took {bind_duration:.2f}s", "LDAP_BIND_TIMING", "null")
+            
             if not bound:
                 raise HcwException(500, "Could not bind to LDAP server", "exception")
 
             self.bind_time = datetime.now()
+            
+            total_connect_duration = time.time() - connect_start_time
+            logger.info(f"Total connect() method took {total_connect_duration:.2f}s", "CONNECT_TOTAL_TIMING", "null")
 
             return connection
         except LDAPException as e:
+            tls_setup_duration = time.time() - tls_setup_start
+            logger.error(f"LDAP connection failed after {tls_setup_duration:.2f}s: {e}", "LDAP_CONNECT_ERROR", "null")
             raise HcwException(500, f"Error connecting to LDAP: {e}", "exception", "Error connecting to LDAP")
 
     @staticmethod
