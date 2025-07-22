@@ -146,4 +146,3 @@ class TestWorker(IntegrationTest):
 
         self.check_valid_response(response, get_practitioners_example(SINGLE_ROLE))
         self.check_response_includes_practitioner_roles(response, get_practitioners_example(SINGLE_ROLE))
-
