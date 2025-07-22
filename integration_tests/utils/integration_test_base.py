@@ -31,19 +31,19 @@ class IntegrationTest:
         local_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f UTC")
         print(f"[{local_time}] Sending {method} request to {path}")
         print(f"[{local_time}] Correlation ID: {correlation_id}")
-        
+
         request_start = datetime.now()
         response = requests.request(method, path, params=params, headers=headers)
         request_duration = (datetime.now() - request_start).total_seconds()
-        
+
         response_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f UTC")
         print(f"[{response_time}] Response received: {response.status_code} (took {request_duration:.3f}s)")
-        
+
         # Log errors with timestamp for easy CloudWatch correlation
         if response.status_code >= 400:
             print(f"[{response_time}] ERROR RESPONSE: Status {response.status_code}")
             print(f"[{response_time}] Response body: {response.text}")
-        
+
         return response
 
     @pytest.fixture(autouse=True, scope="session")

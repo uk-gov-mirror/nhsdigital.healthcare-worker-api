@@ -55,7 +55,7 @@ class TestWorker(IntegrationTest):
         response = self.send_worker_get(999)
 
         self.assert_status_code_with_timestamp(response, 404)
-        
+
         expected_response = {
             "resourceType": "OperationOutcome",
             "issue": [{
@@ -69,7 +69,7 @@ class TestWorker(IntegrationTest):
                 }
             }]
         }
-        
+
         actual_response = response.json()
         if actual_response != expected_response:
             from datetime import datetime, timezone
