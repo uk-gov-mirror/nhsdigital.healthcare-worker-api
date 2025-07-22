@@ -31,46 +31,46 @@ class RealHcwLdapConnection(HcwLdapConnection):
     def __init__(self):
         init_start_time = time.time()
         logger.info("Starting LDAP connection initialization", "LDAP_INIT_START", "null")
-        
+
         # Time the boto3 client creation
         client_start = time.time()
         self.client = boto3.client("secretsmanager", config=Config(region_name="eu-west-2"))
         client_duration = time.time() - client_start
         logger.info(f"boto3 client creation took {client_duration:.2f}s", "BOTO3_CLIENT_TIMING", "null")
-        
+
         # Time the connection establishment
         connect_start = time.time()
         self.connection = self.connect()
         connect_duration = time.time() - connect_start
         logger.info(f"LDAP connection establishment took {connect_duration:.2f}s", "LDAP_CONNECT_TIMING", "null")
-        
+
         total_init_duration = time.time() - init_start_time
         logger.info(f"Total LDAP initialization took {total_init_duration:.2f}s", "LDAP_INIT_TOTAL_TIMING", "null")
         logger.info("LDAP connection established", "LDAP_CONN_SUCCESS", "null")
 
     def get_secret(self, secret_id) -> dict:
         logger.info(f"Requesting secret: {secret_id}", "SECRET_REQUEST_START", "null")
-        
+
         call_start = time.time()
         try:
             response = self.client.get_secret_value(SecretId=secret_id)
             call_duration = time.time() - call_start
-            
+
             logger.info(f"get_secret_value call took {call_duration:.2f}s", "SECRET_CALL_TIMING", "null")
-            
+
             # Time the JSON parsing
             parse_start = time.time()
             result = json.loads(response["SecretString"])
             parse_duration = time.time() - parse_start
-            
+
             logger.info(f"JSON parsing took {parse_duration:.2f}s", "SECRET_PARSE_TIMING", "null")
-            
+
             # Log secret size (without exposing content)
             secret_size = len(response["SecretString"])
             logger.info(f"Secret size: {secret_size} bytes", "SECRET_SIZE_INFO", "null")
-            
+
             return result
-            
+
         except Exception as e:
             call_duration = time.time() - call_start
             logger.error(f"get_secret_value failed after {call_duration:.2f}s: {e}", "SECRET_CALL_ERROR", "null")
@@ -89,7 +89,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
     def connect(self) -> Optional[Connection]:
         connect_start_time = time.time()
         logger.info("About to fetch secrets", "SECRETS_CONN_START", "null")
-        
+
         # Time the environment check
         env_check_start = time.time()
         if "LDAP_CREDENTIALS_SECRET_ID" not in os.environ:
@@ -136,12 +136,12 @@ class RealHcwLdapConnection(HcwLdapConnection):
             bound = connection.bind()
             bind_duration = time.time() - bind_start
             logger.info(f"LDAP bind operation took {bind_duration:.2f}s", "LDAP_BIND_TIMING", "null")
-            
+
             if not bound:
                 raise HcwException(500, "Could not bind to LDAP server", "exception")
 
             self.bind_time = datetime.now()
-            
+
             total_connect_duration = time.time() - connect_start_time
             logger.info(f"Total connect() method took {total_connect_duration:.2f}s", "CONNECT_TOTAL_TIMING", "null")
 
