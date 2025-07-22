@@ -1,5 +1,6 @@
 import json
 import os
+import socket
 import time
 import uuid
 from datetime import datetime
@@ -32,11 +33,17 @@ class RealHcwLdapConnection(HcwLdapConnection):
         init_start_time = time.time()
         logger.info("Starting LDAP connection initialization", "LDAP_INIT_START", "null")
 
+        # Add network diagnostics
+        self.log_network_info()
+
         # Time the boto3 client creation
         client_start = time.time()
         self.client = boto3.client("secretsmanager", config=Config(region_name="eu-west-2"))
         client_duration = time.time() - client_start
         logger.info(f"boto3 client creation took {client_duration:.2f}s", "BOTO3_CLIENT_TIMING", "null")
+
+        # Run isolated Secrets Manager performance test
+        self.test_secrets_manager_performance()
 
         # Time the connection establishment
         connect_start = time.time()
@@ -47,6 +54,115 @@ class RealHcwLdapConnection(HcwLdapConnection):
         total_init_duration = time.time() - init_start_time
         logger.info(f"Total LDAP initialization took {total_init_duration:.2f}s", "LDAP_INIT_TOTAL_TIMING", "null")
         logger.info("LDAP connection established", "LDAP_CONN_SUCCESS", "null")
+
+    def log_network_info(self):
+        """Log network and environment information for diagnostics"""
+        try:
+            # Lambda environment info
+            aws_region = os.environ.get('AWS_REGION', 'unknown')
+            has_vpc_config = 'AWS_LAMBDA_VPC_CONFIG_SUBNET_IDS' in os.environ
+            vpc_subnets = os.environ.get('AWS_LAMBDA_VPC_CONFIG_SUBNET_IDS', 'none')
+
+            logger.info(f"AWS Region: {aws_region}, VPC enabled: {has_vpc_config}", "LAMBDA_ENV_INFO", "null")
+            if has_vpc_config:
+                logger.info(f"VPC Subnets: {vpc_subnets}", "LAMBDA_VPC_SUBNETS", "null")
+
+            # Test DNS resolution for Secrets Manager
+            try:
+                secretsmanager_hostname = 'secretsmanager.eu-west-2.amazonaws.com'
+                dns_start = time.time()
+                secretsmanager_ip = socket.gethostbyname(secretsmanager_hostname)
+                dns_duration = time.time() - dns_start
+
+                logger.info(f"DNS resolution took {dns_duration:.3f}s", "DNS_TIMING", "null")
+                logger.info(f"Secrets Manager resolves to: {secretsmanager_ip}", "DNS_RESOLUTION", "null")
+
+                # Check if it's a private IP (VPC endpoint) or public IP
+                is_private = secretsmanager_ip.startswith(('10.', '172.16.', '172.17.', '172.18.', '172.19.', '172.20.', '172.21.', '172.22.', '172.23.', '172.24.', '172.25.', '172.26.', '172.27.', '172.28.', '172.29.', '172.30.', '172.31.', '192.168.'))
+                connection_path = "VPC endpoint (private)" if is_private else "Public internet"
+                logger.info(f"Connection path: {connection_path}", "CONNECTION_PATH", "null")
+
+                # Check if we can reach the IP on port 443
+                try:
+                    sock_test_start = time.time()
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.settimeout(5)
+                    result = sock.connect_ex((secretsmanager_ip, 443))
+                    sock.close()
+                    sock_test_duration = time.time() - sock_test_start
+
+                    if result == 0:
+                        logger.info(f"TCP connection to {secretsmanager_ip}:443 successful in {sock_test_duration:.3f}s", "TCP_CONNECTION_TEST", "null")
+                    else:
+                        logger.warning(f"TCP connection to {secretsmanager_ip}:443 failed (code: {result}) in {sock_test_duration:.3f}s", "TCP_CONNECTION_FAILED", "null")
+                except Exception as e:
+                    logger.warning(f"TCP connection test failed: {e}", "TCP_CONNECTION_ERROR", "null")
+
+            except Exception as e:
+                logger.error(f"DNS resolution failed: {e}", "DNS_ERROR", "null")
+
+            # Check if we can describe VPC endpoints (to confirm permissions and VPC setup)
+            try:
+                ec2_client = boto3.client('ec2', region_name='eu-west-2')
+                vpc_endpoint_start = time.time()
+                response = ec2_client.describe_vpc_endpoints(
+                    Filters=[
+                        {'Name': 'service-name', 'Values': ['com.amazonaws.eu-west-2.secretsmanager']},
+                        {'Name': 'state', 'Values': ['available']}
+                    ]
+                )
+                vpc_endpoint_duration = time.time() - vpc_endpoint_start
+
+                endpoint_count = len(response.get('VpcEndpoints', []))
+                logger.info(f"Found {endpoint_count} Secrets Manager VPC endpoints (query took {vpc_endpoint_duration:.3f}s)", "VPC_ENDPOINT_COUNT", "null")
+
+                if endpoint_count > 0:
+                    endpoint = response['VpcEndpoints'][0]
+                    logger.info(f"VPC endpoint state: {endpoint.get('State', 'unknown')}, DNS enabled: {endpoint.get('PrivateDnsEnabled', 'unknown')}", "VPC_ENDPOINT_STATE", "null")
+
+            except Exception as e:
+                logger.warning(f"Could not check VPC endpoints: {e}", "VPC_ENDPOINT_CHECK_ERROR", "null")
+
+        except Exception as e:
+            logger.error(f"Network diagnostics failed: {e}", "NETWORK_DIAGNOSTICS_ERROR", "null")
+
+    def test_secrets_manager_performance(self):
+        """Test Secrets Manager performance in isolation"""
+        try:
+            logger.info("Starting isolated Secrets Manager performance test", "SECRETS_PERF_TEST_START", "null")
+
+            # Test 1: Simple list secrets call (should be very fast)
+            list_start = time.time()
+            try:
+                list_response = self.client.list_secrets(MaxResults=1)
+                list_duration = time.time() - list_start
+                logger.info(f"list_secrets call took {list_duration:.3f}s", "SECRETS_LIST_TIMING", "null")
+            except Exception as e:
+                list_duration = time.time() - list_start
+                logger.error(f"list_secrets failed after {list_duration:.3f}s: {e}", "SECRETS_LIST_ERROR", "null")
+
+            # Test 2: Actual secret retrieval
+            secret_id = os.environ.get("LDAP_CREDENTIALS_SECRET_ID", "")
+            if secret_id:
+                get_start = time.time()
+                try:
+                    get_response = self.client.get_secret_value(SecretId=secret_id)
+                    get_duration = time.time() - get_start
+                    logger.info(f"get_secret_value call took {get_duration:.3f}s", "SECRETS_GET_TIMING_ISOLATED", "null")
+
+                    # Log metadata without exposing secret content
+                    secret_size = len(get_response.get("SecretString", ""))
+                    version_id = get_response.get("VersionId", "unknown")
+                    logger.info(f"Secret metadata - Size: {secret_size} bytes, Version: {version_id}", "SECRETS_METADATA", "null")
+
+                except Exception as e:
+                    get_duration = time.time() - get_start
+                    logger.error(f"get_secret_value failed after {get_duration:.3f}s: {e}", "SECRETS_GET_ERROR_ISOLATED", "null")
+
+            logger.info("Completed isolated Secrets Manager performance test", "SECRETS_PERF_TEST_END", "null")
+
+        except Exception as e:
+            logger.error(f"Secrets Manager performance test failed: {e}", "SECRETS_PERF_TEST_FAILED", "null")
 
     def get_secret(self, secret_id) -> dict:
         logger.info(f"Requesting secret: {secret_id}", "SECRET_REQUEST_START", "null")
