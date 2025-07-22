@@ -9,7 +9,7 @@ ldap_service_endpoint = "com.amazonaws.vpce.eu-west-2.vpce-svc-07d9d20a503db2c06
 
 subdomain = "dev"
 
-provisioned_capacity = 1
+provisioned_capacity = 0
 include_nft_vpc      = true
 
 log_group_retention = 7
