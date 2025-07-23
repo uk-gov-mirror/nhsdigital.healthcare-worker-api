@@ -45,7 +45,7 @@ resource "aws_lambda_function" "hcw-app" {
       BASE_URL                   = var.base_url
 
       # Extension configuration (optional - using defaults)
-      SECRETS_MANAGER_TIMEOUT_MILLIS          = "0"    # No timeout 
+      SECRETS_MANAGER_TIMEOUT_MILLIS          = "0"    # No timeout
       SECRETS_MANAGER_TTL_SECONDS             = "300"  # 5 min cache
       PARAMETERS_SECRETS_EXTENSION_CACHE_SIZE = "1000" # 1000 secrets max
       PARAMETERS_SECRETS_EXTENSION_LOG_LEVEL  = "INFO" # Can set to DEBUG for troubleshooting
