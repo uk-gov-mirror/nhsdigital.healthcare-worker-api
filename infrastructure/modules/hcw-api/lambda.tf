@@ -42,7 +42,7 @@ resource "aws_lambda_function" "hcw-app" {
       LDAP_CREDENTIALS_SECRET_ID = data.aws_secretsmanager_secret.ldap_credentials.arn
       LDAP_GATEWAY_URL           = var.ldap_gateway_url
       SANDBOX_MODE               = var.sandbox_mode
-      BASE_URL                   = var.base_url
+      BASE_URL                   = "https://${var.apim_environment}.api.service.nhs.uk/healthcare-worker"
 
       # Extension configuration (optional - using defaults)
       SECRETS_MANAGER_TIMEOUT_MILLIS          = "0"    # No timeout
@@ -50,11 +50,6 @@ resource "aws_lambda_function" "hcw-app" {
       PARAMETERS_SECRETS_EXTENSION_CACHE_SIZE = "1000" # 1000 secrets max
       PARAMETERS_SECRETS_EXTENSION_LOG_LEVEL  = "INFO" # Can set to DEBUG for troubleshooting
     }
-  }
-
-  tags = {
-    Account     = var.account
-    Environment = var.env
   }
 
   depends_on = [aws_cloudwatch_log_group.lambda_log_group]
