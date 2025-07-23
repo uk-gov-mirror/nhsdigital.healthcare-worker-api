@@ -2,6 +2,7 @@ import json
 import os
 import time
 import uuid
+import urllib.error
 from datetime import datetime
 from enum import IntEnum
 from ssl import CERT_REQUIRED
@@ -60,7 +61,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
             # Get AWS session token for extension authentication
             aws_session_token = os.environ.get('AWS_SESSION_TOKEN')
             if not aws_session_token:
-                raise Exception("AWS_SESSION_TOKEN not available")
+                raise EnvironmentError("AWS_SESSION_TOKEN not available")
 
             # Extension HTTP API endpoint for Secrets Manager
             # Format: http://localhost:2773/secretsmanager/get?secretId=<secret-id>
@@ -103,7 +104,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
 
                 return result
 
-        except Exception as e:
+        except (EnvironmentError, urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError, OSError) as e:
             call_duration = time.time() - call_start
             logger.info(f"Extension failed after {call_duration:.2f}s: {e}", "SECRET_EXTENSION_FAILED", "null")
 
