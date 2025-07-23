@@ -52,38 +52,77 @@ def setup_ldap_connection_mock():
 class TestGetSecret:
     """Test the new AWS Secrets Manager Extension functionality"""
 
+    @staticmethod
+    def _get_standard_secret_data():
+        """Standard LDAP secret data used across tests"""
+        return {
+            "LDAP_SERVER_CERT": "server_cert",
+            "MTLS_CLIENT_KEY": "client_key",
+            "MTLS_CLIENT_CERT": "client_cert",
+            "LDAP_USERNAME": "username",
+            "PASSWORD": "password"
+        }
+
+    @staticmethod
+    def _setup_extension_success_mock(mock_urlopen, secret_data=None, use_secret_string=True):
+        """Setup mock for successful extension call"""
+        if secret_data is None:
+            secret_data = TestGetSecret._get_standard_secret_data()
+
+        mock_response = MagicMock()
+        if use_secret_string:
+            response_data = {"SecretString": json.dumps(secret_data)}
+        else:
+            response_data = secret_data
+
+        mock_response.read.return_value.decode.return_value = json.dumps(response_data)
+        mock_urlopen.return_value.__enter__.return_value = mock_response
+
+    @staticmethod
+    def _setup_extension_failure_mock(mock_urlopen, error):
+        """Setup mock for extension failure"""
+        mock_urlopen.side_effect = error
+
+    @staticmethod
+    def _create_isolated_connection(boto3_mock):
+        """Create connection without full initialization for isolated testing"""
+        conn = RealHcwLdapConnection.__new__(RealHcwLdapConnection)
+        conn.client = boto3_mock.client.return_value
+        return conn
+
+    @staticmethod
+    def _assert_extension_called_correctly(mock_urlopen, expected_secret_id, expected_token="test_token"):
+        """Assert extension was called with correct parameters"""
+        args, kwargs = mock_urlopen.call_args
+        request = args[0]
+        assert "localhost:2773/secretsmanager/get" in request.get_full_url()
+        assert f"secretId={expected_secret_id}" in request.get_full_url()
+        assert request.get_header('X-aws-parameters-secrets-token') == expected_token
+
+    @staticmethod
+    def _assert_standard_secret_result(result):
+        """Assert result contains expected LDAP credentials"""
+        assert result["LDAP_USERNAME"] == "username"
+        assert result["PASSWORD"] == "password"
+
+    @staticmethod
+    def _assert_boto3_fallback_called(boto3_mock, secret_id="test_secret_id"):
+        """Assert boto3 fallback was called correctly"""
+        boto3_mock.client.return_value.get_secret_value.assert_called_with(SecretId=secret_id)
+
     def test_get_secret_extension_success(self):
         """Test successful secret retrieval via AWS Secrets Manager Extension"""
         boto3, _, _, _, _ = setup_ldap_connection_mock()
 
         with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
-            # Mock the extension HTTP call
             with patch('urllib.request.urlopen') as mock_urlopen:
-                mock_response = MagicMock()
-                mock_response.read.return_value.decode.return_value = json.dumps({
-                    "SecretString": json.dumps({
-                        "LDAP_SERVER_CERT": "server_cert",
-                        "MTLS_CLIENT_KEY": "client_key",
-                        "MTLS_CLIENT_CERT": "client_cert",
-                        "LDAP_USERNAME": "username",
-                        "PASSWORD": "password"
-                    })
-                })
-                mock_urlopen.return_value.__enter__.return_value = mock_response
+                self._setup_extension_success_mock(mock_urlopen)
 
                 conn = RealHcwLdapConnection()
                 result = conn.get_secret("test_secret_id")
 
-                # Verify extension was called with correct URL and headers
-                args, kwargs = mock_urlopen.call_args
-                request = args[0]
-                assert "localhost:2773/secretsmanager/get" in request.get_full_url()
-                assert "secretId=test_secret_id" in request.get_full_url()
-                assert request.get_header('X-aws-parameters-secrets-token') == "test_token"
-
-                # Verify result
-                assert result["LDAP_USERNAME"] == "username"
-                assert result["PASSWORD"] == "password"
+                self._assert_extension_called_correctly(mock_urlopen, "test_secret_id")
+                self._assert_standard_secret_result(result)
 
                 # Verify boto3 was NOT called (extension succeeded)
                 boto3.client.return_value.get_secret_value.assert_not_called()
@@ -94,22 +133,12 @@ class TestGetSecret:
 
         with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
             with patch('urllib.request.urlopen') as mock_urlopen:
-                # Extension returns secret directly without SecretString wrapper
-                mock_response = MagicMock()
-                mock_response.read.return_value.decode.return_value = json.dumps({
-                    "LDAP_SERVER_CERT": "server_cert",
-                    "MTLS_CLIENT_KEY": "client_key",
-                    "MTLS_CLIENT_CERT": "client_cert",
-                    "LDAP_USERNAME": "username",
-                    "PASSWORD": "password"
-                })
-                mock_urlopen.return_value.__enter__.return_value = mock_response
+                self._setup_extension_success_mock(mock_urlopen, use_secret_string=False)
 
                 conn = RealHcwLdapConnection()
                 result = conn.get_secret("test_secret_id")
 
-                assert result["LDAP_USERNAME"] == "username"
-                assert result["PASSWORD"] == "password"
+                self._assert_standard_secret_result(result)
 
     def test_get_secret_extension_no_session_token(self):
         """Test extension fails when AWS_SESSION_TOKEN is missing, falls back to boto3"""
@@ -121,9 +150,8 @@ class TestGetSecret:
             conn = RealHcwLdapConnection()
             result = conn.get_secret("test_secret_id")
 
-            # Should fall back to boto3
-            boto3.client.return_value.get_secret_value.assert_called_with(SecretId="test_secret_id")
-            assert result["LDAP_USERNAME"] == "username"
+            self._assert_boto3_fallback_called(boto3)
+            self._assert_standard_secret_result(result)
 
     def test_get_secret_extension_http_error_fallback(self):
         """Test extension HTTP error falls back to boto3"""
@@ -132,18 +160,17 @@ class TestGetSecret:
         with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
             mock_secrets(boto3)
 
-            # Mock extension HTTP error
             with patch('urllib.request.urlopen') as mock_urlopen:
-                mock_urlopen.side_effect = urllib.error.HTTPError(
-                    "http://localhost:2773", 500, "Internal Server Error", {}, None
+                self._setup_extension_failure_mock(
+                    mock_urlopen,
+                    urllib.error.HTTPError("http://localhost:2773", 500, "Internal Server Error", {}, None)
                 )
 
                 conn = RealHcwLdapConnection()
                 result = conn.get_secret("test_secret_id")
 
-                # Should fall back to boto3
-                boto3.client.return_value.get_secret_value.assert_called_with(SecretId="test_secret_id")
-                assert result["LDAP_USERNAME"] == "username"
+                self._assert_boto3_fallback_called(boto3)
+                self._assert_standard_secret_result(result)
 
     def test_get_secret_extension_connection_error_fallback(self):
         """Test extension connection error falls back to boto3"""
@@ -152,16 +179,14 @@ class TestGetSecret:
         with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
             mock_secrets(boto3)
 
-            # Mock extension connection error
             with patch('urllib.request.urlopen') as mock_urlopen:
-                mock_urlopen.side_effect = urllib.error.URLError("Connection refused")
+                self._setup_extension_failure_mock(mock_urlopen, urllib.error.URLError("Connection refused"))
 
                 conn = RealHcwLdapConnection()
                 result = conn.get_secret("test_secret_id")
 
-                # Should fall back to boto3
-                boto3.client.return_value.get_secret_value.assert_called_with(SecretId="test_secret_id")
-                assert result["LDAP_USERNAME"] == "username"
+                self._assert_boto3_fallback_called(boto3)
+                self._assert_standard_secret_result(result)
 
     def test_get_secret_extension_json_error_fallback(self):
         """Test extension JSON parsing error falls back to boto3"""
@@ -170,7 +195,6 @@ class TestGetSecret:
         with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
             mock_secrets(boto3)
 
-            # Mock extension returning invalid JSON
             with patch('urllib.request.urlopen') as mock_urlopen:
                 mock_response = MagicMock()
                 mock_response.read.return_value.decode.return_value = "invalid json"
@@ -179,25 +203,21 @@ class TestGetSecret:
                 conn = RealHcwLdapConnection()
                 result = conn.get_secret("test_secret_id")
 
-                # Should fall back to boto3
-                boto3.client.return_value.get_secret_value.assert_called_with(SecretId="test_secret_id")
-                assert result["LDAP_USERNAME"] == "username"
+                self._assert_boto3_fallback_called(boto3)
+                self._assert_standard_secret_result(result)
 
     def test_get_secret_extension_and_boto3_both_fail(self):
         """Test both extension and boto3 failing raises exception"""
         boto3, _, _, _, _ = setup_ldap_connection_mock()
 
         with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
-            # Mock extension failure
             with patch('urllib.request.urlopen') as mock_urlopen:
-                mock_urlopen.side_effect = urllib.error.URLError("Extension failed")
+                self._setup_extension_failure_mock(mock_urlopen, urllib.error.URLError("Extension failed"))
 
                 # Mock boto3 failure
                 boto3.client.return_value.get_secret_value.side_effect = Exception("Boto3 failed")
 
-                # Create connection without calling connect() to test get_secret in isolation
-                conn = RealHcwLdapConnection.__new__(RealHcwLdapConnection)
-                conn.client = boto3.client.return_value
+                conn = self._create_isolated_connection(boto3)
 
                 with pytest.raises(Exception) as e:
                     conn.get_secret("test_secret_id")
@@ -210,22 +230,9 @@ class TestGetSecret:
 
         with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
             with patch('urllib.request.urlopen') as mock_urlopen:
-                mock_response = MagicMock()
-                mock_response.read.return_value.decode.return_value = json.dumps({
-                    "SecretString": json.dumps({
-                        "LDAP_SERVER_CERT": "server_cert",
-                        "MTLS_CLIENT_KEY": "client_key",
-                        "MTLS_CLIENT_CERT": "client_cert",
-                        "LDAP_USERNAME": "username",
-                        "PASSWORD": "password"
-                    })
-                })
-                mock_urlopen.return_value.__enter__.return_value = mock_response
+                self._setup_extension_success_mock(mock_urlopen)
 
-                # Create connection without calling connect() to test get_secret in isolation
-                conn = RealHcwLdapConnection.__new__(RealHcwLdapConnection)
-                conn.client = boto3.client.return_value
-
+                conn = self._create_isolated_connection(boto3)
                 result = conn.get_secret("secret/with/special@chars")
 
                 # Verify URL encoding
@@ -233,8 +240,7 @@ class TestGetSecret:
                 request = args[0]
                 assert "secret%2Fwith%2Fspecial%40chars" in request.get_full_url()
 
-                # Verify result
-                assert result["LDAP_USERNAME"] == "username"
+                self._assert_standard_secret_result(result)
 
 
 def test_connect():
