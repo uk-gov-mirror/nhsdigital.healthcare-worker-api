@@ -51,30 +51,90 @@ class RealHcwLdapConnection(HcwLdapConnection):
     def get_secret(self, secret_id) -> dict:
         logger.info(f"Requesting secret: {secret_id}", "SECRET_REQUEST_START", "null")
 
+        # Try AWS Secrets Manager Extension first (localhost:2773)
         call_start = time.time()
         try:
-            response = self.client.get_secret_value(SecretId=secret_id)
-            call_duration = time.time() - call_start
+            import urllib.request
+            import urllib.parse
 
-            logger.info(f"get_secret_value call took {call_duration:.2f}s", "SECRET_CALL_TIMING", "null")
+            # Get AWS session token for extension authentication
+            aws_session_token = os.environ.get('AWS_SESSION_TOKEN')
+            if not aws_session_token:
+                raise Exception("AWS_SESSION_TOKEN not available")
 
-            # Time the JSON parsing
-            parse_start = time.time()
-            result = json.loads(response["SecretString"])
-            parse_duration = time.time() - parse_start
+            # Extension HTTP API endpoint for Secrets Manager
+            # Format: http://localhost:2773/secretsmanager/get?secretId=<secret-id>
+            encoded_secret_id = urllib.parse.quote(secret_id, safe='')
+            url = f"http://localhost:2773/secretsmanager/get?secretId={encoded_secret_id}"
 
-            logger.info(f"JSON parsing took {parse_duration:.2f}s", "SECRET_PARSE_TIMING", "null")
+            logger.info("Attempting AWS Secrets Manager Extension", "SECRET_EXTENSION_ATTEMPT", "null")
 
-            # Log secret size (without exposing content)
-            secret_size = len(response["SecretString"])
-            logger.info(f"Secret size: {secret_size} bytes", "SECRET_SIZE_INFO", "null")
+            # Create request with required header
+            request = urllib.request.Request(url)
+            request.add_header('X-Aws-Parameters-Secrets-Token', aws_session_token)
 
-            return result
+            # Make the request with timeout
+            with urllib.request.urlopen(request, timeout=5) as response:
+                response_text = response.read().decode()
+                extension_result = json.loads(response_text)
+
+                call_duration = time.time() - call_start
+                logger.info(f"Extension call took {call_duration:.2f}s", "SECRET_EXTENSION_TIMING", "null")
+
+                # The extension returns the secret in a different format
+                # Extract the SecretString from the extension response
+                if 'SecretString' in extension_result:
+                    secret_string = extension_result['SecretString']
+                else:
+                    # Fallback: if the response format is different, log and fall back
+                    logger.info(f"Extension response format: {list(extension_result.keys())}", "SECRET_EXTENSION_FORMAT", "null")
+                    secret_string = extension_result
+
+                # Parse the actual secret content
+                parse_start = time.time()
+                if isinstance(secret_string, str):
+                    result = json.loads(secret_string)
+                else:
+                    result = secret_string
+                parse_duration = time.time() - parse_start
+
+                logger.info(f"JSON parsing took {parse_duration:.2f}s", "SECRET_PARSE_TIMING", "null")
+                logger.info("Successfully used AWS Secrets Manager Extension", "SECRET_EXTENSION_SUCCESS", "null")
+
+                return result
 
         except Exception as e:
             call_duration = time.time() - call_start
-            logger.error(f"get_secret_value failed after {call_duration:.2f}s: {e}", "SECRET_CALL_ERROR", "null")
-            raise
+            logger.info(f"Extension failed after {call_duration:.2f}s: {e}", "SECRET_EXTENSION_FAILED", "null")
+
+            # Fall back to boto3
+            logger.info("Falling back to boto3", "SECRET_BOTO3_FALLBACK", "null")
+
+            fallback_start = time.time()
+            try:
+                response = self.client.get_secret_value(SecretId=secret_id)
+                fallback_duration = time.time() - fallback_start
+
+                logger.info(f"boto3 fallback call took {fallback_duration:.2f}s", "SECRET_BOTO3_TIMING", "null")
+
+                # Time the JSON parsing
+                parse_start = time.time()
+                result = json.loads(response["SecretString"])
+                parse_duration = time.time() - parse_start
+
+                logger.info(f"JSON parsing took {parse_duration:.2f}s", "SECRET_PARSE_TIMING", "null")
+
+                # Log secret size (without exposing content)
+                secret_size = len(response["SecretString"])
+                logger.info(f"Secret size: {secret_size} bytes", "SECRET_SIZE", "null")
+
+                logger.info("Successfully fetched secret via boto3 fallback", "SECRET_BOTO3_SUCCESS", "null")
+                return result
+
+            except Exception as boto_error:
+                fallback_duration = time.time() - fallback_start
+                logger.error(f"boto3 fallback also failed after {fallback_duration:.2f}s: {boto_error}", "SECRET_BOTO3_ERROR", "null")
+                raise boto_error
 
     @staticmethod
     def save_secret_to_file(secret: str) -> str:
