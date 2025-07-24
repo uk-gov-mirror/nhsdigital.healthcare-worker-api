@@ -159,8 +159,8 @@ class RealHcwLdapConnection(HcwLdapConnection):
         """
         file_start = time.time()
 
-        # Generate content hash for cache key
-        content_hash = hashlib.md5(secret.encode()).hexdigest()[:12]  # 12 chars sufficient for uniqueness
+        # Generate content hash for cache key using SHA-256 (secure alternative to MD5)
+        content_hash = hashlib.sha256(secret.encode()).hexdigest()[:12]  # 12 chars sufficient for uniqueness
         cache_key = f"{cert_type}_{content_hash}"
 
         # Check if we already have this certificate cached
