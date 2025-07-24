@@ -126,7 +126,7 @@ class TestGetSecret:
         boto3, _, _, _, _ = setup_ldap_connection_mock()
 
         with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
-            with patch('urllib.request.urlopen') as mock_urlopen:
+            with self._mock_extension_request() as mock_urlopen:
                 self._setup_extension_success_mock(mock_urlopen)
 
                 conn = RealHcwLdapConnection()
@@ -143,7 +143,7 @@ class TestGetSecret:
         boto3, _, _, _, _ = setup_ldap_connection_mock()
 
         with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
-            with patch('urllib.request.urlopen') as mock_urlopen:
+            with self._mock_extension_request() as mock_urlopen:
                 self._setup_extension_success_mock(mock_urlopen, use_secret_string=False)
 
                 conn = RealHcwLdapConnection()
@@ -171,7 +171,7 @@ class TestGetSecret:
         with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
             mock_secrets(boto3)
 
-            with patch('urllib.request.urlopen') as mock_urlopen:
+            with self._mock_extension_request() as mock_urlopen:
                 self._setup_extension_failure_mock(
                     mock_urlopen,
                     urllib.error.HTTPError("http://localhost:2773", 500, "Internal Server Error", {}, None)
@@ -190,7 +190,7 @@ class TestGetSecret:
         with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
             mock_secrets(boto3)
 
-            with patch('urllib.request.urlopen') as mock_urlopen:
+            with self._mock_extension_request() as mock_urlopen:
                 self._setup_extension_failure_mock(mock_urlopen, urllib.error.URLError("Connection refused"))
 
                 conn = RealHcwLdapConnection()
@@ -206,7 +206,7 @@ class TestGetSecret:
         with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
             mock_secrets(boto3)
 
-            with patch('urllib.request.urlopen') as mock_urlopen:
+            with self._mock_extension_request() as mock_urlopen:
                 mock_response = MagicMock()
                 mock_response.read.return_value.decode.return_value = "invalid json"
                 mock_urlopen.return_value.__enter__.return_value = mock_response
@@ -222,7 +222,7 @@ class TestGetSecret:
         boto3, _, _, _, _ = setup_ldap_connection_mock()
 
         with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
-            with patch('urllib.request.urlopen') as mock_urlopen:
+            with self._mock_extension_request() as mock_urlopen:
                 self._setup_extension_failure_mock(mock_urlopen, urllib.error.URLError("Extension failed"))
 
                 # Mock boto3 failure
@@ -240,7 +240,7 @@ class TestGetSecret:
         boto3, _, _, _, _ = setup_ldap_connection_mock()
 
         with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
-            with patch('urllib.request.urlopen') as mock_urlopen:
+            with self._mock_extension_request() as mock_urlopen:
                 self._setup_extension_success_mock(mock_urlopen)
 
                 conn = self._create_isolated_connection(boto3)
