@@ -446,31 +446,31 @@ def test_certificate_caching_file_error():
     from ldap.real_connection import RealHcwLdapConnection
     import os
     from unittest.mock import patch
-    
+
     # Clear any existing cache
     RealHcwLdapConnection._cert_file_cache.clear()
-    
+
     test_cert_content = "test_cert_data"
-    
+
     # Mock open to raise OSError on first call only
     original_open = open
     call_count = 0
-    
+
     def mock_open_func(*args, **kwargs):
         nonlocal call_count
         call_count += 1
         if call_count == 1 and "test_cert_" in str(args[0]):
             raise OSError("Permission denied")
         return original_open(*args, **kwargs)
-    
+
     with patch('builtins.open', side_effect=mock_open_func):
-        # Should handle the error and create fallback file  
+        # Should handle the error and create fallback file
         filename = RealHcwLdapConnection.save_secret_to_file_cached(test_cert_content, "test_cert")
-        
+
         # Should have created some kind of fallback file
         assert filename.startswith("/tmp/")
         assert filename.endswith(".pem")
-    
+
     # Clean up
     RealHcwLdapConnection._cert_file_cache.clear()
     try:
