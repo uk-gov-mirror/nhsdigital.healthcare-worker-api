@@ -257,7 +257,7 @@ def test_connect():
         server_cert_filename = "/tmp/server_cert_df5495d73e2c.pem"
         client_key_filename = "/tmp/client_key_f4317198072e.pem"
         client_cert_filename = "/tmp/client_cert_55e976fc2952.pem"
-        
+
         tls.assert_called_with(
             local_private_key_file=client_key_filename,
             local_certificate_file=client_cert_filename,

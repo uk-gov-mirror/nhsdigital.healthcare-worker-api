@@ -29,7 +29,7 @@ class LdapErrorCode(IntEnum):
 class RealHcwLdapConnection(HcwLdapConnection):
     connection: Connection
     bind_time: datetime
-    
+
     # Class-level cache for certificate files (persists across requests in warm container)
     _cert_file_cache = {}
 
@@ -148,11 +148,11 @@ class RealHcwLdapConnection(HcwLdapConnection):
         Uses content hash to identify unique certificates and reuse existing files.
         """
         file_start = time.time()
-        
+
         # Generate content hash for cache key
         content_hash = hashlib.md5(secret.encode()).hexdigest()[:12]  # 12 chars sufficient for uniqueness
         cache_key = f"{cert_type}_{content_hash}"
-        
+
         # Check if we already have this certificate cached
         if cache_key in cls._cert_file_cache:
             cached_filename = cls._cert_file_cache[cache_key]
@@ -165,19 +165,19 @@ class RealHcwLdapConnection(HcwLdapConnection):
                 # File was deleted, remove from cache
                 del cls._cert_file_cache[cache_key]
                 logger.info(f"Cached {cert_type} file was deleted, removing from cache", "CERT_CACHE_CLEANUP", "null")
-        
+
         # Cache miss - create new file with predictable name
         filename = f"/tmp/{cert_type}_{content_hash}.pem"  # NOSONAR python:S5443
-        
+
         with open(filename, "w") as f:
             f.write(secret)
-        
+
         # Store in cache for future use
         cls._cert_file_cache[cache_key] = filename
-        
+
         file_duration = time.time() - file_start
         logger.info(f"Certificate cache MISS for {cert_type}, created file, took {file_duration:.3f}s, size: {len(secret)} bytes", "CERT_CACHE_MISS", "null")
-        
+
         return filename
 
     def connect(self) -> Optional[Connection]:
