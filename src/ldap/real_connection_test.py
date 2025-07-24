@@ -1,6 +1,7 @@
 import json
 import os
 import urllib.error
+from contextlib import contextmanager
 from datetime import datetime
 from ssl import CERT_REQUIRED
 from unittest.mock import patch, mock_open, MagicMock
@@ -51,6 +52,16 @@ def setup_ldap_connection_mock():
 
 class TestGetSecret:
     """Test the new AWS Secrets Manager Extension functionality"""
+
+    @staticmethod
+    @contextmanager
+    def _mock_extension_request():
+        """
+        Context manager to reduce urllib.request.urlopen duplication flagged by SonarCloud.
+        Provides a mocked urlopen for extension testing.
+        """
+        with patch('urllib.request.urlopen') as mock_urlopen:
+            yield mock_urlopen
 
     @staticmethod
     def _get_standard_secret_data():

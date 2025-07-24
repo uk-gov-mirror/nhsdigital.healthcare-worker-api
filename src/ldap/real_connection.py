@@ -54,13 +54,27 @@ class RealHcwLdapConnection(HcwLdapConnection):
         logger.info(f"Total LDAP initialization took {total_init_duration:.2f}s", "LDAP_INIT_TOTAL_TIMING", "null")
         logger.info("LDAP connection established", "LDAP_CONN_SUCCESS", "null")
 
+    def _make_extension_request(self, url: str, headers: dict, timeout: int = 5) -> dict:
+        """
+        Make HTTP request to AWS Secrets Manager Extension with proper error handling.
+        Extracted to reduce code duplication flagged by SonarCloud.
+        """
+        import urllib.request
+
+        request = urllib.request.Request(url)
+        for header_name, header_value in headers.items():
+            request.add_header(header_name, header_value)
+
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            response_text = response.read().decode()
+            return json.loads(response_text)
+
     def get_secret(self, secret_id) -> dict:
         logger.info(f"Requesting secret: {secret_id}", "SECRET_REQUEST_START", "null")
 
         # Try AWS Secrets Manager Extension first (localhost:2773)
         call_start = time.time()
         try:
-            import urllib.request
             import urllib.parse
 
             # Get AWS session token for extension authentication
@@ -75,39 +89,34 @@ class RealHcwLdapConnection(HcwLdapConnection):
 
             logger.info("Attempting AWS Secrets Manager Extension", "SECRET_EXTENSION_ATTEMPT", "null")
 
-            # Create request with required header
-            request = urllib.request.Request(url)
-            request.add_header('X-Aws-Parameters-Secrets-Token', aws_session_token)
+            # Use extracted method to make the HTTP request
+            headers = {'X-Aws-Parameters-Secrets-Token': aws_session_token}
+            extension_result = self._make_extension_request(url, headers)
 
-            # Make the request with timeout
-            with urllib.request.urlopen(request, timeout=5) as response:
-                response_text = response.read().decode()
-                extension_result = json.loads(response_text)
+            call_duration = time.time() - call_start
+            logger.info(f"Extension call took {call_duration:.2f}s", "SECRET_EXTENSION_TIMING", "null")
 
-                call_duration = time.time() - call_start
-                logger.info(f"Extension call took {call_duration:.2f}s", "SECRET_EXTENSION_TIMING", "null")
+            # The extension returns the secret in a different format
+            # Extract the SecretString from the extension response
+            if 'SecretString' in extension_result:
+                secret_string = extension_result['SecretString']
+            else:
+                # Fallback: if the response format is different, log and fall back
+                logger.info(f"Extension response format: {list(extension_result.keys())}", "SECRET_EXTENSION_FORMAT", "null")
+                secret_string = extension_result
 
-                # The extension returns the secret in a different format
-                # Extract the SecretString from the extension response
-                if 'SecretString' in extension_result:
-                    secret_string = extension_result['SecretString']
-                else:
-                    # Fallback: if the response format is different, log and fall back
-                    logger.info(f"Extension response format: {list(extension_result.keys())}", "SECRET_EXTENSION_FORMAT", "null")
-                    secret_string = extension_result
+            # Parse the actual secret content
+            parse_start = time.time()
+            if isinstance(secret_string, str):
+                result = json.loads(secret_string)
+            else:
+                result = secret_string
+            parse_duration = time.time() - parse_start
 
-                # Parse the actual secret content
-                parse_start = time.time()
-                if isinstance(secret_string, str):
-                    result = json.loads(secret_string)
-                else:
-                    result = secret_string
-                parse_duration = time.time() - parse_start
+            logger.info(f"JSON parsing took {parse_duration:.2f}s", "SECRET_PARSE_TIMING", "null")
+            logger.info("Successfully used AWS Secrets Manager Extension", "SECRET_EXTENSION_SUCCESS", "null")
 
-                logger.info(f"JSON parsing took {parse_duration:.2f}s", "SECRET_PARSE_TIMING", "null")
-                logger.info("Successfully used AWS Secrets Manager Extension", "SECRET_EXTENSION_SUCCESS", "null")
-
-                return result
+            return result
 
         except (EnvironmentError, urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError, OSError) as e:
             call_duration = time.time() - call_start
