@@ -3,6 +3,7 @@ import os
 import time
 import uuid
 import urllib.error
+import hashlib
 from datetime import datetime
 from enum import IntEnum
 from ssl import CERT_REQUIRED
@@ -28,6 +29,9 @@ class LdapErrorCode(IntEnum):
 class RealHcwLdapConnection(HcwLdapConnection):
     connection: Connection
     bind_time: datetime
+    
+    # Class-level cache for certificate files (persists across requests in warm container)
+    _cert_file_cache = {}
 
     def __init__(self):
         init_start_time = time.time()
@@ -137,14 +141,43 @@ class RealHcwLdapConnection(HcwLdapConnection):
                 logger.error(f"boto3 fallback also failed after {fallback_duration:.2f}s: {boto_error}", "SECRET_BOTO3_ERROR", "null")
                 raise boto_error
 
-    @staticmethod
-    def save_secret_to_file(secret: str) -> str:
+    @classmethod
+    def save_secret_to_file_cached(cls, secret: str, cert_type: str) -> str:
+        """
+        Cache certificate files to avoid redundant I/O operations.
+        Uses content hash to identify unique certificates and reuse existing files.
+        """
         file_start = time.time()
-        filename = f"/tmp/{uuid.uuid4()}.pem"  # NOSONAR python:S5443
+        
+        # Generate content hash for cache key
+        content_hash = hashlib.md5(secret.encode()).hexdigest()[:12]  # 12 chars sufficient for uniqueness
+        cache_key = f"{cert_type}_{content_hash}"
+        
+        # Check if we already have this certificate cached
+        if cache_key in cls._cert_file_cache:
+            cached_filename = cls._cert_file_cache[cache_key]
+            # Verify file still exists (Lambda /tmp/ can be cleared)
+            if os.path.exists(cached_filename):
+                file_duration = time.time() - file_start
+                logger.info(f"Certificate cache HIT for {cert_type}, took {file_duration:.3f}s", "CERT_CACHE_HIT", "null")
+                return cached_filename
+            else:
+                # File was deleted, remove from cache
+                del cls._cert_file_cache[cache_key]
+                logger.info(f"Cached {cert_type} file was deleted, removing from cache", "CERT_CACHE_CLEANUP", "null")
+        
+        # Cache miss - create new file with predictable name
+        filename = f"/tmp/{cert_type}_{content_hash}.pem"  # NOSONAR python:S5443
+        
         with open(filename, "w") as f:
             f.write(secret)
+        
+        # Store in cache for future use
+        cls._cert_file_cache[cache_key] = filename
+        
         file_duration = time.time() - file_start
-        logger.info(f"File write took {file_duration:.2f}s, size: {len(secret)} bytes", "FILE_WRITE_TIMING", "null")
+        logger.info(f"Certificate cache MISS for {cert_type}, created file, took {file_duration:.3f}s, size: {len(secret)} bytes", "CERT_CACHE_MISS", "null")
+        
         return filename
 
     def connect(self) -> Optional[Connection]:
@@ -168,9 +201,9 @@ class RealHcwLdapConnection(HcwLdapConnection):
 
         # Time the file operations
         file_ops_start = time.time()
-        server_cert_filename = self.save_secret_to_file(ldap_credentials["LDAP_SERVER_CERT"])
-        mtls_client_private_key_filename = self.save_secret_to_file(ldap_credentials["MTLS_CLIENT_KEY"])
-        mtls_client_cert_filename = self.save_secret_to_file(ldap_credentials["MTLS_CLIENT_CERT"])
+        server_cert_filename = self.save_secret_to_file_cached(ldap_credentials["LDAP_SERVER_CERT"], "server_cert")
+        mtls_client_private_key_filename = self.save_secret_to_file_cached(ldap_credentials["MTLS_CLIENT_KEY"], "client_key")
+        mtls_client_cert_filename = self.save_secret_to_file_cached(ldap_credentials["MTLS_CLIENT_CERT"], "client_cert")
         file_ops_duration = time.time() - file_ops_start
         logger.info(f"All file operations took {file_ops_duration:.2f}s", "FILE_OPS_TIMING", "null")
         logger.info("Saved secrets to tmp file","SECRETS_TMP_FILE", "null")
