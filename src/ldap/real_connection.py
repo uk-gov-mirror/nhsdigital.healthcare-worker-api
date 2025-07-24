@@ -11,6 +11,7 @@ from typing import Optional
 
 import boto3
 from botocore.config import Config
+from botocore.exceptions import ClientError
 from ldap3 import Tls, Server, Connection, SAFE_SYNC
 from ldap3.core.exceptions import LDAPException
 
@@ -136,7 +137,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
                 logger.info("Successfully fetched secret via boto3 fallback", "SECRET_BOTO3_SUCCESS", "null")
                 return result
 
-            except Exception as boto_error:
+            except (json.JSONDecodeError, KeyError, ClientError, OSError) as boto_error:
                 fallback_duration = time.time() - fallback_start
                 logger.error(f"boto3 fallback also failed after {fallback_duration:.2f}s: {boto_error}", "SECRET_BOTO3_ERROR", "null")
                 raise boto_error
@@ -157,23 +158,37 @@ class RealHcwLdapConnection(HcwLdapConnection):
         if cache_key in cls._cert_file_cache:
             cached_filename = cls._cert_file_cache[cache_key]
             # Verify file still exists (Lambda /tmp/ can be cleared)
-            if os.path.exists(cached_filename):
-                file_duration = time.time() - file_start
-                logger.info(f"Certificate cache HIT for {cert_type}, took {file_duration:.3f}s", "CERT_CACHE_HIT", "null")
-                return cached_filename
-            else:
-                # File was deleted, remove from cache
+            try:
+                if os.path.exists(cached_filename):
+                    file_duration = time.time() - file_start
+                    logger.info(f"Certificate cache HIT for {cert_type}, took {file_duration:.3f}s", "CERT_CACHE_HIT", "null")
+                    return cached_filename
+                else:
+                    # File was deleted, remove from cache
+                    del cls._cert_file_cache[cache_key]
+                    logger.info(f"Cached {cert_type} file was deleted, removing from cache", "CERT_CACHE_CLEANUP", "null")
+            except OSError as check_error:
+                # Handle case where file check fails (e.g., permission issues)
+                logger.info(f"Cache file check failed for {cert_type}: {check_error}, removing from cache", "CERT_CACHE_CHECK_FAILED", "null")
                 del cls._cert_file_cache[cache_key]
-                logger.info(f"Cached {cert_type} file was deleted, removing from cache", "CERT_CACHE_CLEANUP", "null")
 
         # Cache miss - create new file with predictable name
         filename = f"/tmp/{cert_type}_{content_hash}.pem"  # NOSONAR python:S5443
 
-        with open(filename, "w") as f:
-            f.write(secret)
+        try:
+            with open(filename, "w") as f:
+                f.write(secret)
 
-        # Store in cache for future use
-        cls._cert_file_cache[cache_key] = filename
+            # Store in cache for future use
+            cls._cert_file_cache[cache_key] = filename
+        except (OSError, IOError) as file_error:
+            logger.error(f"Failed to create certificate file {filename}: {file_error}", "CERT_FILE_ERROR", "null")
+            # Fallback: use temporary file with UUID (original behavior)
+            fallback_filename = f"/tmp/{uuid.uuid4()}.pem"  # NOSONAR python:S5443
+            with open(fallback_filename, "w") as f:
+                f.write(secret)
+            filename = fallback_filename
+            logger.info(f"Created fallback certificate file: {filename}", "CERT_FALLBACK_FILE", "null")
 
         file_duration = time.time() - file_start
         logger.info(f"Certificate cache MISS for {cert_type}, created file, took {file_duration:.3f}s, size: {len(secret)} bytes", "CERT_CACHE_MISS", "null")
