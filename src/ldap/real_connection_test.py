@@ -104,7 +104,7 @@ class TestGetSecret:
     @staticmethod
     def _assert_extension_called_correctly(mock_urlopen, expected_secret_id, expected_token="test_token"):
         """Assert extension was called with correct parameters"""
-        args, kwargs = mock_urlopen.call_args
+        args, _ = mock_urlopen.call_args
         request = args[0]
         assert "localhost:2773/secretsmanager/get" in request.get_full_url()
         assert f"secretId={expected_secret_id}" in request.get_full_url()
@@ -140,7 +140,7 @@ class TestGetSecret:
 
     def test_get_secret_extension_success_direct_format(self):
         """Test extension returning secret directly (not wrapped in SecretString)"""
-        boto3, _, _, _, _ = setup_ldap_connection_mock()
+        _, _, _, _, _ = setup_ldap_connection_mock()
 
         with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
             with self._mock_extension_request() as mock_urlopen:
@@ -247,7 +247,7 @@ class TestGetSecret:
                 result = conn.get_secret("secret/with/special@chars")
 
                 # Verify URL encoding
-                args, kwargs = mock_urlopen.call_args
+                args, _ = mock_urlopen.call_args
                 request = args[0]
                 assert "secret%2Fwith%2Fspecial%40chars" in request.get_full_url()
 
@@ -486,7 +486,7 @@ def test_certificate_caching_file_error():
     RealHcwLdapConnection._cert_file_cache.clear()
     try:
         os.unlink(filename)
-    except (FileNotFoundError, OSError):
+    except OSError:
         pass  # File cleanup - ignore if already gone
 
 
