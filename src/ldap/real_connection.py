@@ -1,5 +1,6 @@
 import json
 import os
+import tempfile
 import time
 import uuid
 import urllib.error
@@ -166,7 +167,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
         # Check if we already have this certificate cached
         if cache_key in cls._cert_file_cache:
             cached_filename = cls._cert_file_cache[cache_key]
-            # Verify file still exists (Lambda /tmp/ can be cleared)
+            # Verify file still exists (Lambda temp directory can be cleared)
             try:
                 if os.path.exists(cached_filename):
                     file_duration = time.time() - file_start
@@ -182,7 +183,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
                 del cls._cert_file_cache[cache_key]
 
         # Cache miss - create new file with predictable name
-        filename = f"/tmp/{cert_type}_{content_hash}.pem"  # NOSONAR python:S5443
+        filename = os.path.join(tempfile.gettempdir(), f"{cert_type}_{content_hash}.pem")
 
         try:
             with open(filename, "w") as f:
@@ -193,7 +194,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
         except (OSError, IOError) as file_error:
             logger.error(f"Failed to create certificate file {filename}: {file_error}", "CERT_FILE_ERROR", "null")
             # Fallback: use temporary file with UUID (original behavior)
-            fallback_filename = f"/tmp/{uuid.uuid4()}.pem"  # NOSONAR python:S5443
+            fallback_filename = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4()}.pem")
             with open(fallback_filename, "w") as f:
                 f.write(secret)
             filename = fallback_filename

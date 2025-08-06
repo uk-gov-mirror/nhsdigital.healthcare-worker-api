@@ -1,5 +1,6 @@
 import json
 import os
+import tempfile
 import urllib.error
 from contextlib import contextmanager
 from datetime import datetime
@@ -265,9 +266,10 @@ def test_connect():
         boto3.client.return_value.get_secret_value.assert_called_with(SecretId="creds_secret_id")
 
         # With certificate caching, each cert type gets its own content-hash based filename (SHA-256)
-        server_cert_filename = "/tmp/server_cert_566980437245.pem"
-        client_key_filename = "/tmp/client_key_d9ee725310e9.pem"
-        client_cert_filename = "/tmp/client_cert_563a137a6115.pem"
+        temp_dir = tempfile.gettempdir()
+        server_cert_filename = os.path.join(temp_dir, "server_cert_566980437245.pem")
+        client_key_filename = os.path.join(temp_dir, "client_key_d9ee725310e9.pem")
+        client_cert_filename = os.path.join(temp_dir, "client_cert_563a137a6115.pem")
 
         tls.assert_called_with(
             local_private_key_file=client_key_filename,
@@ -479,7 +481,7 @@ def test_certificate_caching_file_error():
         filename = RealHcwLdapConnection.save_secret_to_file_cached(test_cert_content, "test_cert")
 
         # Should have created some kind of fallback file
-        assert filename.startswith("/tmp/")
+        assert filename.startswith(tempfile.gettempdir())
         assert filename.endswith(".pem")
 
     # Clean up
