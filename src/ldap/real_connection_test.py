@@ -459,39 +459,39 @@ def test_ldap_retry_logic():
     from ldap3.core.exceptions import LDAPException
     from unittest.mock import MagicMock
     boto3, tls, server, connection, uuid = setup_ldap_connection_mock()
-    
+
     with patch.dict(os.environ, environment_variables()):
         mock_secrets(boto3)
-        
+
         # Create separate mock connection instances for each attempt
         connection_attempts = [MagicMock(), MagicMock(), MagicMock()]
-        
+
         # First two attempts fail with bind exceptions, third succeeds
         connection_attempts[0].bind.side_effect = LDAPException("Network timeout")
-        connection_attempts[1].bind.side_effect = LDAPException("Connection refused") 
+        connection_attempts[1].bind.side_effect = LDAPException("Connection refused")
         connection_attempts[2].bind.return_value = True
-        
+
         # Mock Connection to return our prepared instances
         connection.side_effect = connection_attempts
-        
+
         # Mock time.sleep to avoid actual delays in test
         with patch('time.sleep') as mock_sleep:
             conn = RealHcwLdapConnection()
-            
+
             # Should have made 3 connection attempts
             assert connection.call_count == 3
-            
+
             # Should have called sleep twice (between attempts)
             assert mock_sleep.call_count == 2
             mock_sleep.assert_any_call(1)  # First backoff: 1 second
             mock_sleep.assert_any_call(2)  # Second backoff: 2 seconds
-            
+
             # Verify timeout parameters are set correctly
             for call in connection.call_args_list:
                 kwargs = call[1]
                 assert kwargs['socket_connect_timeout'] == 8
                 assert kwargs['socket_keepalive'] is True
-            
+
             # Connection should succeed after 3 attempts - use the last successful one
             assert conn.connection == connection_attempts[2]
 
