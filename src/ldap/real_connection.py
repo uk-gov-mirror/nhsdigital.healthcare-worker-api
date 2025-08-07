@@ -287,7 +287,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
         base_backoff_delay = 1   # seconds
 
         logger.info(f"Starting LDAP connection with retry logic: {max_attempts} attempts, {timeout_per_attempt}s timeout each",
-                   "LDAP_RETRY_START", "null")
+                    "LDAP_RETRY_START", "null")
 
         last_exception = None
         total_retry_start = time.time()
@@ -316,19 +316,19 @@ class RealHcwLdapConnection(HcwLdapConnection):
                 if bound:
                     total_retry_duration = time.time() - total_retry_start
                     logger.info(f"LDAP bind succeeded on attempt {attempt_number} in {bind_duration:.2f}s (total retry time: {total_retry_duration:.2f}s)",
-                               "LDAP_BIND_SUCCESS", "null")
+                                "LDAP_BIND_SUCCESS", "null")
                     return connection
                 else:
                     # Bind returned False (authentication failed)
                     logger.warning(f"LDAP bind failed on attempt {attempt_number}: authentication rejected",
-                                 "LDAP_BIND_AUTH_FAILED", "null")
+                                    "LDAP_BIND_AUTH_FAILED", "null")
                     raise HcwException(500, "LDAP authentication failed", "exception")
 
             except (LDAPException, OSError, TimeoutError) as e:
                 last_exception = e
                 attempt_duration = time.time() - bind_start if 'bind_start' in locals() else 0
                 logger.warning(f"LDAP attempt {attempt_number} failed after {attempt_duration:.2f}s: {type(e).__name__}: {e}",
-                             "LDAP_RETRY_FAILED", "null")
+                                "LDAP_RETRY_FAILED", "null")
 
                 # If this isn't the last attempt, wait before retrying
                 if attempt_number < max_attempts:
@@ -341,7 +341,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
         logger.error(f"All {max_attempts} LDAP connection attempts failed after {total_retry_duration:.2f}s",
                     "LDAP_RETRY_EXHAUSTED", "null")
         raise HcwException(500, f"LDAP connection failed after {max_attempts} attempts: {last_exception}",
-                          "exception", "Error connecting to LDAP")
+                            "exception", "Error connecting to LDAP")
 
     @staticmethod
     def check_response(uid, success, result):
