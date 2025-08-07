@@ -303,9 +303,9 @@ class RealHcwLdapConnection(HcwLdapConnection):
                     user=username,
                     password=password,
                     client_strategy=SAFE_SYNC,
-                    # Set socket-level timeout to prevent hanging
-                    socket_connect_timeout=timeout_per_attempt,
-                    socket_keepalive=True
+                    # Set receive timeout to prevent hanging
+                    receive_timeout=timeout_per_attempt,
+                    pool_keepalive=timeout_per_attempt
                 )
 
                 # Time the bind operation for this attempt

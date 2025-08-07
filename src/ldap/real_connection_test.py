@@ -281,7 +281,7 @@ def test_connect():
             use_ssl=True, tls=tls.return_value)
 
         connection.assert_called_with(server.return_value, user="username", password="password",
-                                        client_strategy=SAFE_SYNC, socket_connect_timeout=8, socket_keepalive=True)
+                                        client_strategy=SAFE_SYNC, receive_timeout=8, pool_keepalive=8)
         assert connection.return_value.bind.called
 
         assert conn.connection == connection.return_value
@@ -489,8 +489,8 @@ def test_ldap_retry_logic():
             # Verify timeout parameters are set correctly
             for call in connection.call_args_list:
                 kwargs = call[1]
-                assert kwargs['socket_connect_timeout'] == 8
-                assert kwargs['socket_keepalive'] is True
+                assert kwargs['receive_timeout'] == 8
+                assert kwargs['pool_keepalive'] == 8
 
             # Connection should succeed after 3 attempts - use the last successful one
             assert conn.connection == connection_attempts[2]
