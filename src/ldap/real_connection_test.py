@@ -532,7 +532,3 @@ def test_certificate_caching_file_error():
         os.unlink(filename)
     except OSError:
         pass  # File cleanup - ignore if already gone
-
-
-# Additional error handling paths are covered by the comprehensive error handling
-# in save_secret_to_file_cached method - SonarCloud will see the code is present
