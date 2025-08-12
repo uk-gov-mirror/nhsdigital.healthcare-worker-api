@@ -160,8 +160,8 @@ class RealHcwLdapConnection(HcwLdapConnection):
         """
         file_start = time.time()
 
-        # Generate content hash for cache key using SHA-256 (secure alternative to MD5)
-        content_hash = hashlib.sha256(secret.encode()).hexdigest()[:12]  # 12 chars sufficient for uniqueness
+        # Generate content hash for cache key using SHA-256
+        content_hash = hashlib.sha256(secret.encode()).hexdigest()[:12]  # 12 chars for unique filename
         cache_key = f"{cert_type}_{content_hash}"
 
         # Check if we already have this certificate cached
@@ -249,7 +249,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
             tls_setup_duration = time.time() - tls_setup_start
             logger.info(f"TLS and server setup took {tls_setup_duration:.2f}s", "TLS_SETUP_TIMING", "null")
 
-            # Attempt LDAP connection with intelligent retry logic
+            # Attempt LDAP connection with not-very-intelligent retry logic
             connection = self._connect_with_retry(server, username, password)
 
             self.bind_time = datetime.now()
@@ -265,9 +265,9 @@ class RealHcwLdapConnection(HcwLdapConnection):
 
     def _connect_with_retry(self, server, username, password):
         """
-        Attempt LDAP connection with intelligent retry logic and timeout.
+        Attempt LDAP connection with basic retry logic and timeout.
 
-        Implements exponential backoff retry strategy to handle transient network issues
+        Implements basic exponential backoff retry strategy to handle transient network issues
         and LDAP server temporary unavailability. Each attempt has a configurable timeout
         to prevent indefinite hanging.
 
