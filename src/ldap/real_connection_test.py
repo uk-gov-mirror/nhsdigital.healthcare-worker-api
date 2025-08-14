@@ -1,5 +1,8 @@
 import json
 import os
+import tempfile
+import urllib.error
+from contextlib import contextmanager
 from datetime import datetime
 from ssl import CERT_REQUIRED
 from unittest.mock import patch, mock_open, MagicMock
@@ -48,6 +51,210 @@ def setup_ldap_connection_mock():
             ldap.real_connection.Connection, ldap.real_connection.uuid)
 
 
+class TestGetSecret:
+    """Test the new AWS Secrets Manager Extension functionality"""
+
+    @staticmethod
+    @contextmanager
+    def _mock_extension_request():
+        """
+        Context manager to reduce urllib.request.urlopen duplication flagged by SonarCloud.
+        Provides a mocked urlopen for extension testing.
+        """
+        with patch('urllib.request.urlopen') as mock_urlopen:
+            yield mock_urlopen
+
+    @staticmethod
+    def _get_standard_secret_data():
+        """Standard LDAP secret data used across tests"""
+        return {
+            "LDAP_SERVER_CERT": "server_cert",
+            "MTLS_CLIENT_KEY": "client_key",
+            "MTLS_CLIENT_CERT": "client_cert",
+            "LDAP_USERNAME": "username",
+            "PASSWORD": "password"
+        }
+
+    @staticmethod
+    def _setup_extension_success_mock(mock_urlopen, secret_data=None, use_secret_string=True):
+        """Setup mock for successful extension call"""
+        if secret_data is None:
+            secret_data = TestGetSecret._get_standard_secret_data()
+
+        mock_response = MagicMock()
+        if use_secret_string:
+            response_data = {"SecretString": json.dumps(secret_data)}
+        else:
+            response_data = secret_data
+
+        mock_response.read.return_value.decode.return_value = json.dumps(response_data)
+        mock_urlopen.return_value.__enter__.return_value = mock_response
+
+    @staticmethod
+    def _setup_extension_failure_mock(mock_urlopen, error):
+        """Setup mock for extension failure"""
+        mock_urlopen.side_effect = error
+
+    @staticmethod
+    def _create_isolated_connection(boto3_mock):
+        """Create connection without full initialization for isolated testing"""
+        conn = RealHcwLdapConnection.__new__(RealHcwLdapConnection)
+        conn.client = boto3_mock.client.return_value
+        return conn
+
+    @staticmethod
+    def _assert_extension_called_correctly(mock_urlopen, expected_secret_id, expected_token="test_token"):
+        """Assert extension was called with correct parameters"""
+        args, _ = mock_urlopen.call_args
+        request = args[0]
+        assert "localhost:2773/secretsmanager/get" in request.get_full_url()
+        assert f"secretId={expected_secret_id}" in request.get_full_url()
+        assert request.get_header('X-aws-parameters-secrets-token') == expected_token
+
+    @staticmethod
+    def _assert_standard_secret_result(result):
+        """Assert result contains expected LDAP credentials"""
+        assert result["LDAP_USERNAME"] == "username"
+        assert result["PASSWORD"] == "password"
+
+    @staticmethod
+    def _assert_boto3_fallback_called(boto3_mock, secret_id="test_secret_id"):
+        """Assert boto3 fallback was called correctly"""
+        boto3_mock.client.return_value.get_secret_value.assert_called_with(SecretId=secret_id)
+
+    def test_get_secret_extension_success(self):
+        """Test successful secret retrieval via AWS Secrets Manager Extension"""
+        boto3, _, _, _, _ = setup_ldap_connection_mock()
+
+        with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
+            with self._mock_extension_request() as mock_urlopen:
+                self._setup_extension_success_mock(mock_urlopen)
+
+                conn = RealHcwLdapConnection()
+                result = conn.get_secret("test_secret_id")
+
+                self._assert_extension_called_correctly(mock_urlopen, "test_secret_id")
+                self._assert_standard_secret_result(result)
+
+                # Verify boto3 was NOT called (extension succeeded)
+                boto3.client.return_value.get_secret_value.assert_not_called()
+
+    def test_get_secret_extension_success_direct_format(self):
+        """Test extension returning secret directly (not wrapped in SecretString)"""
+        _, _, _, _, _ = setup_ldap_connection_mock()
+
+        with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
+            with self._mock_extension_request() as mock_urlopen:
+                self._setup_extension_success_mock(mock_urlopen, use_secret_string=False)
+
+                conn = RealHcwLdapConnection()
+                result = conn.get_secret("test_secret_id")
+
+                self._assert_standard_secret_result(result)
+
+    def test_get_secret_extension_no_session_token(self):
+        """Test extension fails when AWS_SESSION_TOKEN is missing, falls back to boto3"""
+        boto3, _, _, _, _ = setup_ldap_connection_mock()
+
+        with patch.dict(os.environ, environment_variables(), clear=True):  # No AWS_SESSION_TOKEN
+            mock_secrets(boto3)
+
+            conn = RealHcwLdapConnection()
+            result = conn.get_secret("test_secret_id")
+
+            self._assert_boto3_fallback_called(boto3)
+            self._assert_standard_secret_result(result)
+
+    def test_get_secret_extension_http_error_fallback(self):
+        """Test extension HTTP error falls back to boto3"""
+        boto3, _, _, _, _ = setup_ldap_connection_mock()
+
+        with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
+            mock_secrets(boto3)
+
+            with self._mock_extension_request() as mock_urlopen:
+                self._setup_extension_failure_mock(
+                    mock_urlopen,
+                    urllib.error.HTTPError("http://localhost:2773", 500, "Internal Server Error", {}, None)
+                )
+
+                conn = RealHcwLdapConnection()
+                result = conn.get_secret("test_secret_id")
+
+                self._assert_boto3_fallback_called(boto3)
+                self._assert_standard_secret_result(result)
+
+    def test_get_secret_extension_connection_error_fallback(self):
+        """Test extension connection error falls back to boto3"""
+        boto3, _, _, _, _ = setup_ldap_connection_mock()
+
+        with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
+            mock_secrets(boto3)
+
+            with self._mock_extension_request() as mock_urlopen:
+                self._setup_extension_failure_mock(mock_urlopen, urllib.error.URLError("Connection refused"))
+
+                conn = RealHcwLdapConnection()
+                result = conn.get_secret("test_secret_id")
+
+                self._assert_boto3_fallback_called(boto3)
+                self._assert_standard_secret_result(result)
+
+    def test_get_secret_extension_json_error_fallback(self):
+        """Test extension JSON parsing error falls back to boto3"""
+        boto3, _, _, _, _ = setup_ldap_connection_mock()
+
+        with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
+            mock_secrets(boto3)
+
+            with self._mock_extension_request() as mock_urlopen:
+                mock_response = MagicMock()
+                mock_response.read.return_value.decode.return_value = "invalid json"
+                mock_urlopen.return_value.__enter__.return_value = mock_response
+
+                conn = RealHcwLdapConnection()
+                result = conn.get_secret("test_secret_id")
+
+                self._assert_boto3_fallback_called(boto3)
+                self._assert_standard_secret_result(result)
+
+    def test_get_secret_extension_and_boto3_both_fail(self):
+        """Test both extension and boto3 failing raises exception"""
+        boto3, _, _, _, _ = setup_ldap_connection_mock()
+
+        with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
+            with self._mock_extension_request() as mock_urlopen:
+                self._setup_extension_failure_mock(mock_urlopen, urllib.error.URLError("Extension failed"))
+
+                # Mock boto3 failure
+                boto3.client.return_value.get_secret_value.side_effect = Exception("Boto3 failed")
+
+                conn = self._create_isolated_connection(boto3)
+
+                with pytest.raises(Exception) as e:
+                    conn.get_secret("test_secret_id")
+
+                assert "Boto3 failed" in str(e.value)
+
+    def test_get_secret_special_characters_in_secret_id(self):
+        """Test secret ID with special characters gets properly URL encoded"""
+        boto3, _, _, _, _ = setup_ldap_connection_mock()
+
+        with patch.dict(os.environ, {"AWS_SESSION_TOKEN": "test_token", **environment_variables()}):
+            with self._mock_extension_request() as mock_urlopen:
+                self._setup_extension_success_mock(mock_urlopen)
+
+                conn = self._create_isolated_connection(boto3)
+                result = conn.get_secret("secret/with/special@chars")
+
+                # Verify URL encoding
+                args, _ = mock_urlopen.call_args
+                request = args[0]
+                assert "secret%2Fwith%2Fspecial%40chars" in request.get_full_url()
+
+                self._assert_standard_secret_result(result)
+
+
 def test_connect():
     boto3, tls, server, connection, uuid = setup_ldap_connection_mock()
 
@@ -58,18 +265,23 @@ def test_connect():
         conn = RealHcwLdapConnection()
         boto3.client.return_value.get_secret_value.assert_called_with(SecretId="creds_secret_id")
 
-        tmp_filename = "/tmp/id.pem"
+        # With certificate caching, each cert type gets its own content-hash based filename (SHA-256)
+        temp_dir = tempfile.gettempdir()
+        server_cert_filename = os.path.join(temp_dir, "server_cert_566980437245.pem")
+        client_key_filename = os.path.join(temp_dir, "client_key_d9ee725310e9.pem")
+        client_cert_filename = os.path.join(temp_dir, "client_cert_563a137a6115.pem")
+
         tls.assert_called_with(
-            local_private_key_file=tmp_filename,
-            local_certificate_file=tmp_filename,
-            ca_certs_file=tmp_filename,
+            local_private_key_file=client_key_filename,
+            local_certificate_file=client_cert_filename,
+            ca_certs_file=server_cert_filename,
             validate=CERT_REQUIRED)
 
         server.assert_called_with("gateway_url",
             use_ssl=True, tls=tls.return_value)
 
         connection.assert_called_with(server.return_value, user="username", password="password",
-                                        client_strategy=SAFE_SYNC)
+                                        client_strategy=SAFE_SYNC, receive_timeout=8, pool_keepalive=8)
         assert connection.return_value.bind.called
 
         assert conn.connection == connection.return_value
@@ -87,7 +299,7 @@ def test_connect_fail():
             RealHcwLdapConnection()
 
         assert e.value.status_code == 500
-        assert e.value.message == "Error connecting to LDAP: Connection error"
+        assert e.value.message == "LDAP connection failed after 3 attempts: Connection error"
         assert e.value.return_message == "Error connecting to LDAP"
 
 
@@ -240,3 +452,83 @@ class TestLdapSearch:
             assert practitioner is not None
             assert len(org_persons) == 1
             assert roles == []
+
+
+def test_ldap_retry_logic():
+    """Test LDAP connection retry logic with timeout and exponential backoff"""
+    from ldap3.core.exceptions import LDAPException
+    from unittest.mock import MagicMock
+    boto3, tls, server, connection, uuid = setup_ldap_connection_mock()
+
+    with patch.dict(os.environ, environment_variables()):
+        mock_secrets(boto3)
+
+        # Create separate mock connection instances for each attempt
+        connection_attempts = [MagicMock(), MagicMock(), MagicMock()]
+
+        # First two attempts fail with bind exceptions, third succeeds
+        connection_attempts[0].bind.side_effect = LDAPException("Network timeout")
+        connection_attempts[1].bind.side_effect = LDAPException("Connection refused")
+        connection_attempts[2].bind.return_value = True
+
+        # Mock Connection to return our prepared instances
+        connection.side_effect = connection_attempts
+
+        # Mock time.sleep to avoid actual delays in test
+        with patch('time.sleep') as mock_sleep:
+            conn = RealHcwLdapConnection()
+
+            # Should have made 3 connection attempts
+            assert connection.call_count == 3
+
+            # Should have called sleep twice (between attempts)
+            assert mock_sleep.call_count == 2
+            mock_sleep.assert_any_call(1)  # First backoff: 1 second
+            mock_sleep.assert_any_call(2)  # Second backoff: 2 seconds
+
+            # Verify timeout parameters are set correctly
+            for call in connection.call_args_list:
+                kwargs = call[1]
+                assert kwargs['receive_timeout'] == 8
+                assert kwargs['pool_keepalive'] == 8
+
+            # Connection should succeed after 3 attempts - use the last successful one
+            assert conn.connection == connection_attempts[2]
+
+
+def test_certificate_caching_file_error():
+    """Test certificate caching handles file creation errors gracefully."""
+    from ldap.real_connection import RealHcwLdapConnection
+    import os
+    from unittest.mock import patch
+
+    # Clear any existing cache
+    RealHcwLdapConnection._cert_file_cache.clear()
+
+    test_cert_content = "test_cert_data"
+
+    # Mock open to raise OSError on first call only
+    original_open = open
+    call_count = 0
+
+    def mock_open_func(*args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1 and "test_cert_" in str(args[0]):
+            raise OSError("Permission denied")
+        return original_open(*args, **kwargs)
+
+    with patch('builtins.open', side_effect=mock_open_func):
+        # Should handle the error and create fallback file
+        filename = RealHcwLdapConnection.save_secret_to_file_cached(test_cert_content, "test_cert")
+
+        # Should have created some kind of fallback file
+        assert filename.startswith(tempfile.gettempdir())
+        assert filename.endswith(".pem")
+
+    # Clean up
+    RealHcwLdapConnection._cert_file_cache.clear()
+    try:
+        os.unlink(filename)
+    except OSError:
+        pass  # File cleanup - ignore if already gone

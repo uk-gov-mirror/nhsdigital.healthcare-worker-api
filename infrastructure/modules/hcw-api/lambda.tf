@@ -27,6 +27,11 @@ resource "aws_lambda_function" "hcw-app" {
 
   publish = true
 
+  # AWS Parameters and Secrets Lambda Extension (Official ARN from AWS docs)
+  layers = [
+    "arn:aws:lambda:eu-west-2:133256977650:layer:AWS-Parameters-and-Secrets-Lambda-Extension:18"
+  ]
+
   vpc_config {
     security_group_ids = [data.aws_security_group.security_group.id]
     subnet_ids         = data.aws_subnets.subnets.ids
@@ -38,6 +43,12 @@ resource "aws_lambda_function" "hcw-app" {
       LDAP_GATEWAY_URL           = var.ldap_gateway_url
       SANDBOX_MODE               = var.sandbox_mode
       BASE_URL                   = "https://${var.apim_environment}.api.service.nhs.uk/healthcare-worker"
+
+      # Extension configuration (optional - using defaults)
+      SECRETS_MANAGER_TIMEOUT_MILLIS          = "0"    # No timeout
+      SECRETS_MANAGER_TTL_SECONDS             = "300"  # 5 min cache
+      PARAMETERS_SECRETS_EXTENSION_CACHE_SIZE = "1000" # 1000 secrets max
+      PARAMETERS_SECRETS_EXTENSION_LOG_LEVEL  = "INFO" # Can set to DEBUG for troubleshooting
     }
   }
 

@@ -1,6 +1,7 @@
 from statistics import correlation
 from typing import Optional
 from uuid import uuid4
+from datetime import datetime, timezone
 
 import pytest
 import requests
@@ -26,10 +27,36 @@ class IntegrationTest:
             "X-Correlation-ID": correlation_id
         }
 
-        print(f"Sending request to {path} with correlation id {correlation_id}")
-        return requests.request(
-            method, path, params=params, headers=headers
-        )
+        # Add timestamp to request logging
+        local_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f UTC")
+        print(f"[{local_time}] Sending {method} request to {path}")
+        print(f"[{local_time}] Correlation ID: {correlation_id}")
+
+        request_start = datetime.now()
+        response = requests.request(method, path, params=params, headers=headers)
+        request_duration = (datetime.now() - request_start).total_seconds()
+
+        response_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f UTC")
+        print(f"[{response_time}] Response received: {response.status_code} (took {request_duration:.3f}s)")
+
+        # Log errors with timestamp for easy CloudWatch correlation
+        if response.status_code >= 400:
+            print(f"[{response_time}] ERROR RESPONSE: Status {response.status_code}")
+            print(f"[{response_time}] Response body: {response.text}")
+
+        return response
+
+    @pytest.fixture(autouse=True, scope="session")
+    def log_test_session(self):
+        session_start = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f UTC")
+        print(f"\n{'='*60}")
+        print(f"INTEGRATION TEST SESSION STARTED: {session_start}")
+        print(f"{'='*60}")
+        yield
+        session_end = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f UTC")
+        print(f"\n{'='*60}")
+        print(f"INTEGRATION TEST SESSION ENDED: {session_end}")
+        print(f"{'='*60}")
 
     @pytest.fixture(autouse=True)
     def resource(self):
@@ -48,3 +75,21 @@ class IntegrationTest:
         for entry in response_json["entry"]:
             if entry["resource"]["resourceType"] == resource_type:
                 fail(f"Expected no {resource_type} entries in response")
+
+    @staticmethod
+    def assert_with_timestamp(condition, message=""):
+        if not condition:
+            error_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f UTC")
+            timestamped_message = f"[{error_time}] ASSERTION FAILED: {message}"
+            print(timestamped_message)
+            fail(timestamped_message)
+
+    @staticmethod
+    def assert_status_code_with_timestamp(response, expected_status, correlation_id=None):
+        if response.status_code != expected_status:
+            error_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f UTC")
+            correlation_info = f" (Correlation ID: {correlation_id})" if correlation_id else ""
+            error_msg = f"[{error_time}] Expected status {expected_status}, got {response.status_code}{correlation_info}"
+            print(error_msg)
+            print(f"[{error_time}] Response body: {response.text}")
+            fail(error_msg)

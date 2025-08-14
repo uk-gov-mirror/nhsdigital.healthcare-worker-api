@@ -54,8 +54,9 @@ class TestWorker(IntegrationTest):
     def test_get_missing_worker(self):
         response = self.send_worker_get(999)
 
-        assert response.status_code == 404
-        assert response.json() == {
+        self.assert_status_code_with_timestamp(response, 404)
+
+        expected_response = {
             "resourceType": "OperationOutcome",
             "issue": [{
                 "code": "unknown",
@@ -69,11 +70,20 @@ class TestWorker(IntegrationTest):
             }]
         }
 
+        actual_response = response.json()
+        if actual_response != expected_response:
+            from datetime import datetime, timezone
+            error_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f UTC")
+            print(f"[{error_time}] Response body mismatch:")
+            print(f"[{error_time}] Expected: {expected_response}")
+            print(f"[{error_time}] Actual: {actual_response}")
+            self.assert_with_timestamp(False, "Response body mismatch")
+
     def test_wrong_url(self):
         response = self.send_request(self.access_token, "invalid_url")
 
-        assert response.status_code == 404
-        assert response.content == b""
+        self.assert_status_code_with_timestamp(response, 404)
+        self.assert_with_timestamp(response.content == b"", "Expected empty response body")
 
     def test_wrong_method(self):
         response = self.send_request(self.access_token, "Practitioner", {"identifier": 999}, method="POST")
@@ -102,8 +112,8 @@ class TestWorker(IntegrationTest):
     def test_without_auth(self):
         response = self.send_request(None, "Practitioner", {"identifier": KNOWN_USER})
 
-        assert response.status_code == 401
-        assert response.content == b""
+        self.assert_status_code_with_timestamp(response, 401)
+        self.assert_with_timestamp(response.content == b"", "Expected empty response body for auth failure")
 
     def test_invalid_auth(self):
         response = self.send_request("invalid", "Practitioner", {"identifier": KNOWN_USER})
@@ -136,4 +146,3 @@ class TestWorker(IntegrationTest):
 
         self.check_valid_response(response, get_practitioners_example(SINGLE_ROLE))
         self.check_response_includes_practitioner_roles(response, get_practitioners_example(SINGLE_ROLE))
-
