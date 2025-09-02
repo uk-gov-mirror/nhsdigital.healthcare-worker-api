@@ -1,6 +1,10 @@
 from datetime import date, datetime
 from typing import Optional
 
+from logs.log import Log
+
+logger = Log("nhs_person")
+
 
 def from_list_or_string(value) -> str:
     # I've seen at least middle name have both an empty array and a string value, we're only expecting to ever
@@ -73,7 +77,7 @@ class NhsOrgPersonRole:
     business_function_codes: list[str]
     job_role: str
     job_role_code: str
-    role_granted: date
+    role_granted: Optional[date] = None
     role_stopped: Optional[date] = None
     nacs_site_names: [str]
     nacs_site_codes: [str]
@@ -90,6 +94,19 @@ class NhsOrgPersonRole:
         self.nacs_site_names = role_attrs.get("nhsSiteNames", None)
         self.nacs_site_codes = role_attrs.get("nhsSiteCodes", None)
 
-        self.role_granted = datetime.strptime(from_list_or_string(role_attrs["nhsOrgOpenDate"]), "%Y%m%d").date()
-        if role_attrs["nhsOrgCloseDate"]:
-            self.role_stopped = datetime.strptime(from_list_or_string(role_attrs["nhsOrgCloseDate"]), "%Y%m%d").date()
+        # Safe parsing for nhsOrgOpenDate
+        open_date_str = from_list_or_string(role_attrs.get("nhsOrgOpenDate", ""))
+        if open_date_str and open_date_str.strip():
+            try:
+                self.role_granted = datetime.strptime(open_date_str, "%Y%m%d").date()
+            except ValueError as e:
+                logger.warning(f"Invalid nhsOrgOpenDate format: '{open_date_str}' - {e}", "INVALID_OPEN_DATE", role_attrs.get("uniqueIdentifier", "unknown"))
+
+        # Safe parsing for nhsOrgCloseDate  
+        if role_attrs.get("nhsOrgCloseDate"):
+            close_date_str = from_list_or_string(role_attrs["nhsOrgCloseDate"])
+            if close_date_str and close_date_str.strip():
+                try:
+                    self.role_stopped = datetime.strptime(close_date_str, "%Y%m%d").date()
+                except ValueError as e:
+                    logger.warning(f"Invalid nhsOrgCloseDate format: '{close_date_str}' - {e}", "INVALID_CLOSE_DATE", role_attrs.get("uniqueIdentifier", "unknown"))
