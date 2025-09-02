@@ -102,7 +102,7 @@ class NhsOrgPersonRole:
             except ValueError as e:
                 logger.warning(f"Invalid nhsOrgOpenDate format: '{open_date_str}' - {e}", "INVALID_OPEN_DATE", role_attrs.get("uniqueIdentifier", "unknown"))
 
-        # Safe parsing for nhsOrgCloseDate  
+        # Safe parsing for nhsOrgCloseDate 
         if role_attrs.get("nhsOrgCloseDate"):
             close_date_str = from_list_or_string(role_attrs["nhsOrgCloseDate"])
             if close_date_str and close_date_str.strip():
