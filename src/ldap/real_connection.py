@@ -407,7 +407,6 @@ class RealHcwLdapConnection(HcwLdapConnection):
                         # Scenario 2: No open date but has future close date
                         logger.info(f"Role {role.profile_id} has no open date but valid close date", "ROLE_MISSING_OPEN_DATE", uid)
 
-                # Apply existing active role logic
                 if not role.role_stopped or role.role_stopped > datetime.now().date():
                     role.org_person = next(filter(lambda op: op.nhs_id_code == role.nhs_id_code, org_persons))
                     role.practitioner = practitioner
