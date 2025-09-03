@@ -4,8 +4,7 @@ Integration tests for the worker endpoint
 from typing import Optional
 
 from example_practitioners import PractitionerExample, KNOWN_USER, NO_PREFIX_OR_MIDDLE_NAME, get_practitioners_example, \
-    MULTIPLE_MIDDLE_NAMES, SINGLE_ROLE, MISSING_ROLE_OPEN_DATE_PAST_CLOSE, MISSING_ROLE_DATES, \
-    MISSING_ORG_PERSON_DATES, MISSING_ORG_PERSON_OPEN_PAST_CLOSE
+    MULTIPLE_MIDDLE_NAMES, SINGLE_ROLE, MISSING_ORG_PERSON_DATES, MISSING_ORG_PERSON_OPEN_PAST_CLOSE
 from utils.integration_test_base import IntegrationTest
 from utils.response_checks import check_practitioner_entry, check_practitioner_role_entry, check_bundle, check_entry_wrapper
 

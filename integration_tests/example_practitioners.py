@@ -55,10 +55,8 @@ practitioners: [PractitionerExample] = [
                                         "\"Add'l Clinical Services\":\"Non Clinical - Add Clin Serv\":\"Porter\"")]),
     PractitionerExample(MULTIPLE_MIDDLE_NAMES, "Miss", "Shayla Cailin Seanna Cayley", "Ashworth",
                         "Miss Shayla Cailin Seanna Cayley Ashworth", []),
-
-    # HCW-183 Missing date test scenarios
-    PractitionerExample(MISSING_ORG_PERSON_DATES, "Dr", "Test", "UserThree", "Dr Test UserThree", []),
-    PractitionerExample(MISSING_ORG_PERSON_OPEN_PAST_CLOSE, "Mrs", "Test", "UserFour", "Mrs Test UserFour", []),
+    PractitionerExample(MISSING_ORG_PERSON_DATES, "", "LOUISE", "STEENE", "LOUISE STEENE", []),
+    PractitionerExample(MISSING_ORG_PERSON_OPEN_PAST_CLOSE, "", "KARTHICK", "BVM", "KARTHICK BVM", []),
 ]
 
 
