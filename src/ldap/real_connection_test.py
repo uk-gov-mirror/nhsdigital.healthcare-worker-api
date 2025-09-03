@@ -593,10 +593,10 @@ class TestRoleFilteringWithMissingDates:
             # Create multiple roles with different scenarios
             role1 = self.create_role_response(open_date="", close_date="20200101")  # Exclude
             role1["attributes"]["uniqueIdentifier"] = "role1"
-            
+
             role2 = self.create_role_response(open_date="", close_date="20301231")  # Include
             role2["attributes"]["uniqueIdentifier"] = "role2"
-            
+
             role3 = self.create_role_response(open_date="20200101", close_date="20301231")  # Include
             role3["attributes"]["uniqueIdentifier"] = "role3"
 
@@ -612,7 +612,7 @@ class TestRoleFilteringWithMissingDates:
             assert practitioner is not None
             assert len(org_persons) == 1
             assert len(roles) == 2  # Only role2 and role3 should be included
-            
+
             role_ids = [role.profile_id for role in roles]
             assert "role1" not in role_ids  # Excluded
             assert "role2" in role_ids      # Included
