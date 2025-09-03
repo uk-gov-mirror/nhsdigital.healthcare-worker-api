@@ -29,7 +29,7 @@ class NhsOrgPerson:
 
     def __init__(self, org_person_attrs: dict[str, str]) -> None:
         self.org_person_id = from_list_or_string(org_person_attrs["uniqueIdentifier"])
-        
+
         # Safe parsing for nhsOrgOpenDate
         open_date_str = from_list_or_string(org_person_attrs.get("nhsOrgOpenDate", ""))
         if open_date_str and open_date_str.strip():
@@ -37,7 +37,7 @@ class NhsOrgPerson:
                 self.joined = datetime.strptime(open_date_str, "%Y%m%d").date()
             except ValueError as e:
                 logger.warning(f"Invalid nhsOrgOpenDate format for org person: '{open_date_str}' - {e}", "INVALID_ORG_OPEN_DATE", org_person_attrs.get("uniqueIdentifier", "unknown"))
-        
+
         self.ods_code = from_list_or_string(org_person_attrs["nhsIDCode"])
         self.org_name = from_list_or_string(org_person_attrs["o"])
         self.nhs_id_code = from_list_or_string(org_person_attrs["nhsIDCode"])

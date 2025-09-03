@@ -263,3 +263,4 @@ class TestFromListOrString:
         """Test with None input"""
         result = from_list_or_string(None)
         assert result == ""
+
