@@ -372,7 +372,6 @@ class RealHcwLdapConnection(HcwLdapConnection):
     def _should_include_role(self, role: NhsOrgPersonRole, uid: str) -> bool:
         """
         Determine if a role should be included in the response and log appropriate messages.
-        
         Returns True if the role should be included, False if it should be excluded.
         """
         # Handle roles with missing open dates
@@ -381,7 +380,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
             if role.role_stopped and role.role_stopped <= datetime.now().date():
                 logger.debug(f"Excluding role {role.profile_id} - no open date and closed in past", "ROLE_EXCLUDE_PAST_CLOSED", uid)
                 return False
-            
+    
             # Scenario 2 & 3: No open date but active → include with logging
             if not role.role_stopped:
                 # Scenario 3: Neither open nor close date
