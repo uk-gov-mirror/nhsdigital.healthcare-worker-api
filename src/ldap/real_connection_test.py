@@ -480,13 +480,13 @@ class TestRoleFilteringWithMissingDates:
             }
         }
 
-    def create_org_person_response(self):
-        """Helper to create org person response"""
+    def create_org_person_response(self, open_date="20200101"):
+        """Helper to create org person response with specified open date"""
         return {
             "attributes": {
                 "objectClass": "nhsOrgPerson",
                 "uniqueIdentifier": "orgPerson123",
-                "nhsOrgOpenDate": "20200101",
+                "nhsOrgOpenDate": open_date,
                 "o": "Test Hospital",
                 "nhsIDCode": "Y51"
             }
@@ -502,7 +502,7 @@ class TestRoleFilteringWithMissingDates:
 
             ldap_result = [
                 self.base_person_response,
-                self.create_org_person_response(),
+                self.create_org_person_response(),  # Valid org person date
                 self.create_role_response(open_date="", close_date="20200101")  # Past date
             ]
             connection.return_value.search.return_value = True, {"result": 0}, ldap_result, ""
@@ -523,7 +523,7 @@ class TestRoleFilteringWithMissingDates:
 
             ldap_result = [
                 self.base_person_response,
-                self.create_org_person_response(),
+                self.create_org_person_response(),  # Valid org person date
                 self.create_role_response(open_date="", close_date="20301231")  # Future date
             ]
             connection.return_value.search.return_value = True, {"result": 0}, ldap_result, ""
@@ -546,7 +546,7 @@ class TestRoleFilteringWithMissingDates:
 
             ldap_result = [
                 self.base_person_response,
-                self.create_org_person_response(),
+                self.create_org_person_response(),  # Valid org person date
                 self.create_role_response(open_date="", close_date="")  # Both missing
             ]
             connection.return_value.search.return_value = True, {"result": 0}, ldap_result, ""
@@ -569,7 +569,7 @@ class TestRoleFilteringWithMissingDates:
 
             ldap_result = [
                 self.base_person_response,
-                self.create_org_person_response(),
+                self.create_org_person_response(),  # Valid org person date
                 self.create_role_response(open_date="20200101", close_date="20301231")  # Valid dates
             ]
             connection.return_value.search.return_value = True, {"result": 0}, ldap_result, ""
@@ -602,7 +602,7 @@ class TestRoleFilteringWithMissingDates:
 
             ldap_result = [
                 self.base_person_response,
-                self.create_org_person_response(),
+                self.create_org_person_response(),  # Valid org person date
                 role1, role2, role3
             ]
             connection.return_value.search.return_value = True, {"result": 0}, ldap_result, ""
@@ -617,6 +617,29 @@ class TestRoleFilteringWithMissingDates:
             assert "role1" not in role_ids  # Excluded
             assert "role2" in role_ids      # Included
             assert "role3" in role_ids      # Included
+
+    def test_org_person_missing_dates(self):
+        """Test that org persons with missing dates are handled gracefully"""
+        boto3, _, _, connection, _ = setup_ldap_connection_mock()
+
+        with patch.dict(os.environ, environment_variables()):
+            mock_secrets(boto3)
+            conn = RealHcwLdapConnection()
+
+            ldap_result = [
+                self.base_person_response,
+                self.create_org_person_response(open_date=""),  # Missing org person date
+                self.create_role_response(open_date="20200101", close_date="20301231")  # Valid role dates
+            ]
+            connection.return_value.search.return_value = True, {"result": 0}, ldap_result, ""
+
+            practitioner, org_persons, roles = conn.search_active_nhs_person("123")
+
+            assert practitioner is not None
+            assert len(org_persons) == 1
+            assert org_persons[0].joined is None  # Should handle missing date gracefully
+            assert len(roles) == 1
+            assert roles[0].role_granted == date(2020, 1, 1)
 
 
 def test_ldap_retry_logic():
