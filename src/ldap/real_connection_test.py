@@ -459,7 +459,7 @@ class TestRoleFilteringWithMissingDates:
 
     base_person_response = {
         "attributes": {
-            "objectClass": "nhsPerson",
+            "objectClass": ["nhsPerson"],
             "uid": "123",
             "sn": "Smith",
             "givenName": "John"
@@ -470,7 +470,7 @@ class TestRoleFilteringWithMissingDates:
         """Helper to create role response with specified dates"""
         return {
             "attributes": {
-                "objectClass": "nhsOrgPersonRole",
+                "objectClass": ["nhsOrgPersonRole"],
                 "uniqueIdentifier": "role123",
                 "nhsOrgOpenDate": open_date,
                 "nhsOrgCloseDate": close_date,
@@ -484,7 +484,7 @@ class TestRoleFilteringWithMissingDates:
         """Helper to create org person response with specified open date"""
         return {
             "attributes": {
-                "objectClass": "nhsOrgPerson",
+                "objectClass": ["nhsOrgPerson"],
                 "uniqueIdentifier": "orgPerson123",
                 "nhsOrgOpenDate": open_date,
                 "o": "Test Hospital",
