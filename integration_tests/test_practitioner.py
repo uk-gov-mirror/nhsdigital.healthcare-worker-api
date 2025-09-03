@@ -4,7 +4,8 @@ Integration tests for the worker endpoint
 from typing import Optional
 
 from example_practitioners import PractitionerExample, KNOWN_USER, NO_PREFIX_OR_MIDDLE_NAME, get_practitioners_example, \
-    MULTIPLE_MIDDLE_NAMES, SINGLE_ROLE
+    MULTIPLE_MIDDLE_NAMES, SINGLE_ROLE, MISSING_ROLE_OPEN_DATE_PAST_CLOSE, MISSING_ROLE_DATES, \
+    MISSING_ORG_PERSON_DATES, MISSING_ORG_PERSON_OPEN_PAST_CLOSE
 from utils.integration_test_base import IntegrationTest
 from utils.response_checks import check_practitioner_entry, check_practitioner_role_entry, check_bundle, check_entry_wrapper
 
@@ -146,3 +147,14 @@ class TestWorker(IntegrationTest):
 
         self.check_valid_response(response, get_practitioners_example(SINGLE_ROLE))
         self.check_response_includes_practitioner_roles(response, get_practitioners_example(SINGLE_ROLE))
+
+    # HCW-183 Missing date scenario tests
+    def test_org_person_missing_both_dates_included(self):
+        """Test org person with missing open+close dates is included"""
+        response = self.send_worker_get(MISSING_ORG_PERSON_DATES)
+        self.check_valid_response(response, get_practitioners_example(MISSING_ORG_PERSON_DATES))
+
+    def test_org_person_missing_open_past_close_included(self):
+        """Test org person with missing open date + past close date is included"""
+        response = self.send_worker_get(MISSING_ORG_PERSON_OPEN_PAST_CLOSE)
+        self.check_valid_response(response, get_practitioners_example(MISSING_ORG_PERSON_OPEN_PAST_CLOSE))

@@ -5,6 +5,10 @@ MULTIPLE_MIDDLE_NAMES = "151504270100"
 SINGLE_ROLE = NO_PREFIX_OR_MIDDLE_NAME
 NO_ROLE = MULTIPLE_MIDDLE_NAMES
 
+# HCW-183 Missing date test scenarios
+MISSING_ORG_PERSON_DATES = "102013428983"             # nhsOrgPerson: no open, no close → should be included
+MISSING_ORG_PERSON_OPEN_PAST_CLOSE = "927501956548"   # nhsOrgPerson: no open, past close → should be included
+
 
 class RoleExample:
     role_profile_id: str
@@ -50,7 +54,11 @@ practitioners: [PractitionerExample] = [
                                         "S0070:G0380:R0002",
                                         "\"Add'l Clinical Services\":\"Non Clinical - Add Clin Serv\":\"Porter\"")]),
     PractitionerExample(MULTIPLE_MIDDLE_NAMES, "Miss", "Shayla Cailin Seanna Cayley", "Ashworth",
-                        "Miss Shayla Cailin Seanna Cayley Ashworth", [])
+                        "Miss Shayla Cailin Seanna Cayley Ashworth", []),
+
+    # HCW-183 Missing date test scenarios
+    PractitionerExample(MISSING_ORG_PERSON_DATES, "Dr", "Test", "UserThree", "Dr Test UserThree", []),
+    PractitionerExample(MISSING_ORG_PERSON_OPEN_PAST_CLOSE, "Mrs", "Test", "UserFour", "Mrs Test UserFour", []),
 ]
 
 
