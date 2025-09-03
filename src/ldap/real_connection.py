@@ -378,16 +378,14 @@ class RealHcwLdapConnection(HcwLdapConnection):
         if not role.role_granted:
             # Scenario 1: No open date + closed in past → exclude
             if role.role_stopped and role.role_stopped <= datetime.now().date():
-                logger.debug(f"Excluding role {role.profile_id} - no open date and closed in past", "ROLE_EXCLUDE_PAST_CLOSED", uid)
+                logger.info(f"Excluding role {role.profile_id} - no open date and closed in past", "ROLE_EXCLUDE_PAST_CLOSED", uid)
                 return False
 
             # Scenario 2 & 3: No open date but active → include with logging
             if not role.role_stopped:
-                # Scenario 3: Neither open nor close date
-                logger.warning(f"Role {role.profile_id} has no open or close date - data quality issue", "ROLE_MISSING_DATES", uid)
+                logger.warning(f"Role {role.profile_id} has no open date and no close date - investigate data quality", "ROLE_NO_DATES", uid)
             else:
-                # Scenario 2: No open date but has future close date
-                logger.info(f"Role {role.profile_id} has no open date but valid close date", "ROLE_MISSING_OPEN_DATE", uid)
+                logger.info(f"Role {role.profile_id} has no open date but valid close date", "ROLE_NO_OPEN_DATE", uid)
 
         # Apply existing active role logic
         return not role.role_stopped or role.role_stopped > datetime.now().date()
