@@ -380,7 +380,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
             if role.role_stopped and role.role_stopped <= datetime.now().date():
                 logger.debug(f"Excluding role {role.profile_id} - no open date and closed in past", "ROLE_EXCLUDE_PAST_CLOSED", uid)
                 return False
-    
+
             # Scenario 2 & 3: No open date but active → include with logging
             if not role.role_stopped:
                 # Scenario 3: Neither open nor close date
