@@ -59,7 +59,7 @@ practitioners: [PractitionerExample] = [
                         "Miss Shayla Cailin Seanna Cayley Ashworth", []),
     PractitionerExample(MISSING_ORG_PERSON_DATES, "Dr", "LOUISE", "STEENE", "Dr LOUISE STEENE", []),
     PractitionerExample(MISSING_ORG_PERSON_OPEN_PAST_CLOSE, "Mr", "KARTHIK J", "BVM", "Mr KARTHIK J BVM", []),
-    PractitionerExample(MISSING_ROLE_OPEN_DATE_PAST_CLOSE, "Mr", "Elvis", "Presley", "Mr Elvis Presley", []),
+    PractitionerExample(MISSING_ROLE_OPEN_DATE_PAST_CLOSE, "Mr", "Elvis", "Presley", "Mr Elvis Presley",
                         [RoleExample("100006095936", "Q32",
                                         "", "",
                                         "S0080:G0450:R0040",
