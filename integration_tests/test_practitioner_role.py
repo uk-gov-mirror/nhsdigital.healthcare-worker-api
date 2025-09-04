@@ -89,7 +89,7 @@ class TestPractitionerRole(IntegrationTest):
 
         # Verify the problematic role is NOT in the response
         returned_role_ids = [entry["resource"]["id"] for entry in response_json.get("entry", [])
-                           if entry["resource"]["resourceType"] == "PractitionerRole"]
+            if entry["resource"]["resourceType"] == "PractitionerRole"]
 
         assert filtered_role_id not in returned_role_ids, f"Role {filtered_role_id} should be filtered out but was found in response"
 
@@ -111,7 +111,7 @@ class TestPractitionerRole(IntegrationTest):
 
         # Verify the role with missing dates IS in the response
         returned_role_ids = [entry["resource"]["id"] for entry in response_json.get("entry", [])
-                           if entry["resource"]["resourceType"] == "PractitionerRole"]
+            if entry["resource"]["resourceType"] == "PractitionerRole"]
 
         assert included_role_id in returned_role_ids, f"Role {included_role_id} should be included but was not found in response"
 
