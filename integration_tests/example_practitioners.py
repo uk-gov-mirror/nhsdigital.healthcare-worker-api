@@ -8,6 +8,8 @@ NO_ROLE = MULTIPLE_MIDDLE_NAMES
 # HCW-183 Missing date test scenarios
 MISSING_ORG_PERSON_DATES = "102013428983"             # nhsOrgPerson: no open, no close → should be included
 MISSING_ORG_PERSON_OPEN_PAST_CLOSE = "927501956548"   # nhsOrgPerson: no open, past close → should be included
+MISSING_ROLE_OPEN_DATE_PAST_CLOSE = "100121123891"    # nhsOrgPersonRole: no open, past close → should be filtered out
+MISSING_ROLE_DATES = "150279799109"                   # nhsOrgPersonRole: no open, no close → should be included
 
 
 class RoleExample:
@@ -57,6 +59,16 @@ practitioners: [PractitionerExample] = [
                         "Miss Shayla Cailin Seanna Cayley Ashworth", []),
     PractitionerExample(MISSING_ORG_PERSON_DATES, "Dr", "LOUISE", "STEENE", "Dr LOUISE STEENE", []),
     PractitionerExample(MISSING_ORG_PERSON_OPEN_PAST_CLOSE, "Mr", "KARTHIK J", "BVM", "Mr KARTHIK J BVM", []),
+    PractitionerExample(MISSING_ROLE_OPEN_DATE_PAST_CLOSE, "Mr", "Elvis", "Presley", "Mr Elvis Presley",
+                        [RoleExample("100006095936", "Q32",
+                                        "", "",
+                                        "S0080:G0450:R0040",
+                                        "\"Admin & Clerical\":\"Management\":\"Sponsor\"")]),
+    PractitionerExample(MISSING_ROLE_DATES, "Dr", "Shikha", "Tiwari", "Dr Shikha Tiwari",
+                        [RoleExample("150452057105", "Y51",
+                                     "", "",
+                                     "S0070:G0380:R0002",
+                                     "\"Add\'l Clinical Services\":\"Non Clinical - Add Clin Serv\":\"Porter\"")]),
 ]
 
 
