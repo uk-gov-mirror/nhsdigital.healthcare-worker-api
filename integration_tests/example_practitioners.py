@@ -55,8 +55,8 @@ practitioners: [PractitionerExample] = [
                                         "\"Add'l Clinical Services\":\"Non Clinical - Add Clin Serv\":\"Porter\"")]),
     PractitionerExample(MULTIPLE_MIDDLE_NAMES, "Miss", "Shayla Cailin Seanna Cayley", "Ashworth",
                         "Miss Shayla Cailin Seanna Cayley Ashworth", []),
-    PractitionerExample(MISSING_ORG_PERSON_DATES, "Dr", "LOUISE", "STEENE", "LOUISE STEENE", []),
-    PractitionerExample(MISSING_ORG_PERSON_OPEN_PAST_CLOSE, "", "KARTHICK J", "BVM", "KARTHICK J BVM", []),
+    PractitionerExample(MISSING_ORG_PERSON_DATES, "Dr", "LOUISE", "STEENE", "Dr LOUISE STEENE", []),
+    PractitionerExample(MISSING_ORG_PERSON_OPEN_PAST_CLOSE, "Mr", "KARTHICK J", "BVM", "Mr KARTHICK J BVM", []),
 ]
 
 
