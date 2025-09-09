@@ -1,6 +1,10 @@
 from datetime import date, datetime
 from typing import Optional
 
+from logs.log import Log
+
+logger = Log("nhs_person")
+
 
 def from_list_or_string(value) -> str:
     # I've seen at least middle name have both an empty array and a string value, we're only expecting to ever
@@ -18,14 +22,22 @@ def from_list_or_string(value) -> str:
 
 class NhsOrgPerson:
     org_person_id: str
-    joined: date
+    joined: Optional[date] = None
     ods_code: str
     org_name: str
     nhs_id_code: str
 
     def __init__(self, org_person_attrs: dict[str, str]) -> None:
         self.org_person_id = from_list_or_string(org_person_attrs["uniqueIdentifier"])
-        self.joined = datetime.strptime(from_list_or_string(org_person_attrs["nhsOrgOpenDate"]), "%Y%m%d").date()
+
+        # Safe parsing for nhsOrgOpenDate
+        open_date_str = from_list_or_string(org_person_attrs.get("nhsOrgOpenDate", ""))
+        if open_date_str and open_date_str.strip():
+            try:
+                self.joined = datetime.strptime(open_date_str, "%Y%m%d").date()
+            except ValueError as e:
+                logger.warning(f"Invalid nhsOrgOpenDate format for org person: '{open_date_str}' - {e}", "INVALID_ORG_OPEN_DATE", org_person_attrs.get("uniqueIdentifier", "unknown"))
+
         self.ods_code = from_list_or_string(org_person_attrs["nhsIDCode"])
         self.org_name = from_list_or_string(org_person_attrs["o"])
         self.nhs_id_code = from_list_or_string(org_person_attrs["nhsIDCode"])
@@ -73,7 +85,7 @@ class NhsOrgPersonRole:
     business_function_codes: list[str]
     job_role: str
     job_role_code: str
-    role_granted: date
+    role_granted: Optional[date] = None
     role_stopped: Optional[date] = None
     nacs_site_names: [str]
     nacs_site_codes: [str]
@@ -90,6 +102,17 @@ class NhsOrgPersonRole:
         self.nacs_site_names = role_attrs.get("nhsSiteNames", None)
         self.nacs_site_codes = role_attrs.get("nhsSiteCodes", None)
 
-        self.role_granted = datetime.strptime(from_list_or_string(role_attrs["nhsOrgOpenDate"]), "%Y%m%d").date()
-        if role_attrs["nhsOrgCloseDate"]:
-            self.role_stopped = datetime.strptime(from_list_or_string(role_attrs["nhsOrgCloseDate"]), "%Y%m%d").date()
+        open_date_str = from_list_or_string(role_attrs.get("nhsOrgOpenDate", ""))
+        if open_date_str and open_date_str.strip():
+            try:
+                self.role_granted = datetime.strptime(open_date_str, "%Y%m%d").date()
+            except ValueError as e:
+                logger.warning(f"Invalid nhsOrgOpenDate format: '{open_date_str}' - {e}", "INVALID_OPEN_DATE", role_attrs.get("uniqueIdentifier", "unknown"))
+
+        if role_attrs.get("nhsOrgCloseDate"):
+            close_date_str = from_list_or_string(role_attrs["nhsOrgCloseDate"])
+            if close_date_str and close_date_str.strip():
+                try:
+                    self.role_stopped = datetime.strptime(close_date_str, "%Y%m%d").date()
+                except ValueError as e:
+                    logger.warning(f"Invalid nhsOrgCloseDate format: '{close_date_str}' - {e}", "INVALID_CLOSE_DATE", role_attrs.get("uniqueIdentifier", "unknown"))

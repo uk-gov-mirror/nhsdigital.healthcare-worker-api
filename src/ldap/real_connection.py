@@ -369,6 +369,27 @@ class RealHcwLdapConnection(HcwLdapConnection):
     def get_org_roles(response) -> list[dict[str, str]]:
         return list(RealHcwLdapConnection.find_by_type(response, "nhsOrgPersonRole"))
 
+    def _should_include_role(self, role: NhsOrgPersonRole, uid: str) -> bool:
+        """
+        Determine if a role should be included in the response and log appropriate messages.
+        Returns True if the role should be included, False if it should be excluded.
+        """
+        # Handle roles with missing open dates
+        if not role.role_granted:
+            # Scenario 1: No open date + closed in past → exclude
+            if role.role_stopped and role.role_stopped <= datetime.now().date():
+                logger.info(f"Excluding role {role.profile_id} - no open date and closed in past", "ROLE_EXCLUDE_PAST_CLOSED", uid)
+                return False
+
+            # Scenario 2 & 3: No open date but active → include with logging
+            if not role.role_stopped:
+                logger.warning(f"Role {role.profile_id} has no open date and no close date - investigate data quality", "ROLE_NO_DATES", uid)
+            else:
+                logger.info(f"Role {role.profile_id} has no open date but valid close date", "ROLE_NO_OPEN_DATE", uid)
+
+        # Apply existing active role logic
+        return not role.role_stopped or role.role_stopped > datetime.now().date()
+
     def search_active_nhs_person(self, uid: str, allow_retry: bool = True) -> [NhsPerson, list[NhsOrgPerson], list[NhsOrgPersonRole]]:
         try:
             logger.info("Searching LDAP for nhsPerson","SEARCH_PERSON_START", uid)
@@ -392,7 +413,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
 
             active_roles = []
             for role in roles:
-                if not role.role_stopped or role.role_stopped > datetime.now().date():
+                if self._should_include_role(role, uid):
                     role.org_person = next(filter(lambda op: op.nhs_id_code == role.nhs_id_code, org_persons))
                     role.practitioner = practitioner
                     active_roles.append(role)

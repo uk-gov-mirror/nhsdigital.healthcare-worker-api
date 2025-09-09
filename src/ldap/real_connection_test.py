@@ -3,7 +3,7 @@ import os
 import tempfile
 import urllib.error
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, date
 from ssl import CERT_REQUIRED
 from unittest.mock import patch, mock_open, MagicMock
 
@@ -452,6 +452,194 @@ class TestLdapSearch:
             assert practitioner is not None
             assert len(org_persons) == 1
             assert roles == []
+
+
+class TestRoleFilteringWithMissingDates:
+    """Test role filtering logic for roles with missing nhsOrgOpenDate"""
+
+    base_person_response = {
+        "attributes": {
+            "objectClass": ["nhsPerson"],
+            "uid": "123",
+            "sn": "Smith",
+            "givenName": "John"
+        }
+    }
+
+    def create_role_response(self, open_date="", close_date=""):
+        """Helper to create role response with specified dates"""
+        return {
+            "attributes": {
+                "objectClass": ["nhsOrgPersonRole"],
+                "uniqueIdentifier": "role123",
+                "nhsOrgOpenDate": open_date,
+                "nhsOrgCloseDate": close_date,
+                "nhsJobRole": "Doctor",
+                "nhsJobRoleCode": "DOC",
+                "nhsIDCode": "Y51"
+            }
+        }
+
+    def create_org_person_response(self, open_date="20200101"):
+        """Helper to create org person response with specified open date"""
+        return {
+            "attributes": {
+                "objectClass": ["nhsOrgPerson"],
+                "uniqueIdentifier": "orgPerson123",
+                "nhsOrgOpenDate": open_date,
+                "o": "Test Hospital",
+                "nhsIDCode": "Y51"
+            }
+        }
+
+    def test_scenario_1_missing_open_date_past_close_date(self):
+        """Test Scenario 1: Missing open date + past close date → exclude role"""
+        boto3, _, _, connection, _ = setup_ldap_connection_mock()
+
+        with patch.dict(os.environ, environment_variables()):
+            mock_secrets(boto3)
+            conn = RealHcwLdapConnection()
+
+            ldap_result = [
+                self.base_person_response,
+                self.create_org_person_response(),  # Valid org person date
+                self.create_role_response(open_date="", close_date="20200101")  # Past date
+            ]
+            connection.return_value.search.return_value = True, {"result": 0}, ldap_result, ""
+
+            practitioner, org_persons, roles = conn.search_active_nhs_person("123")
+
+            assert practitioner is not None
+            assert len(org_persons) == 1
+            assert len(roles) == 0  # Role should be excluded
+
+    def test_scenario_2_missing_open_date_future_close_date(self):
+        """Test Scenario 2: Missing open date + future close date → include with logging"""
+        boto3, _, _, connection, _ = setup_ldap_connection_mock()
+
+        with patch.dict(os.environ, environment_variables()):
+            mock_secrets(boto3)
+            conn = RealHcwLdapConnection()
+
+            ldap_result = [
+                self.base_person_response,
+                self.create_org_person_response(),  # Valid org person date
+                self.create_role_response(open_date="", close_date="20301231")  # Future date
+            ]
+            connection.return_value.search.return_value = True, {"result": 0}, ldap_result, ""
+
+            practitioner, org_persons, roles = conn.search_active_nhs_person("123")
+
+            assert practitioner is not None
+            assert len(org_persons) == 1
+            assert len(roles) == 1  # Role should be included
+            assert roles[0].role_granted is None
+            assert roles[0].role_stopped == date(2030, 12, 31)
+
+    def test_scenario_3_missing_both_dates(self):
+        """Test Scenario 3: Missing both dates → include with warning"""
+        boto3, _, _, connection, _ = setup_ldap_connection_mock()
+
+        with patch.dict(os.environ, environment_variables()):
+            mock_secrets(boto3)
+            conn = RealHcwLdapConnection()
+
+            ldap_result = [
+                self.base_person_response,
+                self.create_org_person_response(),  # Valid org person date
+                self.create_role_response(open_date="", close_date="")  # Both missing
+            ]
+            connection.return_value.search.return_value = True, {"result": 0}, ldap_result, ""
+
+            practitioner, org_persons, roles = conn.search_active_nhs_person("123")
+
+            assert practitioner is not None
+            assert len(org_persons) == 1
+            assert len(roles) == 1  # Role should be included
+            assert roles[0].role_granted is None
+            assert roles[0].role_stopped is None
+
+    def test_valid_dates_still_work(self):
+        """Test that roles with valid dates continue to work as before"""
+        boto3, _, _, connection, _ = setup_ldap_connection_mock()
+
+        with patch.dict(os.environ, environment_variables()):
+            mock_secrets(boto3)
+            conn = RealHcwLdapConnection()
+
+            ldap_result = [
+                self.base_person_response,
+                self.create_org_person_response(),  # Valid org person date
+                self.create_role_response(open_date="20200101", close_date="20301231")  # Valid dates
+            ]
+            connection.return_value.search.return_value = True, {"result": 0}, ldap_result, ""
+
+            practitioner, org_persons, roles = conn.search_active_nhs_person("123")
+
+            assert practitioner is not None
+            assert len(org_persons) == 1
+            assert len(roles) == 1
+            assert roles[0].role_granted == date(2020, 1, 1)
+            assert roles[0].role_stopped == date(2030, 12, 31)
+
+    def test_multiple_roles_mixed_scenarios(self):
+        """Test multiple roles with different date scenarios"""
+        boto3, _, _, connection, _ = setup_ldap_connection_mock()
+
+        with patch.dict(os.environ, environment_variables()):
+            mock_secrets(boto3)
+            conn = RealHcwLdapConnection()
+
+            # Create multiple roles with different scenarios
+            role1 = self.create_role_response(open_date="", close_date="20200101")  # Exclude
+            role1["attributes"]["uniqueIdentifier"] = "role1"
+
+            role2 = self.create_role_response(open_date="", close_date="20301231")  # Include
+            role2["attributes"]["uniqueIdentifier"] = "role2"
+
+            role3 = self.create_role_response(open_date="20200101", close_date="20301231")  # Include
+            role3["attributes"]["uniqueIdentifier"] = "role3"
+
+            ldap_result = [
+                self.base_person_response,
+                self.create_org_person_response(),  # Valid org person date
+                role1, role2, role3
+            ]
+            connection.return_value.search.return_value = True, {"result": 0}, ldap_result, ""
+
+            practitioner, org_persons, roles = conn.search_active_nhs_person("123")
+
+            assert practitioner is not None
+            assert len(org_persons) == 1
+            assert len(roles) == 2  # Only role2 and role3 should be included
+
+            role_ids = [role.profile_id for role in roles]
+            assert "role1" not in role_ids  # Excluded
+            assert "role2" in role_ids      # Included
+            assert "role3" in role_ids      # Included
+
+    def test_org_person_missing_dates(self):
+        """Test that org persons with missing dates are handled gracefully"""
+        boto3, _, _, connection, _ = setup_ldap_connection_mock()
+
+        with patch.dict(os.environ, environment_variables()):
+            mock_secrets(boto3)
+            conn = RealHcwLdapConnection()
+
+            ldap_result = [
+                self.base_person_response,
+                self.create_org_person_response(open_date=""),  # Missing org person date
+                self.create_role_response(open_date="20200101", close_date="20301231")  # Valid role dates
+            ]
+            connection.return_value.search.return_value = True, {"result": 0}, ldap_result, ""
+
+            practitioner, org_persons, roles = conn.search_active_nhs_person("123")
+
+            assert practitioner is not None
+            assert len(org_persons) == 1
+            assert org_persons[0].joined is None  # Should handle missing date gracefully
+            assert len(roles) == 1
+            assert roles[0].role_granted == date(2020, 1, 1)
 
 
 def test_ldap_retry_logic():

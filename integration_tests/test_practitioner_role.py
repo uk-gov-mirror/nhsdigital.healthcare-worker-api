@@ -1,7 +1,7 @@
 from typing import Optional
 
 from example_practitioners import PractitionerExample, SINGLE_ROLE, \
-    get_practitioners_example, NO_ROLE
+    get_practitioners_example, NO_ROLE, MISSING_ROLE_OPEN_DATE_PAST_CLOSE, MISSING_ROLE_DATES
 from utils.integration_test_base import IntegrationTest
 from utils.response_checks import check_practitioner_role_entry, check_practitioner_entry, check_bundle, check_entry_wrapper
 
@@ -73,6 +73,49 @@ class TestPractitionerRole(IntegrationTest):
         assert response.status_code == 200
         assert response.json() == {"entry": [], "resourceType": "Bundle", "total": 0, "type": "searchset",
                                     "link": [{"relation": "self", "url": "https://https://internal-dev.api.service.nhs.uk/healthcare-worker/PractitionerRole"}]}
+
+    def test_get_practitioner_role_missing_open_date_past_close_filtered_out(self):
+        """Test that roles with missing open date + past close date are filtered out"""
+        response = self.send_practitioner_role_get(MISSING_ROLE_OPEN_DATE_PAST_CLOSE)
+
+        # Should return 200 (no crash when processing missing open date)
+        assert response.status_code == 200
+
+        response_json = response.json()
+
+        # Get the specific role that should be filtered out from the test data
+        expected_practitioner = get_practitioners_example(MISSING_ROLE_OPEN_DATE_PAST_CLOSE)
+        filtered_role_id = expected_practitioner.roles[0].role_profile_id  # Role with missing open date + past close date
+
+        # Verify the problematic role is NOT in the response
+        returned_role_ids = [entry["resource"]["id"] for entry in response_json.get("entry", [])
+            if entry["resource"]["resourceType"] == "PractitionerRole"]
+
+        assert filtered_role_id not in returned_role_ids, f"Role {filtered_role_id} should be filtered out but was found in response"
+
+        # The practitioner might have other active roles, so we don't enforce empty response
+        # We just ensure the problematic role is excluded
+
+    def test_get_practitioner_role_missing_both_dates_included(self):
+        """Test that roles with missing both open and close dates are included"""
+        response = self.send_practitioner_role_get(MISSING_ROLE_DATES)
+
+        # Should return 200 (no crash when processing missing dates)
+        assert response.status_code == 200
+
+        response_json = response.json()
+
+        # Get the specific role that should be included from the test data
+        expected_practitioner = get_practitioners_example(MISSING_ROLE_DATES)
+        included_role_id = expected_practitioner.roles[0].role_profile_id  # Role with missing both dates
+
+        # Verify the role with missing dates IS in the response
+        returned_role_ids = [entry["resource"]["id"] for entry in response_json.get("entry", [])
+            if entry["resource"]["resourceType"] == "PractitionerRole"]
+
+        assert included_role_id in returned_role_ids, f"Role {included_role_id} should be included but was not found in response"
+
+        # The practitioner might have other roles too, we just ensure this specific one is included
 
     def test_get_practitioner_role_with_included_practitioner(self):
         response = self.send_practitioner_role_get(SINGLE_ROLE,

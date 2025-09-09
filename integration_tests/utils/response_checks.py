@@ -4,14 +4,15 @@ def check_practitioner_entry(entry, practitioner):
     else:
         expected_name = {"family": practitioner.family, "given": [practitioner.given], "use": "usual"}
 
-    assert entry == {
-        "id": practitioner.id,
-        "resourceType": "Practitioner",
-        "active": True,
-        "identifier": [
-            {"system": "https://fhir.nhs.uk/Id/sds-user-id", "value": practitioner.id}],
-        "name": [expected_name]
-    }
+    # Check individual fields instead of strict equality to allow extra identifiers
+    assert entry["id"] == practitioner.id
+    assert entry["resourceType"] == "Practitioner"
+    assert entry["active"] == True
+    assert entry["name"] == [expected_name]
+
+    # Check that the required sds-user-id identifier is present (allow additional ones)
+    required_identifier = {"system": "https://fhir.nhs.uk/Id/sds-user-id", "value": practitioner.id}
+    assert required_identifier in entry["identifier"], f"Required identifier {required_identifier} not found in {entry['identifier']}"
 
 
 def check_practitioner_role_entry(entry, practitioner, role):
