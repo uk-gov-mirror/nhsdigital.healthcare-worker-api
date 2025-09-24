@@ -288,6 +288,7 @@ resource "aws_iam_role_policy_attachment" "log_transformer_policy_attach" {
 }
 
 resource "aws_s3_bucket_logging" "failed_logs_bucket_logging" {
+  count         = var.access_logs_bucket_id != null ? 1 : 0
   bucket        = aws_s3_bucket.failed_logs_bucket.id
   target_bucket = var.access_logs_bucket_id
   target_prefix = "access-logs/"
