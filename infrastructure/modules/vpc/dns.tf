@@ -169,6 +169,22 @@ resource "aws_s3_bucket_policy" "access_logs_bucket_policy" {
   })
 }
 
+resource "aws_kms_key" "access_logs_kms_key" {
+  description         = "Key used to encrypt Access log S3 objects"
+  enable_key_rotation = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "access_logs_config" {
+  bucket = aws_s3_bucket.access_logs.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.access_logs_kms_key.arn
+      sse_algorithm     = "aws:kms"
+    }
+  }
+}
+
 output "access_logs_bucket_id" {
   value = aws_s3_bucket.access_logs.id
 }
