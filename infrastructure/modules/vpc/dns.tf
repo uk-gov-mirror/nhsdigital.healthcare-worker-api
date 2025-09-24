@@ -165,17 +165,7 @@ resource "aws_s3_bucket_policy" "access_logs_bucket_policy" {
             "aws:SecureTransport" = "false"
           }
         }
-      },
-      {
-        Sid    = "AllowS3LoggingDelivery"
-        Effect = "Allow"
-        Principal = {
-          Service = "logging.s3.amazonaws.com"
-        }
-        Action   = "s3:PutObject"
-        Resource = "${aws_s3_bucket.access_logs.arn}/*"
-      }
-    ]
+    }]
   })
 }
 
