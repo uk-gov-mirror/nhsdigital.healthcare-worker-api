@@ -139,7 +139,7 @@ resource "aws_s3_bucket" "access_logs" {
   bucket = "${var.account_id}-s3-access-logs"
 }
 
-resource "aws_s3_bucket_public_access_block" "block_public_access" {
+resource "aws_s3_bucket_public_access_block" "access_logs_block_public_access" {
   bucket = aws_s3_bucket.access_logs.id
 
   block_public_acls       = true
