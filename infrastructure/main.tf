@@ -113,7 +113,7 @@ module "app" {
   vpc_env               = var.vpc_env
   hec_token_secret_id   = local.include_vpc ? module.vpc[0].hec_token_secret_id : data.aws_secretsmanager_secret.hec_token[0].id
   log_group_retention   = var.log_group_retention
-  access_logs_bucket_id = module.vpc[0].access_logs_bucket_id
+  access_logs_bucket_id = local.include_vpc ? module.vpc[0].access_logs_bucket_id : null
 
   count = !local.is_mgmt ? 1 : 0
 }
