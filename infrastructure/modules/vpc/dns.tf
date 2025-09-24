@@ -139,6 +139,36 @@ resource "aws_s3_bucket" "access_logs" {
   bucket = "${var.account_id}-s3-access-logs"
 }
 
+resource "aws_s3_bucket_public_access_block" "block_public_access" {
+  bucket = aws_s3_bucket.access_logs.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_policy" "access_logs_bucket_policy" {
+  bucket = aws_s3_bucket.access_logs.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "DenyInsecureConnections"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource  = "${aws_s3_bucket.access_logs.arn}/*"
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
+          }
+        }
+    }]
+  })
+}
+
 output "access_logs_bucket_id" {
   value = aws_s3_bucket.access_logs.id
 }
