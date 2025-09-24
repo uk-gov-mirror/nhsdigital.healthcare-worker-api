@@ -22,3 +22,7 @@ variable "subdomain" {
 variable "ldap_service_endpoint" {
   type = string
 }
+
+variable "account_id" {
+  type = string
+}

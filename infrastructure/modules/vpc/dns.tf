@@ -64,6 +64,12 @@ resource "aws_s3_bucket_public_access_block" "block_public_access" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_logging" "logging" {
+  bucket        = aws_s3_bucket.truststore.id
+  target_bucket = aws_s3_bucket.access_logs.id
+  target_prefix = "access-logs/"
+}
+
 data "aws_s3_object" "truststore_version" {
   count  = var.subdomain != "" ? 1 : 0
   bucket = aws_s3_bucket.truststore.id
@@ -127,4 +133,12 @@ resource "aws_route53_record" "cert_validation" {
 resource "aws_acm_certificate_validation" "cert_validation" {
   certificate_arn         = aws_acm_certificate.cert.arn
   validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
+}
+
+resource "aws_s3_bucket" "access_logs" {
+  bucket = "${var.account_id}-s3-access-logs"
+}
+
+output "access_logs_bucket_id" {
+  value = aws_s3_bucket.access_logs.id
 }

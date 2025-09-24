@@ -78,6 +78,7 @@ module "vpc" {
   vpc_cidr_block = var.vpc_cidr_block
   env            = local.env
   subdomain      = var.subdomain
+  account_id     = var.account_id
 
   ldap_service_endpoint = var.ldap_service_endpoint
   log_group_retention   = var.log_group_retention
@@ -105,13 +106,14 @@ module "app" {
 
   sandbox_mode = var.sandbox
 
-  s3_filename          = var.app_s3_filename
-  apim_environment     = var.apim_environment
-  ldap_gateway_url     = var.ldap_gateway_url
-  provisioned_capacity = var.provisioned_capacity
-  vpc_env              = var.vpc_env
-  hec_token_secret_id  = local.include_vpc ? module.vpc[0].hec_token_secret_id : data.aws_secretsmanager_secret.hec_token[0].id
-  log_group_retention  = var.log_group_retention
+  s3_filename           = var.app_s3_filename
+  apim_environment      = var.apim_environment
+  ldap_gateway_url      = var.ldap_gateway_url
+  provisioned_capacity  = var.provisioned_capacity
+  vpc_env               = var.vpc_env
+  hec_token_secret_id   = local.include_vpc ? module.vpc[0].hec_token_secret_id : data.aws_secretsmanager_secret.hec_token[0].id
+  log_group_retention   = var.log_group_retention
+  access_logs_bucket_id = module.vpc[0].access_logs_bucket_id
 
   count = !local.is_mgmt ? 1 : 0
 }

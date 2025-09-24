@@ -47,3 +47,9 @@ variable "log_group_retention" {
   type        = number
   default     = 30
 }
+
+variable "access_logs_bucket_id" {
+  description = "ARN of the access logs bucket"
+  type        = string
+  default     = null
+}

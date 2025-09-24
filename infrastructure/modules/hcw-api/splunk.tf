@@ -286,3 +286,9 @@ resource "aws_iam_role_policy_attachment" "log_transformer_policy_attach" {
   role       = aws_iam_role.log_transformer_role.name
   policy_arn = aws_iam_policy.log_transformer_policy.arn
 }
+
+resource "aws_s3_bucket_logging" "failed_logs_bucket_logging" {
+  bucket        = aws_s3_bucket.failed_logs_bucket.id
+  target_bucket = var.access_logs_bucket_id
+  target_prefix = "access-logs/"
+}
