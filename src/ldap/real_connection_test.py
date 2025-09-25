@@ -8,7 +8,7 @@ from ssl import CERT_REQUIRED
 from unittest.mock import patch, mock_open, MagicMock
 
 import pytest
-from ldap3 import SAFE_SYNC, AUTO_BIND_TLS_BEFORE_BIND
+from ldap3 import SAFE_SYNC, AUTO_BIND_TLS_BEFORE_BIND, NONE, IP_V4_ONLY
 from ldap3.core.exceptions import LDAPException
 
 import ldap.real_connection
