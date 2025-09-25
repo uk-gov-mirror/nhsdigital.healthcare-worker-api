@@ -278,7 +278,11 @@ def test_connect():
             validate=CERT_REQUIRED)
 
         server.assert_called_with("gateway_url",
-            use_ssl=True, tls=tls.return_value)
+            use_ssl=True,
+            tls=tls.return_value,
+            connect_timeout=4,
+            get_info=NONE,
+            mode=IP_V4_ONLY)
 
         connection.assert_called_with(server.return_value, user="username", password="password",
                                         client_strategy=SAFE_SYNC, receive_timeout=8, pool_keepalive=8)
