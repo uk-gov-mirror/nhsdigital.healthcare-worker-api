@@ -13,7 +13,7 @@ from typing import Optional
 import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
-from ldap3 import Tls, Server, Connection, SAFE_SYNC
+from ldap3 import Tls, Server, Connection, SAFE_SYNC, NONE, IP_V4_ONLY
 from ldap3.core.exceptions import LDAPException
 
 from hcw_exception import HcwException
@@ -245,7 +245,7 @@ class RealHcwLdapConnection(HcwLdapConnection):
                 ca_certs_file=server_cert_filename,
                 validate=CERT_REQUIRED
             )
-            server = Server(os.environ["LDAP_GATEWAY_URL"], use_ssl=True, tls=tls)
+            server = Server(os.environ["LDAP_GATEWAY_URL"], use_ssl=True, tls=tls, connect_timeout=4, get_info=NONE, mode=IP_V4_ONLY)
             tls_setup_duration = time.time() - tls_setup_start
             logger.info(f"TLS and server setup took {tls_setup_duration:.2f}s", "TLS_SETUP_TIMING", "null")
 
