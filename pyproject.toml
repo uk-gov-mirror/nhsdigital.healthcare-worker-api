@@ -10,7 +10,7 @@ packages = [{include = "*/*", from="src"}, {include = "*", from="src"}, {include
 python = "^3.12"
 boto3 = "^1.38.32"
 pytest = "^8.4.1"
-aws-lambda-powertools = "^3.14.0"
+aws-lambda-powertools = "^3.22.0"
 pydantic = "1.10.22"
 setuptools = "^80.9.0"
 jproperties = "^2.1.2"
