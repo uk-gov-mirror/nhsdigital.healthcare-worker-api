@@ -32,6 +32,7 @@ function main() {
   else
     run-sonar-scanner-in-docker
   fi
+  return $?
 }
 
 function run-sonar-scanner-natively() {
@@ -54,6 +55,7 @@ function run-sonar-scanner-natively() {
       -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
       -Dsonar.token="$SONAR_TOKEN"
   fi
+  return $?
 }
 
 function run-sonar-scanner-in-docker() {
@@ -86,13 +88,15 @@ function run-sonar-scanner-in-docker() {
         -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
         -Dsonar.token="$SONAR_TOKEN"
   fi
+  return $?
 }
 
 # ==============================================================================
 
-function is-arg-true() {
 
-  if [[ "$1" =~ ^(true|yes|y|on|1|TRUE|YES|Y|ON)$ ]]; then
+function is-arg-true() {
+  local arg="$1"
+  if [[ "$arg" =~ ^(true|yes|y|on|1|TRUE|YES|Y|ON)$ ]]; then
     return 0
   else
     return 1
