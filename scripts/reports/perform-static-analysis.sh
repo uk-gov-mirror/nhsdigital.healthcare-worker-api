@@ -45,7 +45,7 @@ function run-sonar-scanner-natively() {
       -Dsonar.token="$SONAR_TOKEN"
   else
     # Doing a PR analysis
-    sonar-scanner \
+    sonar-scanner -X \
       -Dproject.settings="$PWD/scripts/config/sonar-scanner.properties" \
       -Dsonar.pullrequest.key="${PULL_REQUEST_NUMBER:-}" \
       -Dsonar.pullrequest.branch="${BRANCH_NAME:-$(git rev-parse --abbrev-ref HEAD)}" \
