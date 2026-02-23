@@ -198,8 +198,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  practitioner:
-                    $ref: '#/components/schemas/Bundle'
+                  $ref: '#/components/schemas/Bundle'
         '400':
           description: Missing or invalid query parameter(s).
         '404':
@@ -263,8 +262,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  practitioner:
-                    $ref: '#/components/schemas/Bundle'
+                  $ref: '#/components/schemas/Bundle'
         '400':
           description: Missing or invalid query parameter(s).
         '404':
