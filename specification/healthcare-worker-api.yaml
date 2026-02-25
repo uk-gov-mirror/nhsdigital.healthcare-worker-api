@@ -196,9 +196,16 @@ paths:
           content:
             application/fhir+json:
               schema:
-                type: object
-                properties:
-                  $ref: '#/components/schemas/Bundle'
+                $ref: '#/components/schemas/Bundle'
+              examples:
+                basic:
+                  summary: Basic response (without roles)
+                  value:
+                    $ref: components/examples/GetHealthcareWorkerDetailsResponseSuccessBasic.json
+                with-roles:
+                  summary: Response with roles included
+                  value:
+                    $ref: components/examples/GetHealthcareWorkerDetailsResponseSuccessWithRoles.json
         '400':
           description: Missing or invalid query parameter(s).
         '404':
@@ -260,9 +267,7 @@ paths:
           content:
             application/fhir+json:
               schema:
-                type: object
-                properties:
-                  $ref: '#/components/schemas/Bundle'
+                $ref: '#/components/schemas/Bundle'
         '400':
           description: Missing or invalid query parameter(s).
         '404':
