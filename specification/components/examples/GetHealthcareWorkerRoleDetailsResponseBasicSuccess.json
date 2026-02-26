@@ -1,0 +1,58 @@
+{
+  "resourceType": "Bundle",
+  "type": "searchset",
+  "total": 15,
+  "entry": [
+    {
+      "search": {
+        "mode": "match"
+      },
+      "resource": {
+        "resourceType": "PractitionerRole",
+        "id": "615218913510",
+        "identifier": [
+          {
+            "system": "https://fhir.nhs.uk/Id/sds-role-profile-id",
+            "value": "615218913510"
+          }
+        ],
+        "active": true,
+        "practitioner": {
+          "reference": "Practitioner/123456789012",
+          "identifier": {
+            "system": "https://fhir.nhs.uk/Id/sds-user-id",
+            "value": "243476765512"
+          },
+          "display": "Ms Jane Allison Smith"
+        },
+        "organization": {
+          "reference": "Organization/V05266",
+          "identifier": {
+            "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+            "value": "V05266"
+          },
+          "display": "J M SUMMERFIELD AND ASSOCIATES"
+        },
+        "period": {},
+        "code": [
+          {
+            "coding": [
+              {
+                "system": "https://fhir.nhs.uk/CodeSystem/NHSDigital-SDS-JobRoleCode",
+                "code": "S0070:G0400:R1590",
+                "display": "\"Add'l Clinical Services\":\"Phlebotomist\":\"Phlebotomist\""
+              }
+            ]
+          }
+        ]
+      },
+      "fullUrl": "https://int.api.service.nhs.uk/healthcare-workerPractitionerRole/615218913510"
+    }
+  ],
+  "link": [
+    {
+      "relation": "self",
+      "url": "https://https://int.api.service.nhs.uk/healthcare-worker/PractitionerRole"
+    }
+  ]
+}
