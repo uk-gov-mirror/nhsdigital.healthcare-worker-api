@@ -152,30 +152,29 @@ paths:
       operationId: getPractitioner
       description: |
         # Overview
-        Use this endpoint to get details of healthcare workers in the Care Identity Service (CIS) directory.
+        Use this endpoint to get details of a healthcare worker registered in the Care Identity Service (CIS), using their CIS unique identifier.
 
-        This endpoint will return the basic details about the person. Future versions will include more data.
+        Only active accounts are returned. If the care identity itself is closed, the endpoint returns a 410 (Gone) response.
 
-        Only active accounts will be returned. If the care identity itself is closed, a 410 response will be provided (see below).
-
-        This endpoint supports the use of the _revinclude query parameter to expose more information about practitioner roles.
+        You can also get details of the healthcare worker's [national RBAC roles](https://digital.nhs.uk/services/care-identity-service/applications-and-services/cis2-authentication/integrate/design-and-build/national-rbac-for-developers),
+        using the `_revinclude` query parameter.
 
       parameters:
         - in: query
           name: identifier
           description: CIS unique identifier (sometimes known as the UUID, SDS user ID or smartcard ID).
           required: true
-          example: 123456789012
           schema:
             type: string
-          explode: true
+          example: 123456789012
         - in: query
           name: _revinclude
-          description: Include objects which reference the one being returned.
+          description: Include objects in the response which reference the one being returned.
           required: false
-          example: PractitionerRole:practitioner
           schema:
             type: string
+            enum: [PractitionerRole:practitioner]
+          example: PractitionerRole:practitioner
         - in: header
           name: X-Correlation-Id
           description: This is an arbitrary string value that allows you to relate a number of requests together. This does not have to be unique to the request.
@@ -202,10 +201,10 @@ paths:
                   summary: Basic response (without roles)
                   value:
                     $ref: components/examples/GetHealthcareWorkerDetailsResponseSuccessBasic.json
-                with-roles:
+                with-includes:
                   summary: Response with roles included
                   value:
-                    $ref: components/examples/GetHealthcareWorkerDetailsResponseSuccessWithRoles.json
+                    $ref: components/examples/GetHealthcareWorkerDetailsResponseSuccessWithIncludes.json
         '400':
           description: Missing or invalid query parameter(s).
         '404':
@@ -268,6 +267,15 @@ paths:
             application/fhir+json:
               schema:
                 $ref: '#/components/schemas/Bundle'
+              examples:
+                basic:
+                  summary: Basic response (without practitioner or organisation included)
+                  value:
+                    $ref: components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessBasic.json
+                with-includes:
+                  summary: Response with practitioner and organisations included
+                  value:
+                    $ref: components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessWithIncludes.json
         '400':
           description: Missing or invalid query parameter(s).
         '404':
