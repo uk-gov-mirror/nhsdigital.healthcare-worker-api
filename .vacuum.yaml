@@ -19,11 +19,7 @@
 extends: [[spectral:oas, recommended]]
 
 rules:
-  resolving-references:
-    severity: hint
-  oas3-unused-component:
-    severity: hint
-  paths-kebab-case:
-    severity: off
-  description-duplication:
-    severity: off
+  resolving-references: hint
+  oas3-unused-component: hint
+  paths-kebab-case: off
+  description-duplication: off
