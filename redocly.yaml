@@ -14,3 +14,5 @@ apis:
 rules:
   # FHIR APIs use PascalCase resource paths (e.g. /Practitioner, /PractitionerRole)
   paths-kebab-case: off
+  # License field is not required for internal NHS APIs
+  info-license: off
