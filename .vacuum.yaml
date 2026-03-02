@@ -5,8 +5,7 @@
 #
 # - resolving-references: The securitySchemes $ref points to an internal NHS
 #   proxygen URL that is resolved at deploy time, not fetchable by a linter.
-#   This is a core vacuum rule that cannot be disabled via config, so it is
-#   handled via the --ignore-file (.vacuum-ignore.yaml) instead.
+#   Remote reference resolution is disabled via the -u=false CLI flag.
 #
 # - oas3-unused-component: False positive caused by the above unresolvable
 #   external $ref — vacuum can't see it's used. Disabled here via config.

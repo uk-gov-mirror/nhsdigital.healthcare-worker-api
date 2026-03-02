@@ -1,8 +1,0 @@
-# Vacuum ignore file
-# https://quobix.com/vacuum/commands/lint/#ignoring-specific-linting-errors
-#
-# The resolving-references rule fires because the securitySchemes $ref points to
-# an internal NHS proxygen URL that is resolved at deploy time, not fetchable by
-# a standalone linter. This is not a spec defect.
-resolving-references:
-  - "$.components.securitySchemes['app-level3']"
