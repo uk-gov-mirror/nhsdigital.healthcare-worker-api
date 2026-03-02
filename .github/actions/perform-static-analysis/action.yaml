@@ -47,7 +47,7 @@ runs:
         poetry run coverage xml
         ./scripts/reports/perform-static-analysis.sh
     - name: "Run Trivy Checks"
-      uses: aquasecurity/trivy-action@0.28.0
+      uses: aquasecurity/trivy-action@0.34.1
       with:
         scan-type: "config"
         format: "sarif"
