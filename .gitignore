@@ -25,3 +25,4 @@ hcw-api.zip
 coverage.xml
 
 nft/*.csv
+specification/healthcare-worker-api.bundled.yaml
