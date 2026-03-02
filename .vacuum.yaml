@@ -5,6 +5,8 @@
 #
 # - resolving-references: The securitySchemes $ref points to an internal NHS
 #   proxygen URL that is resolved at deploy time, not fetchable by a linter.
+#   This is a core vacuum rule that cannot be disabled via config, so it is
+#   skipped via the --skip-rule CLI flag in the Makefile instead.
 #
 # - oas3-unused-component: False positive caused by the above unresolvable
 #   external $ref — vacuum can't see it's used.
