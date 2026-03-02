@@ -282,6 +282,7 @@ paths:
 components:
   securitySchemes:
     app-level3:
+      x-lint-ignore: resolving-references
       $ref: https://proxygen.prod.api.platform.nhs.uk/components/securitySchemes/app-level3
   schemas:
     Bundle:
