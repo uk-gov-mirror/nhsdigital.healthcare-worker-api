@@ -30,7 +30,7 @@ install-vacuum: # Install vacuum OpenAPI linter @Configuration
 
 lint-specification: # Lint the OpenAPI specification @Quality
 	# TODO: Change --fail-severity to 'error' once pre-existing spec issues are resolved (HCW-310)
-	vacuum lint -d -s -r .vacuum.yaml -u=false --fail-severity none specification/healthcare-worker-api.yaml
+	vacuum lint -d -s --no-clip -r .vacuum.yaml -u=false --fail-severity none specification/healthcare-worker-api.yaml
 
 config:: # Configure development environment (main) @Configuration
 	# TODO: Use only 'make' targets that are specific to this project, e.g. you may not need to install Node.js
