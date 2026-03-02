@@ -7,11 +7,6 @@ runs:
       shell: bash
       run: |
         make install-vacuum
-    - name: "Test proxygen reachability (diagnostic - can be removed later)"
-      shell: bash
-      run: |
-        echo "Testing if proxygen URL is reachable from GitHub Actions runner..."
-        curl -s -o /dev/null -w "HTTP Status: %{http_code}\nRemote IP: %{remote_ip}\n" https://proxygen.prod.api.platform.nhs.uk/components/securitySchemes/app-level3 || echo "UNREACHABLE"
     - name: "Lint OpenAPI specification"
       shell: bash
       run: |
