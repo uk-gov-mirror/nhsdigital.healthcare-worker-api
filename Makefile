@@ -25,6 +25,12 @@ deploy: # Deploy the project artefact to the target environment @Pipeline
 clean:: # Clean-up project resources (main) @Operations
 	# TODO: Implement project resources clean-up step
 
+install-vacuum: # Install vacuum OpenAPI linter @Configuration
+	curl -fsSL https://quobix.com/scripts/install_vacuum.sh | sh > /dev/null
+
+lint-specification: # Lint the OpenAPI specification @Quality
+	vacuum lint -d specification/healthcare-worker-api.yaml
+
 config:: # Configure development environment (main) @Configuration
 	# TODO: Use only 'make' targets that are specific to this project, e.g. you may not need to install Node.js
 	make _install-dependencies

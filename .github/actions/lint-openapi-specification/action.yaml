@@ -1,0 +1,13 @@
+name: "Lint OpenAPI specification"
+description: "Lint the OpenAPI specification using vacuum"
+runs:
+  using: "composite"
+  steps:
+    - name: "Install vacuum"
+      shell: bash
+      run: |
+        make install-vacuum
+    - name: "Lint OpenAPI specification"
+      shell: bash
+      run: |
+        make lint-specification
