@@ -282,13 +282,13 @@ paths:
 components:
   securitySchemes:
     app-level3:
-      # $ref: https://proxygen.prod.api.platform.nhs.uk/components/securitySchemes/app-level3
-      type: oauth2
-      description: "# Application level 3 authentication\n\nThis is an application-restricted authentication pattern for access\nto NHS England APIs.  For a full description of our authentication\nand authorization patterns please see the [Security and authorisation page](https://digital.nhs.uk/developer/guides-and-documentation/security-and-authorisation).\n"
-      flows:
-        clientCredentials:
-          tokenUrl: "/oauth2/token"
-          scopes: []
+      $ref: https://proxygen.prod.api.platform.nhs.uk/components/securitySchemes/app-level3
+      #type: oauth2
+      #description: "# Application level 3 authentication\n\nThis is an application-restricted authentication pattern for access\nto NHS England APIs.  For a full description of our authentication\nand authorization patterns please see the [Security and authorisation page](https://digital.nhs.uk/developer/guides-and-documentation/security-and-authorisation).\n"
+      #flows:
+      #  clientCredentials:
+      #    tokenUrl: "/oauth2/token"
+      #    scopes: []
   schemas:
     Bundle:
       type: object
