@@ -6,10 +6,10 @@
 # - resolving-references: The securitySchemes $ref points to an internal NHS
 #   proxygen URL that is resolved at deploy time, not fetchable by a linter.
 #   This is a core vacuum rule that cannot be disabled via config, so it is
-#   skipped via the --skip-rule CLI flag in the Makefile instead.
+#   handled via the --ignore-file (.vacuum-ignore.yaml) instead.
 #
 # - oas3-unused-component: False positive caused by the above unresolvable
-#   external $ref — vacuum can't see it's used.
+#   external $ref — vacuum can't see it's used. Disabled here via config.
 #
 # - paths-kebab-case: This is a FHIR API. FHIR resource paths use PascalCase
 #   by convention (e.g. /Practitioner, /PractitionerRole).
@@ -21,7 +21,6 @@
 extends: [[spectral:oas, recommended]]
 
 rules:
-  resolving-references: off
   oas3-unused-component: off
   paths-kebab-case: off
   description-duplication: off
