@@ -49,8 +49,7 @@ runs:
     - name: "Install Trivy"
       shell: bash
       run: |
-        sudo apt-get install -y wget apt-transport-https gnupg
-        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+        wget --max-redirect=0 -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
         echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee /etc/apt/sources.list.d/trivy.list
         sudo apt-get update
         sudo apt-get install -y trivy
