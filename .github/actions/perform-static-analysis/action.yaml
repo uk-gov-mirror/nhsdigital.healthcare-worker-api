@@ -46,12 +46,21 @@ runs:
         poetry run coverage run -m pytest
         poetry run coverage xml
         ./scripts/reports/perform-static-analysis.sh
+    - name: "Install Trivy"
+      shell: bash
+      run: |
+        wget --max-redirect=0 -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+        echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee /etc/apt/sources.list.d/trivy.list
+        sudo apt-get update
+        sudo apt-get install -y trivy
+        trivy --version
     - name: "Run Trivy Checks"
-      uses: aquasecurity/trivy-action@0.28.0
+      uses: aquasecurity/trivy-action@0.34.1
       with:
         scan-type: "config"
         format: "sarif"
         output: trivy.sarif
+        skip-setup-trivy: true
       env:
         TRIVY_SKIP_DB_UPDATE: true
     - name: Upload Trivy scan results to GitHub Security tab

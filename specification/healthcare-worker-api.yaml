@@ -166,7 +166,7 @@ paths:
           required: true
           schema:
             type: string
-          example: 123456789012
+          example: '123456789012'
         - in: query
           name: _revinclude
           description: Include objects in the response which reference the one being returned.
@@ -174,21 +174,21 @@ paths:
           schema:
             type: string
             enum: [PractitionerRole:practitioner]
-          example: PractitionerRole:practitioner
+          example: 'PractitionerRole:practitioner'
         - in: header
           name: X-Correlation-Id
           description: This is an arbitrary string value that allows you to relate a number of requests together. This does not have to be unique to the request.
           schema:
             type: string
             format: string
-          example: MyTransactionID.ABC.20240101.001
+          example: 'MyTransactionID.ABC.20240101.001'
         - in: header
           name: X-Request-Id
           description: Unique identifier for the request, used for tracking and logging purposes.
           schema:
             type: string
             format: uuid
-          example: 6d3d3674-7ce5-11ec-90d6-0242ac121234
+          example: '6d3d3674-7ce5-11ec-90d6-0242ac121234'
       responses:
         '200':
           description: Successful operation
@@ -235,7 +235,7 @@ paths:
           name: practitioner.identifier
           description: CIS unique identifier (sometimes known as the UUID, SDS user ID or smartcard ID)
           required: true
-          example: 123456789012
+          example: '123456789012'
           schema:
             type: string
           explode: true
@@ -243,7 +243,7 @@ paths:
           name: _include
           description: Accepted values of either PractitionerRole:organization or PractitionerRole:practitioner. If you want both, then add this parameter multiple times with different values.
           required: false
-          example: PractitionerRole:practitioner
+          example: 'PractitionerRole:practitioner'
           schema:
             type: string
         - in: header
@@ -252,14 +252,14 @@ paths:
           schema:
             type: string
             format: string
-          example: MyTransactionID.ABC.20240101.001
+          example: 'MyTransactionID.ABC.20240101.001'
         - in: header
           name: X-Request-Id
           description: Unique identifier for the request, used for tracking and logging purposes.
           schema:
             type: string
             format: uuid
-          example: 6d3d3674-7ce5-11ec-90d6-0242ac121234
+          example: '6d3d3674-7ce5-11ec-90d6-0242ac121234'
       responses:
         '200':
           description: Successful operation
@@ -335,7 +335,7 @@ components:
         id:
           type: string
           description: Auto generated unique ID for the person.
-          example: 123456789012
+          example: '123456789012'
         identifier:
           type: array
           description: Auto generated unique ID for the person.
@@ -347,7 +347,7 @@ components:
                 default: https://fhir.nhs.uk/Id/sds-user-id
               value:
                 type: string
-                example: 123456789012
+                example: '123456789012'
         active:
           type: boolean
           description: Describes the active status of the Practitioner record in the directory.
@@ -365,15 +365,15 @@ components:
               family:
                 type: string
                 description: That part of a person's name which is used to describe family, clan, tribal group, or marital association.
-                example: Smith
+                example: 'Smith'
               given:
                 type: string
                 description: The forenames or given names of a person. Includes middle names.
-                example: Jane Alison
+                example: 'Jane Alison'
               prefix:
                 type: string
                 description: Standard form of address used to precede a person's name
-                example: Ms
+                example: 'Ms'
     PractitionerRole:
       type: object
       properties:
@@ -394,7 +394,7 @@ components:
                 default: https://fhir.nhs.uk/Id/sds-role-profile-id
               value:
                 type: string
-                example: 123456789012
+                example: '123456789012'
         active:
           type: boolean
           description: Describes the active status of the Practitioner record in the directory.
