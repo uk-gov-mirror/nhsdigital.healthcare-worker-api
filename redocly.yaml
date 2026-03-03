@@ -1,0 +1,18 @@
+# Redocly OpenAPI linter configuration
+# https://redocly.com/docs/cli/configuration/
+#
+# The specification is first resolved (external $refs inlined) via
+# `redocly bundle -d`, then linted against the recommended ruleset.
+
+extends:
+  - recommended
+
+apis:
+  healthcare-worker:
+    root: ./specification/healthcare-worker-api.resolved.json
+
+rules:
+  # FHIR APIs use PascalCase resource paths (e.g. /Practitioner, /PractitionerRole)
+  paths-kebab-case: off
+  # License field is not required for internal NHS APIs
+  info-license: off

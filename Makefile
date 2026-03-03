@@ -25,6 +25,12 @@ deploy: # Deploy the project artefact to the target environment @Pipeline
 clean:: # Clean-up project resources (main) @Operations
 	# TODO: Implement project resources clean-up step
 
+resolve-specification: # Resolve external $refs in the OpenAPI specification @Quality
+	npx -y @redocly/cli bundle specification/healthcare-worker-api.yaml -o specification/healthcare-worker-api.resolved.json
+
+lint-specification: resolve-specification # Lint the OpenAPI specification @Quality
+	NO_COLOR=1 npx -y @redocly/cli lint --config redocly.yaml
+
 config:: # Configure development environment (main) @Configuration
 	# TODO: Use only 'make' targets that are specific to this project, e.g. you may not need to install Node.js
 	make _install-dependencies

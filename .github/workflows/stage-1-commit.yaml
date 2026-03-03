@@ -86,6 +86,15 @@ jobs:
         uses: actions/checkout@v4
       - name: "Lint Terraform"
         uses: ./.github/actions/lint-terraform
+  lint-openapi-specification:
+    name: "Lint OpenAPI specification"
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v4
+      - name: "Lint OpenAPI specification"
+        uses: ./.github/actions/lint-openapi-specification
   count-lines-of-code:
     name: "Count lines of code"
     runs-on: ubuntu-latest
