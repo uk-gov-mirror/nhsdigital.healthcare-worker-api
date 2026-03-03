@@ -54,11 +54,11 @@
       },
       "resource": {
         "resourceType": "PractitionerRole",
-        "id": "555051226102",
+        "id": "555051225101",
         "identifier": [
           {
             "system": "https://fhir.nhs.uk/Id/sds-role-profile-id",
-            "value": "555051226102"
+            "value": "555051225101"
           }
         ],
         "active": true,
@@ -66,7 +66,7 @@
           "reference": "Practitioner/123456789012",
           "identifier": {
             "system": "https://fhir.nhs.uk/Id/sds-user-id",
-            "value": "243476765512"
+            "value": "123456789012"
           },
           "display": "Ms Jane Allison Smith"
         },
@@ -86,14 +86,14 @@
             "coding": [
               {
                 "system": "https://fhir.nhs.uk/CodeSystem/NHSDigital-SDS-JobRoleCode",
-                "code": "S0080:G0450:R5105",
-                "display": "\"Admin & Clerical\":\"Management - A & C\":\"Caldicott Guardian\""
+                "code": "S8002:G8003:R0001",
+                "display": "\"Admin and Clerical\":\"Admin and Clerical\":\"Privacy Officer\""
               }
             ]
           }
         ]
       },
-      "fullUrl": "https://int.api.service.nhs.uk/healthcare-workerPractitionerRole/555051226102"
+      "fullUrl": "https://int.api.service.nhs.uk/healthcare-workerPractitionerRole/555051225101"
     },
     {
       "search": {
