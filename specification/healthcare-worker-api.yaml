@@ -363,13 +363,17 @@ components:
                 description: That part of a person's name which is used to describe family, clan, tribal group, or marital association.
                 example: 'Smith'
               given:
-                type: string
+                type: array
                 description: The forenames or given names of a person. Includes middle names.
-                example: 'Jane Alison'
+                items:
+                  type: string
+                  example: 'Jane Allison'
               prefix:
-                type: string
+                type: array
                 description: Standard form of address used to precede a person's name
-                example: 'Ms'
+                items:
+                  type: string
+                  example: 'Ms'
     PractitionerRole:
       type: object
       properties:
