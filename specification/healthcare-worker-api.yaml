@@ -200,7 +200,7 @@ paths:
                 basic:
                   summary: Basic response (without roles)
                   value:
-                    $ref: components/examples/GetHealthcareWorkerDetailsResponseSuccessBasic.json
+                    $ref: components/examples/GetHealthcareWorkerDetailsResponseSuccessBasicX.json
                 with-includes:
                   summary: Response with roles included
                   value:
