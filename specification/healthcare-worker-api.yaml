@@ -199,12 +199,10 @@ paths:
               examples:
                 basic:
                   summary: Basic response (without roles)
-                  value:
-                    $ref: components/examples/GetHealthcareWorkerDetailsResponseSuccessBasicX.json
+                  externalValue: components/examples/GetHealthcareWorkerDetailsResponseSuccessBasic.json
                 with-includes:
                   summary: Response with roles included
-                  value:
-                    $ref: components/examples/GetHealthcareWorkerDetailsResponseSuccessWithIncludes.json
+                  externalValue: components/examples/GetHealthcareWorkerDetailsResponseSuccessWithIncludes.json
         '400':
           description: Missing or invalid query parameter(s).
         '404':
@@ -270,12 +268,10 @@ paths:
               examples:
                 basic:
                   summary: Basic response (without practitioner or organisation included)
-                  value:
-                    $ref: components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessBasic.json
+                  externalValue: components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessBasic.json
                 with-includes:
                   summary: Response with practitioner and organisations included
-                  value:
-                    $ref: components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessWithIncludes.json
+                  externalValue: components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessWithIncludes.json
         '400':
           description: Missing or invalid query parameter(s).
         '404':
