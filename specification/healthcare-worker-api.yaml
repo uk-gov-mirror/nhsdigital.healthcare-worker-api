@@ -307,6 +307,16 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SearchEntry"
+        link:
+          type: array
+          items:
+            type: object
+            properties:
+              relation:
+                type: string
+                enum: [ "self" ]
+              url:
+                type: string
     SearchEntry:
       type: object
       properties:
@@ -316,6 +326,10 @@ components:
           oneOf:
             - $ref: "#/components/schemas/Practitioner"
             - $ref: "#/components/schemas/PractitionerRole"
+        fullUrl:
+          type: string
+          description: URL for the resource
+          example: https://int.api.service.nhs.uk/healthcare-worker/Practitioner/123456789012
     SearchDetails:
       type: object
       properties:
