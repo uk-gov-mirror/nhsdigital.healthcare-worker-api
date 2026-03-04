@@ -332,6 +332,8 @@ components:
         link:
           description: A list of useful links.
           type: array
+          minItems: 1
+          maxItems: 1
           items:
             type: object
             properties:
@@ -368,18 +370,22 @@ components:
           type: string
           enum: [match,include]
     Practitioner:
+      description: A healthcare worker's personal details, formatted as a FHIR `Practitioner` resource.
       type: object
       properties:
         resourceType:
+          description: FHIR resource type.
           type: string
-          default: Practitioner
+          enum: [Practitioner]
         id:
+          description: CIS identifier for the healthcare worker. Also known as their UUID or smartcard ID.
           type: string
-          description: Auto generated unique ID for the person.
           example: '123456789012'
         identifier:
+          description: CIS identifier for the healthcare worker. Also known as their UUID or smartcard ID.
           type: array
-          description: Auto generated unique ID for the person.
+          minItems: 1
+          maxItems: 1
           items:
             type: object
             properties:
@@ -390,98 +396,127 @@ components:
                 type: string
                 example: '123456789012'
         active:
+          description: Indicates whether the healthcare worker's account is active in CIS.
           type: boolean
-          description: Describes the active status of the Practitioner record in the directory.
-          example: True
+          example: true
         name:
+          description: Healthcare worker's name.
           type: array
-          description: Person's name details.
+          minItems: 1
+          maxItems: 1
           items:
             type: object
             properties:
               use:
                 type: string
                 description: Identifies the purpose for this name.
-                default: usual
+                enum: [usual]
               family:
-                type: string
                 description: That part of a person's name which is used to describe family, clan, tribal group, or marital association.
+                type: string
                 example: 'Smith'
               given:
-                type: array
                 description: The forenames or given names of a person. Includes middle names.
+                type: array
+                minItems: 1
                 items:
                   type: string
                   example: 'Jane Allison'
               prefix:
                 type: array
-                description: Standard form of address used to precede a person's name
+                description: Standard form of address used to precede a person's name.
+                maxItems: 1
                 items:
                   type: string
                   example: 'Ms'
     PractitionerRole:
+      description: |
+        A healthcare worker role (sometimes called a 'role profile'), formatted as a FHIR `PractitionerRole` resource.
+        A healthcare worker can have multiple roles, and each role is associated with a specific organisation.
+        If the worker performs the same role in multiple organisations, there is a separate role profile for each organisation.
       type: object
       properties:
         resourceType:
+          description: FHIR resource type.
           type: string
-          default: PractitionerRole
+          enum: [PractitionerRole]
         id:
+          description: Unique identifier for the role, sometimes called the role profile ID.
           type: string
-          description: Id of the practitioner role
         identifier:
+          description: Unique identifier for the role, sometimes called the role profile ID.
           type: array
-          description: Auto generated unique ID for the role.
+          minItems: 1
+          maxItems: 1
           items:
             type: object
             properties:
               system:
+                description: Coding system for the idenfier.
                 type: string
-                default: https://fhir.nhs.uk/Id/sds-role-profile-id
+                enum: [https://fhir.nhs.uk/Id/sds-role-profile-id]
               value:
+                description: The identifier itself.
                 type: string
                 example: '123456789012'
         active:
           type: boolean
-          description: Describes the active status of the Practitioner record in the directory.
+          description: Whethe the role is active in CIS.
           example: True
         practitioner:
           $ref: '#/components/schemas/Reference'
         organization:
           $ref: '#/components/schemas/Reference'
         period:
+          description: Time period during which the role applies, or applied.
           type: object
           properties:
             start:
+              description: Start date for the period.
               type: string
             end:
+              description: End date for the period.
               type: string
         code:
+          description: Code for the role.
           type: array
+          minItems: 1
+          maxItems: 1
           items:
             $ref: '#/components/schemas/CodeableConcept'
     Organization:
+      description: |
+        An organisation associated with one of the roles in the result set, formatted as a FHIR `Organization` resource.
       type: object
       properties:
         resourceType:
+          description: FHIR resource type.
           type: string
-          default: Organization
+          enum: [Organization]
         id:
           type: string
-          description: Id of the organisation
+          description: ODS code for the organisation.
+          example: V05266
         identifier:
+          description: ODS code for the organisation.
           type: array
-          description: Auto generated unique ID for the role.
+          minItems: 1
+          maxItems: 1
           items:
             type: object
             properties:
               system:
+                description: Coding system for the ODS code.
                 type: string
-                default: https://fhir.nhs.uk/Id/ods-organization-code
+                enum: [https://fhir.nhs.uk/Id/ods-organization-code]
               value:
+                description: The ODS code itself.
                 type: string
                 example: 'V05266'
         name:
+          description: Organisation name.
           type: string
+          example: SILKSTONE PHARMACY
     Reference:
       type: object
       properties:
