@@ -414,7 +414,20 @@ components:
           description: Describes the active status of the Practitioner record in the directory.
           example: True
         practitioner:
-          $ref: '#/components/schemas/Reference'
+#          $ref: '#/components/schemas/Reference'
+          type: object
+          properties:
+            reference:
+              type: string
+            identifier:
+              type: object
+              properties:
+                system:
+                  type: string
+                value:
+                  type: string
+            display:
+              type: string
         organization:
           $ref: '#/components/schemas/Reference'
         period:
