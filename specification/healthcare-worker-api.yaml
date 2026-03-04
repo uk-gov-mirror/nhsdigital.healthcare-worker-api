@@ -326,6 +326,7 @@ components:
           oneOf:
             - $ref: "#/components/schemas/Practitioner"
             - $ref: "#/components/schemas/PractitionerRole"
+            - $ref: "#/components/schemas/Organization"
         fullUrl:
           type: string
           description: URL for the resource
@@ -414,19 +415,7 @@ components:
           description: Describes the active status of the Practitioner record in the directory.
           example: True
         practitioner:
-          type: object
-          properties:
-            reference:
-              type: string
-            identifier:
-              type: object
-              properties:
-                system:
-                  type: string
-                value:
-                  type: string
-            display:
-              type: string
+          $ref: '#/components/schemas/Reference'
         organization:
           $ref: '#/components/schemas/Reference'
         period:
@@ -440,6 +429,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CodeableConcept'
+    Organization:
+      type: object
+      properties:
+        resourceType:
+          type: string
+          default: Organization
+        id:
+          type: string
+          description: Id of the organisation
+        identifier:
+          type: array
+          description: Auto generated unique ID for the role.
+          items:
+            type: object
+            properties:
+              system:
+                type: string
+                default: https://fhir.nhs.uk/Id/ods-organization-code
+              value:
+                type: string
+                example: 'V05266'
+        name:
+          type: string
     Reference:
       type: object
       properties:
