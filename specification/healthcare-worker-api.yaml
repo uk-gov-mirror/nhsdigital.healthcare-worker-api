@@ -431,13 +431,17 @@ components:
     Reference:
       type: object
       properties:
-        resourceType:
+        reference:
           type: string
-          default: Identifier
-        system:
-          type: string
-        value:
-          type: string
+        identifier:
+          type: object
+          properties:
+            system:
+              type: string
+            value:
+              type: string
+          display:
+            type: string
     CodeableConcept:
       type: object
       properties:
