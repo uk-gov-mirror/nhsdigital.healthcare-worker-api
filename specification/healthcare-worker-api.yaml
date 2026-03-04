@@ -162,33 +162,22 @@ paths:
       parameters:
         - in: query
           name: identifier
-          description: CIS unique identifier (sometimes known as the UUID, SDS user ID or smartcard ID).
+          description: CIS unique identifier for the healthcare worker (sometimes known as the UUID, SDS user ID or smartcard ID).
           required: true
           schema:
             type: string
           example: '123456789012'
         - in: query
           name: _revinclude
-          description: Include objects in the response which reference the one being returned.
+          description: Specifies other information to be included along with the healthcare worker, using the FHIR 'reverse include' syntax. Specifying `PractitionerRole:practitioner` will include the healthcare worker's roles.
           required: false
           schema:
             type: string
             enum: [PractitionerRole:practitioner]
           example: 'PractitionerRole:practitioner'
-        - in: header
-          name: X-Correlation-Id
-          description: This is an arbitrary string value that allows you to relate a number of requests together. This does not have to be unique to the request.
-          schema:
-            type: string
-            format: string
-          example: 'MyTransactionID.ABC.20240101.001'
-        - in: header
-          name: X-Request-Id
-          description: Unique identifier for the request, used for tracking and logging purposes.
-          schema:
-            type: string
-            format: uuid
-          example: '6d3d3674-7ce5-11ec-90d6-0242ac121234'
+        - $ref: '#/components/parameters/BearerAuthorization'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/CorrelationId'
       responses:
         '200':
           description: Successful operation
@@ -239,25 +228,18 @@ paths:
           explode: true
         - in: query
           name: _include
-          description: Accepted values of either PractitionerRole:organization or PractitionerRole:practitioner. If you want both, then add this parameter multiple times with different values.
+          description: |
+            Specifies other information to be included along with the roles, using the FHIR 'include' syntax.
+            Specifying `PractitionerRole:practitioner` will include the healthcare worker's personal details.
+            Specifying `PractitionerRole:organization` will include the organisation associated with the role.
+            If you want both, include this parameter multiple times with different values.
           required: false
-          example: 'PractitionerRole:practitioner'
           schema:
             type: string
-        - in: header
-          name: X-Correlation-Id
-          description: This is an arbitrary string value that allows you to relate a number of requests together. This does not have to be unique to the request.
-          schema:
-            type: string
-            format: string
-          example: 'MyTransactionID.ABC.20240101.001'
-        - in: header
-          name: X-Request-Id
-          description: Unique identifier for the request, used for tracking and logging purposes.
-          schema:
-            type: string
-            format: uuid
-          example: '6d3d3674-7ce5-11ec-90d6-0242ac121234'
+            enum: [PractitionerRole:practitioner,PractitionerRole:organization]
+        - $ref: '#/components/parameters/BearerAuthorization'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/CorrelationId'
       responses:
         '200':
           description: Successful operation
@@ -290,13 +272,44 @@ components:
   securitySchemes:
     app-level3:
       $ref: https://proxygen.prod.api.platform.nhs.uk/components/securitySchemes/app-level3
+  parameters:
+    BearerAuthorization:
+      in: header
+      name: Authorization
+      description: |
+        The calling system's access token, which must be an OAuth 2.0 bearer token.
+        For details, see [Authorisation using OAuth 2.0 private key JWT](https://digital.nhs.uk/developer/api-catalogue/digital-staff-passport-api-standard/authorisation-using-oauth-2.0-private-key-jwt).
+      required: false
+      schema:
+        type: string
+        format: '^Bearer\ [[:ascii:]]+$'
+        example: 'Bearer g1112R_ccQ1Ebbb4gtHBP1aaaNM'
+    RequestId:
+      in: header
+      name: X-Request-Id
+      description: Unique identifier for the request, used for tracking and logging purposes.
+      schema:
+        type: string
+        format: uuid
+      example: '6d3d3674-7ce5-11ec-90d6-0242ac121234'
+    CorrelationId:
+      in: header
+      name: X-Correlation-Id
+      description: |
+        An optional ID which you can use to track transactions across multiple systems. It can take any value, but we recommend avoiding `.` characters.
+
+        Mirrored back in a response header.          
+      schema:
+        type: string
+      example: 'MyTransactionID.ABC.20240101.001'
   schemas:
     Bundle:
       type: object
       properties:
         resourceType:
+          description: FHIR resource type
           type: string
-          default: Bundle
+          enum: [ Bundle ]
         type:
           type: string
           default: searchset
