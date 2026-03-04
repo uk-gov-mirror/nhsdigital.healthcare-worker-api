@@ -278,7 +278,9 @@ components:
       name: Authorization
       description: |
         The calling system's access token, which must be an OAuth 2.0 bearer token.
-        For details, see [Authorisation using OAuth 2.0 private key JWT](https://digital.nhs.uk/developer/api-catalogue/digital-staff-passport-api-standard/authorisation-using-oauth-2.0-private-key-jwt).
+        For details, see [Application-restricted RESTful APIs - signed JWT authentication](https://digital.nhs.uk/developer/guides-and-documentation/security-and-authorisation/application-restricted-restful-apis-signed-jwt-authentication).
+        
+        Required in all environments except sandbox.
       required: false
       schema:
         type: string
@@ -287,7 +289,11 @@ components:
     RequestId:
       in: header
       name: X-Request-Id
-      description: Unique identifier for the request, used for tracking and logging purposes.
+      description: |
+        Unique identifier for the request, used for tracking and logging purposes.
+
+        Must be a universally unique identifier (UUID) (ideally version 4).
+      required: true
       schema:
         type: string
         format: uuid
@@ -299,6 +305,7 @@ components:
         An optional ID which you can use to track transactions across multiple systems. It can take any value, but we recommend avoiding `.` characters.
 
         Mirrored back in a response header.
+      required: false
       schema:
         type: string
       example: 'MyTransactionID.ABC.20240101.001'
@@ -307,28 +314,33 @@ components:
       type: object
       properties:
         resourceType:
-          description: FHIR resource type
+          description: FHIR resource type.
           type: string
-          enum: [ Bundle ]
+          enum: [Bundle]
         type:
+          description: Indicates how the bundle is intended to be used.
           type: string
-          default: searchset
+          enum: [searchset]
         total:
+          description: Number of matching entries. Excludes related resources included in the bundle due to the use of the `_include` or `_revinclude` parameters.
           type: number
-          description: Total count of matching entries, does not includes extra included entries from link relationships
         entry:
+          description: List of matching healthcare workers, roles and organisations.
           type: array
           items:
             $ref: "#/components/schemas/SearchEntry"
         link:
+          description: A list of useful links.
           type: array
           items:
             type: object
             properties:
               relation:
+                description: The nature of the link. Always `self`, meaning it's a link to the resource endpoint that was called.
                 type: string
                 enum: [ "self" ]
               url:
+                secription: The link's URL.
                 type: string
     SearchEntry:
       type: object
@@ -345,11 +357,16 @@ components:
           description: URL for the resource
           example: https://int.api.service.nhs.uk/healthcare-worker/Practitioner/123456789012
     SearchDetails:
+      description: Search-related information for the resource.
       type: object
       properties:
         mode:
+          description: |
+            Indicates why this resource is in the result set.
+            `match` indicates a direct match to the query.
+            `include` indicates that the entry is linked to one of the matching entries, and that the relevant link was requested in the search.
           type: string
-          description: Either "match" or "include". Match indicates a direct match to the query. Include indicates that the entry is linked to one of the matching entries, and that the relevant link was requested in the search.
+          enum: [match,included]
     Practitioner:
       type: object
       properties:
