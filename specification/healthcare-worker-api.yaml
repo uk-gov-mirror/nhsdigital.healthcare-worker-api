@@ -440,8 +440,8 @@ components:
               type: string
             value:
               type: string
-          display:
-            type: string
+        display:
+          type: string
     CodeableConcept:
       type: object
       properties:
