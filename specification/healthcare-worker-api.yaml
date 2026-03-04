@@ -461,14 +461,16 @@ components:
           type: string
           default: CodeableConcept
         coding:
-          type: object
-          properties:
-            resourceType:
-              type: string
-              default: Coding
-            system:
-              type: string
-            code:
-              type: string
-            display:
-              type: string
+          type: array
+          items:
+            type: object
+            properties:
+              resourceType:
+                type: string
+                default: Coding
+              system:
+                type: string
+              code:
+                type: string
+              display:
+                type: string
