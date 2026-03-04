@@ -279,7 +279,7 @@ components:
       description: |
         The calling system's access token, which must be an OAuth 2.0 bearer token.
         For details, see [Application-restricted RESTful APIs - signed JWT authentication](https://digital.nhs.uk/developer/guides-and-documentation/security-and-authorisation/application-restricted-restful-apis-signed-jwt-authentication).
-        
+
         Required in all environments except sandbox.
       required: false
       schema:
@@ -340,7 +340,7 @@ components:
                 type: string
                 enum: [ "self" ]
               url:
-                secription: The link's URL.
+                description: The link's URL.
                 type: string
     SearchEntry:
       type: object
@@ -366,7 +366,7 @@ components:
             `match` indicates a direct match to the query.
             `include` indicates that the entry is linked to one of the matching entries, and that the relevant link was requested in the search.
           type: string
-          enum: [match,included]
+          enum: [match,include]
     Practitioner:
       type: object
       properties:
