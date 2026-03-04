@@ -298,7 +298,7 @@ components:
       description: |
         An optional ID which you can use to track transactions across multiple systems. It can take any value, but we recommend avoiding `.` characters.
 
-        Mirrored back in a response header.          
+        Mirrored back in a response header.
       schema:
         type: string
       example: 'MyTransactionID.ABC.20240101.001'
