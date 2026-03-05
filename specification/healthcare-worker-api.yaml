@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  version: v0.1
+  version: __VERSION__
   title: Healthcare Worker API
   description: |
     ## Overview

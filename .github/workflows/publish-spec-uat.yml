@@ -1,0 +1,60 @@
+name: "Publish Spec to Bloomreach UAT Portal"
+run-name: Publish ${{ github.ref_name }} to UAT by @${{ github.actor }}
+
+on: workflow_dispatch
+
+jobs:
+  publish:
+    name: "Publish spec to UAT"
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    timeout-minutes: 5
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v4
+
+      - name: "Set OAS info.version to ${{ github.ref_name }}-${{ github.sha }}"
+        run: |
+          sed -i 's/__VERSION__/${{ github.ref_name }}-${{ github.sha }}/g' specification/healthcare-worker-api.yaml
+
+      - name: "Lint OpenAPI specification"
+        run: |
+          npx -y @redocly/cli bundle \
+            specification/healthcare-worker-api.yaml \
+            -o specification/healthcare-worker-api.resolved.json
+          npx -y @redocly/cli lint --config redocly.yaml
+
+      - name: "Setup proxygen-cli"
+        run: |
+          pipx install proxygen-cli
+          pipx upgrade proxygen-cli
+          mkdir -p ${HOME}/.proxygen
+          cp ./.github/proxygen-credentials-template.yaml ${HOME}/.proxygen/credentials.yaml
+          cp ./.github/proxygen-settings.yaml ${HOME}/.proxygen/settings.yaml
+
+      - name: "Configure AWS credentials"
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.DEV_AWS_ACCOUNT_ID }}:role/GitHubActionsPublishSpecRole
+          aws-region: eu-west-2
+
+      - name: "Fetch proxygen private key from AWS Secrets Manager"
+        run: |
+          aws secretsmanager get-secret-value \
+            --secret-id "apim-deploy-private-key" \
+            --query SecretString \
+            --output text > ${HOME}/.proxygen/key
+          proxygen status
+        env:
+          AWS_DEFAULT_REGION: eu-west-2
+
+      - name: "Publish spec to UAT"
+        run: |
+          proxygen spec publish specification/healthcare-worker-api.yaml --uat --no-confirm
+
+      - name: "Instructions for viewing UAT Specification"
+        run: |
+          echo "View UAT spec changes at https://uat2.nhsd.io/developer/api-catalogue/healthcare-worker-api"
+          echo "Remember Bloomreach pulls UAT changes every 5-10 minutes so changes may not appear right away. You must be connected to the VPN."
