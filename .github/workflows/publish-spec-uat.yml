@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: "Set OAS info.version to ${{ github.ref_name }}-${{ github.sha }}"
         run: |
@@ -35,7 +35,7 @@ jobs:
           cp ./.github/proxygen-settings.yaml ${HOME}/.proxygen/settings.yaml
 
       - name: "Configure AWS credentials"
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@90a7a1fb1ee4e8d6a99f60d2fd22287e1657e51e # v2
         with:
           role-to-assume: arn:aws:iam::${{ secrets.DEV_AWS_ACCOUNT_ID }}:role/GitHubActionsPublishSpecRole
           aws-region: eu-west-2
