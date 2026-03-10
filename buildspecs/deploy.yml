@@ -28,7 +28,8 @@ phases:
       # Bundle the OpenAPI spec to inline all external references (e.g. externalValue example files).
       # This resolved file is used by apim_instance_deploy.sh so that proxygen receives a fully
       # self-contained spec rather than one with unresolvable relative file paths.
-      - npx -y @redocly/cli bundle specification/healthcare-worker-api.yaml -o specification/healthcare-worker-api.resolved.yaml
+      # --keep-url-references (-k) preserves the proxygen-managed security scheme $ref which must remain unresolved.
+      - npx -y @redocly/cli bundle specification/healthcare-worker-api.yaml -o specification/healthcare-worker-api.resolved.yaml --keep-url-references
   build:
     commands:
       - cd infrastructure
