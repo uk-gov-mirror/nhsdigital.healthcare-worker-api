@@ -52,7 +52,7 @@ jobs:
 
       - name: "Publish spec to UAT"
         run: |
-          proxygen spec publish specification/healthcare-worker-api.yaml --uat --no-confirm
+          proxygen spec publish specification/healthcare-worker-api.resolved.json --uat --no-confirm
 
       - name: "Instructions for viewing UAT Specification"
         run: |
