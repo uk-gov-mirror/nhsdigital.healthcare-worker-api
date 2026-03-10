@@ -9,6 +9,10 @@ api_gw_url=$4
 
 cp ../specification/healthcare-worker-api.yaml temp_spec.yaml
 
+# Stamp version into spec (replace placeholder with short commit SHA)
+short_sha=${CODEBUILD_RESOLVED_SOURCE_VERSION:0:8}
+sed -i "s/__VERSION__/${short_sha}/g" temp_spec.yaml
+
 yq -i ".x-nhsd-apim.target.url = \"${api_gw_url}\"" temp_spec.yaml
 if [[ "$environment_name" == pr-* ]]; then
   uppercase_env_name=$(echo "$environment_name" | tr '[:lower:]' '[:upper:]')
