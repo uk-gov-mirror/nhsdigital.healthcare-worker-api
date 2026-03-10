@@ -17,7 +17,7 @@ jobs:
 
       - name: "Set OAS info.version to ${{ github.ref_name }}-${{ github.sha }}"
         run: |
-          sed -i 's/__VERSION__/${{ github.ref_name }}-${{ github.sha }}/g' specification/healthcare-worker-api.yaml
+          sed -i 's|__VERSION__|${{ github.ref_name }}-${{ github.sha }}|g' specification/healthcare-worker-api.yaml
 
       - name: "Lint OpenAPI specification"
         run: |
