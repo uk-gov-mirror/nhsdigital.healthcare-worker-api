@@ -23,7 +23,8 @@ jobs:
         run: |
           npx -y @redocly/cli bundle \
             specification/healthcare-worker-api.yaml \
-            -o specification/healthcare-worker-api.resolved.json
+            -o specification/healthcare-worker-api.resolved.json \
+            --keep-url-references
           npx -y @redocly/cli lint --config redocly.yaml
 
       - name: "Setup proxygen-cli"
@@ -52,7 +53,7 @@ jobs:
 
       - name: "Publish spec to UAT"
         run: |
-          proxygen spec publish specification/healthcare-worker-api.yaml --uat --no-confirm
+          proxygen spec publish specification/healthcare-worker-api.resolved.json --uat --no-confirm
 
       - name: "Instructions for viewing UAT Specification"
         run: |

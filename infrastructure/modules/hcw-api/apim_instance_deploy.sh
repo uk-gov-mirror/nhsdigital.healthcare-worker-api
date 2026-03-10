@@ -9,6 +9,17 @@ api_gw_url=$4
 
 cp ../specification/healthcare-worker-api.yaml temp_spec.yaml
 
+# If a pre-bundled resolved spec exists (produced by the deploy buildspec pre_build step),
+# use it so that all externalValue references (e.g. JSON example files) are inlined.
+# This ensures proxygen receives a fully self-contained spec with no local file dependencies.
+if [ -f "../specification/healthcare-worker-api.resolved.yaml" ]; then
+  echo "Using pre-bundled resolved spec (healthcare-worker-api.resolved.yaml)"
+  cp ../specification/healthcare-worker-api.resolved.yaml temp_spec.yaml
+else
+  echo "Warning: resolved spec not found, falling back to original (externalValue references will not be inlined)"
+  cp ../specification/healthcare-worker-api.yaml temp_spec.yaml
+fi
+
 # Stamp version into spec (replace placeholder with short commit SHA)
 short_sha=${CODEBUILD_RESOLVED_SOURCE_VERSION:0:8}
 sed -i "s/__VERSION__/${short_sha}/g" temp_spec.yaml

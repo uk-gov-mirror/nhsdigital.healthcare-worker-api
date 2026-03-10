@@ -26,3 +26,4 @@ coverage.xml
 
 nft/*.csv
 specification/healthcare-worker-api.resolved.json
+specification/healthcare-worker-api.resolved.yaml
