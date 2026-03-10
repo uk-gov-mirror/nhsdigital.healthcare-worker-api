@@ -12,7 +12,8 @@ locals {
 
 resource "null_resource" "apim_instance_deploy" {
   triggers = {
-    spec             = sha1(file("${path.root}/../specification/healthcare-worker-api.yaml"))
+    # Hash all files under specification/ so that changes to example files also trigger redeployment.
+    spec             = sha1(join("", [for f in sort(fileset("${path.root}/../specification", "**")) : sha1(file("${path.root}/../specification/${f}"))]))
     build_script     = sha1(file("${path.module}/apim_instance_deploy.sh"))
     env              = var.env
     apim_environment = var.apim_environment
