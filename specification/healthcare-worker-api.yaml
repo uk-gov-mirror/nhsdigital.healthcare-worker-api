@@ -25,7 +25,8 @@ info:
 
     ## Related APIs
     The following APIs are related to this one:
-    * [Healthcare Worker - FHIR API](https://digital.nhs.uk/developer/api-catalogue/healthcare-fhir-api)
+    - [Spine Directory Service - LDAP API](https://digital.nhs.uk/developer/api-catalogue/spine-directory-service-ldap) - The legacy API for accessing healthcare worker information in CIS. Only available on HSCN and being considered for deprecation.
+    - [Organisation Data Terminology - FHIR API](https://digital.nhs.uk/developer/api-catalogue/organisation-data-terminology) - Get organisation information from the Organisation Data Service (ODS), including some limited information on some prescribing staff at each organisation.
 
     ## API status and roadmap
     This API is [in production, beta](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#statuses).
@@ -94,11 +95,6 @@ info:
     - is for early developer testing
     - used to confirm you are ready for production
     - includes application authentication
-
-    ## Related APIs
-    The following APIs are related to this one:- [Spine Directory Service - LDAP API](https://digital.nhs.uk/developer/api-catalogue/spine-directory-service-ldap) - Access details of organisations, people and systems registered in the Spine Directory Service (SDS) using our LDAP API. This API is only available on HSCN, doesn't use the FHIR standard and is being considered for deprecation.
-    - [Organisation Data Terminology - FHIR API](https://digital.nhs.uk/developer/api-catalogue/organisation-data-terminology) - Access an organisation-based dataset from the Organisation Data Service (ODS), including some limited information on some prescribing staff at each organisation.
-    - [Organisation Data Service - FHIR API](https://digital.nhs.uk/developer/api-catalogue/organisation-data-service-fhir) - Access a reduced organisation-based dataset from the Organisation Data Service (ODS). An older, limited alternative to ODS Terminology API and soon to be deprecated.
 
     ## Onboarding
     You need to get your software approved by us before it can go live with this API. We call this onboarding. The onboarding process can sometimes be quite long, so it's worth planning well ahead.
