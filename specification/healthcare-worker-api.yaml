@@ -93,11 +93,11 @@ info:
     ## Open source
     You might find the following [open source](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#open-source) resources useful:
 
-    | Resource                | Description                                                   | Links                                                                                                                                        |
-    | ----------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-    | Project codebase        | The full Healthcare Worker codebase is open source in GitHub. | [GitHub](https://github.com/NHSDigital/healthcare-worker-api)                                                                                |
-    | Postman collection      | Export of our Postman collection for use with the API.        | [GitHub](https://github.com/NHSDigital/healthcare-worker-api/tree/develop/postman)
-    | FHIR libraries and SDKs | Various open source libraries for integrating with FHIR APIs. | [FHIR libraries and SDKs](https://digital.nhs.uk/developer/guides-and-documentation/api-technologies-at-nhs-digital#fhir-libraries-and-sdks) |
+    | Resource                | Description                                                       | Links                                                                                                                                        |
+    | ----------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+    | API source code         | The full Healthcare Worker API codebase is open source in GitHub. | [GitHub](https://github.com/NHSDigital/healthcare-worker-api)                                                                                |
+    | Postman collection      | Export of our Postman collection for use with the API.            | [GitHub](https://github.com/NHSDigital/healthcare-worker-api/tree/develop/postman)
+    | FHIR libraries and SDKs | Various open source libraries for integrating with FHIR APIs.     | [FHIR libraries and SDKs](https://digital.nhs.uk/developer/guides-and-documentation/api-technologies-at-nhs-digital#fhir-libraries-and-sdks) |
 
     ## Environments and testing
     | Environment       | Base URL
