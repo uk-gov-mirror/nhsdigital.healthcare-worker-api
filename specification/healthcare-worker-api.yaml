@@ -122,10 +122,6 @@ info:
     ## Onboarding
     You need to get your software approved by us before it can go live with this API. We call this onboarding. The onboarding process can sometimes be quite long, so it's worth planning well ahead.
 
-    As part of this process, you need to demonstrate that you can manage risks and that your software conforms
-    technically with the requirements for this API. This might impact the design of your software. For details, see
-    [Onboarding support information](https://digital.nhs.uk/developer/api-catalogue/child-protection-information-sharing-hl7-v3/onboarding-support-information).
-
     To understand how our online digital onboarding process works, see [digital onboarding](https://digital.nhs.uk/developer/guides-and-documentation/digital-onboarding).
 
     To get started, sign in or create a [developer account](https://onboarding.prod.api.platform.nhs.uk/), then select 'product onboarding'.
