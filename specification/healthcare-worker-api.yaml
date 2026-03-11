@@ -64,16 +64,22 @@ info:
 
     * [Application-restricted RESTful APIs - signed JWT authentication](https://digital.nhs.uk/developer/guides-and-documentation/security-and-authorisation/application-restricted-restful-apis-signed-jwt-authentication)
 
-    ## Postman Collection
-    See https://github.com/NHSDigital/healthcare-worker-api/tree/develop/postman for an export of our postman collection. The readme in that directory explains how to set it up and send the requests.
+    ## Errors
+    We use standard HTTP status codes to show whether an API request succeeded or not. They are usually in the range:
+
+    * 200 to 299 if it succeeded, including code 202 if it was accepted by an API that needs to wait for further action
+    * 400 to 499 if it failed because of a client error by your application
+    * 500 to 599 if it failed because of an error on our server
+
+    Errors specific to each API are shown in the Endpoints section, under Response. See our [reference guide](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#http-status-codes) for more on errors.
 
     ## Open source
-
     You might find the following [open source](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#open-source) resources useful:
 
     | Resource                | Description                                                   | Links                                                                                                                                        |
     | ----------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-    | Project codebase        | The full Healthcare Worker codebase is open source in GitHub. | [Github](https://github.com/NHSDigital/healthcare-worker-api)                                                                                |
+    | Project codebase        | The full Healthcare Worker codebase is open source in GitHub. | [GitHub](https://github.com/NHSDigital/healthcare-worker-api)                                                                                |
+    | Postman collection      | Export of our Postman collection for use with the API.        | [GitHub](https://github.com/NHSDigital/healthcare-worker-api/tree/develop/postman)
     | FHIR libraries and SDKs | Various open source libraries for integrating with FHIR APIs. | [FHIR libraries and SDKs](https://digital.nhs.uk/developer/guides-and-documentation/api-technologies-at-nhs-digital#fhir-libraries-and-sdks) |
 
     ## Environments and testing
@@ -107,14 +113,6 @@ info:
 
     To get started, sign in or create a [developer account](https://onboarding.prod.api.platform.nhs.uk/), then select 'product onboarding'.
 
-    ## Errors
-    We use standard HTTP status codes to show whether an API request succeeded or not. They are usually in the range:
-
-    * 200 to 299 if it succeeded, including code 202 if it was accepted by an API that needs to wait for further action
-    * 400 to 499 if it failed because of a client error by your application
-    * 500 to 599 if it failed because of an error on our server
-
-    Errors specific to each API are shown in the Endpoints section, under Response. See our [reference guide](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#http-status-codes) for more on errors.
   contact:
     name: Spine Directory Service API Support
     url: https://digital.nhs.uk/developer/help-and-support
