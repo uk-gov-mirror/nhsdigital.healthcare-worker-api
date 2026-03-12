@@ -308,7 +308,7 @@ components:
       required: false
       schema:
         type: string
-      example: 'MyTransactionID.ABC.20240101.001'
+      example: '11C46F5F-CDEF-4865-94B2-0EE0EDCC26DA'
   schemas:
     Bundle:
       type: object
@@ -356,7 +356,7 @@ components:
             - $ref: "#/components/schemas/Organization"
         fullUrl:
           type: string
-          description: URL for the resource
+          description: URL for the resource.
           example: https://int.api.service.nhs.uk/healthcare-worker/Practitioner/123456789012
     SearchDetails:
       description: Search-related information for the resource.
@@ -461,7 +461,7 @@ components:
                 example: '123456789012'
         active:
           type: boolean
-          description: Whethe the role is active in CIS.
+          description: Whether the role is active in CIS.
           example: True
         practitioner:
           $ref: '#/components/schemas/Reference'
