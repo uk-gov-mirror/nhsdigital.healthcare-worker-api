@@ -57,5 +57,5 @@ jobs:
 
       - name: "Instructions for viewing UAT Specification"
         run: |
-          echo "View UAT spec changes at https://uat2.nhsd.io/developer/api-catalogue/healthcare-worker-api"
+          echo "View UAT spec changes at https://training2.nhsd.io/developer/api-catalogue/healthcare-worker-fhir"
           echo "Remember Bloomreach pulls UAT changes every 5-10 minutes so changes may not appear right away. You must be connected to the VPN."

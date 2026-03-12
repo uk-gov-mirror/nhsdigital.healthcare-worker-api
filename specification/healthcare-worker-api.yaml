@@ -159,54 +159,46 @@ paths:
       operationId: getPractitioner
       description: |
         # Overview
-        Use this endpoint to get details of healthcare workers in the Care Identity Service (CIS) directory.
+        Use this endpoint to get details of a healthcare worker registered in the Care Identity Service (CIS), using their CIS unique identifier.
 
-        This endpoint will return the basic details about the person. Future versions will include more data.
+        Only active accounts are returned. If the care identity itself is closed, the endpoint returns a 410 (Gone) response.
 
-        Only active accounts will be returned. If the care identity itself is closed, a 410 response will be provided (see below).
-
-        This endpoint supports the use of the _revinclude query parameter to expose more information about practitioner roles.
+        You can also get details of the healthcare worker's [national RBAC roles](https://digital.nhs.uk/services/care-identity-service/applications-and-services/cis2-authentication/integrate/design-and-build/national-rbac-for-developers),
+        using the `_revinclude` query parameter.
 
       parameters:
         - in: query
           name: identifier
-          description: CIS unique identifier (sometimes known as the UUID, SDS user ID or smartcard ID).
+          description: CIS unique identifier for the healthcare worker (sometimes known as the UUID, SDS user ID or smartcard ID).
           required: true
-          example: '123456789012'
           schema:
             type: string
-          explode: true
+          example: '123456789012'
         - in: query
           name: _revinclude
-          description: Include objects which reference the one being returned.
+          description: Specifies other information to be included along with the healthcare worker, using the FHIR 'reverse include' syntax. Specifying `PractitionerRole:practitioner` will include the healthcare worker's roles.
           required: false
+          schema:
+            type: string
+            enum: [PractitionerRole:practitioner]
           example: 'PractitionerRole:practitioner'
-          schema:
-            type: string
-        - in: header
-          name: X-Correlation-Id
-          description: This is an arbitrary string value that allows you to relate a number of requests together. This does not have to be unique to the request.
-          schema:
-            type: string
-            format: string
-          example: 'MyTransactionID.ABC.20240101.001'
-        - in: header
-          name: X-Request-Id
-          description: Unique identifier for the request, used for tracking and logging purposes.
-          schema:
-            type: string
-            format: uuid
-          example: '6d3d3674-7ce5-11ec-90d6-0242ac121234'
+        - $ref: '#/components/parameters/BearerAuthorization'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/CorrelationId'
       responses:
         '200':
           description: Successful operation
           content:
             application/fhir+json:
               schema:
-                type: object
-                properties:
-                  practitioner:
-                    $ref: '#/components/schemas/Bundle'
+                $ref: '#/components/schemas/Bundle'
+              examples:
+                basic:
+                  summary: Basic response (without roles)
+                  externalValue: components/examples/GetHealthcareWorkerDetailsResponseSuccessBasic.json
+                with-includes:
+                  summary: Response with roles included
+                  externalValue: components/examples/GetHealthcareWorkerDetailsResponseSuccessWithIncludes.json
         '400':
           description: Missing or invalid query parameter(s).
         '404':
@@ -243,35 +235,32 @@ paths:
           explode: true
         - in: query
           name: _include
-          description: Accepted values of either PractitionerRole:organization or PractitionerRole:practitioner. If you want both, then add this parameter multiple times with different values.
+          description: |
+            Specifies other information to be included along with the roles, using the FHIR 'include' syntax.
+            Specifying `PractitionerRole:practitioner` will include the healthcare worker's personal details.
+            Specifying `PractitionerRole:organization` will include the organisation associated with the role.
+            If you want both, include this parameter multiple times with different values.
           required: false
-          example: 'PractitionerRole:practitioner'
           schema:
             type: string
-        - in: header
-          name: X-Correlation-Id
-          description: This is an arbitrary string value that allows you to relate a number of requests together. This does not have to be unique to the request.
-          schema:
-            type: string
-            format: string
-          example: 'MyTransactionID.ABC.20240101.001'
-        - in: header
-          name: X-Request-Id
-          description: Unique identifier for the request, used for tracking and logging purposes.
-          schema:
-            type: string
-            format: uuid
-          example: '6d3d3674-7ce5-11ec-90d6-0242ac121234'
+            enum: [PractitionerRole:practitioner,PractitionerRole:organization]
+        - $ref: '#/components/parameters/BearerAuthorization'
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/CorrelationId'
       responses:
         '200':
           description: Successful operation
           content:
             application/fhir+json:
               schema:
-                type: object
-                properties:
-                  practitioner:
-                    $ref: '#/components/schemas/Bundle'
+                $ref: '#/components/schemas/Bundle'
+              examples:
+                basic:
+                  summary: Basic response (without practitioner or organisation included)
+                  externalValue: components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessBasic.json
+                with-includes:
+                  summary: Response with practitioner and organisations included
+                  externalValue: components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessWithIncludes.json
         '400':
           description: Missing or invalid query parameter(s).
         '404':
@@ -290,23 +279,78 @@ components:
   securitySchemes:
     app-level3:
       $ref: https://proxygen.prod.api.platform.nhs.uk/components/securitySchemes/app-level3
+  parameters:
+    BearerAuthorization:
+      in: header
+      name: Authorization
+      description: |
+        The calling system's access token, which must be an OAuth 2.0 bearer token.
+        For details, see [Application-restricted RESTful APIs - signed JWT authentication](https://digital.nhs.uk/developer/guides-and-documentation/security-and-authorisation/application-restricted-restful-apis-signed-jwt-authentication).
+
+        Required in all environments except sandbox.
+      required: false
+      schema:
+        type: string
+        format: '^Bearer\ [[:ascii:]]+$'
+        example: 'Bearer g1112R_ccQ1Ebbb4gtHBP1aaaNM'
+    RequestId:
+      in: header
+      name: X-Request-Id
+      description: |
+        Unique identifier for the request, used for tracking and logging purposes.
+
+        Must be a universally unique identifier (UUID) (ideally version 4).
+      required: true
+      schema:
+        type: string
+        format: uuid
+      example: '6d3d3674-7ce5-11ec-90d6-0242ac121234'
+    CorrelationId:
+      in: header
+      name: X-Correlation-Id
+      description: |
+        An optional ID which you can use to track transactions across multiple systems. It can take any value, but we recommend avoiding `.` characters.
+
+        Mirrored back in a response header.
+      required: false
+      schema:
+        type: string
+      example: '11C46F5F-CDEF-4865-94B2-0EE0EDCC26DA'
   schemas:
     Bundle:
       type: object
       properties:
         resourceType:
+          description: FHIR resource type.
           type: string
-          default: Bundle
+          enum: [Bundle]
         type:
+          description: Indicates how the bundle is intended to be used.
           type: string
-          default: searchset
+          enum: [searchset]
         total:
+          description: Number of matching entries. Excludes related resources included in the bundle due to the use of the `_include` or `_revinclude` parameters.
           type: number
-          description: Total count of matching entries, does not includes extra included entries from link relationships
         entry:
+          description: List of matching healthcare workers, roles and organisations.
           type: array
           items:
             $ref: "#/components/schemas/SearchEntry"
+        link:
+          description: A list of useful links.
+          type: array
+          minItems: 1
+          maxItems: 1
+          items:
+            type: object
+            properties:
+              relation:
+                description: The nature of the link. Always `self`, meaning it's a link to the resource endpoint that was called.
+                type: string
+                enum: [ "self" ]
+              url:
+                description: The link's URL.
+                type: string
     SearchEntry:
       type: object
       properties:
@@ -316,25 +360,39 @@ components:
           oneOf:
             - $ref: "#/components/schemas/Practitioner"
             - $ref: "#/components/schemas/PractitionerRole"
+            - $ref: "#/components/schemas/Organization"
+        fullUrl:
+          type: string
+          description: URL for the resource.
+          example: https://int.api.service.nhs.uk/healthcare-worker/Practitioner/123456789012
     SearchDetails:
+      description: Search-related information for the resource.
       type: object
       properties:
         mode:
+          description: |
+            Indicates why this resource is in the result set.
+            `match` indicates a direct match to the query.
+            `include` indicates that the entry is linked to one of the matching entries, and that the relevant link was requested in the search.
           type: string
-          description: Either "match" or "include". Match indicates a direct match to the query. Include indicates that the entry is linked to one of the matching entries, and that the relevant link was requested in the search.
+          enum: [match,include]
     Practitioner:
+      description: A healthcare worker's personal details, formatted as a FHIR `Practitioner` resource.
       type: object
       properties:
         resourceType:
+          description: FHIR resource type.
           type: string
-          default: Practitioner
+          enum: [Practitioner]
         id:
+          description: CIS identifier for the healthcare worker. Also known as their UUID or smartcard ID.
           type: string
-          description: Auto generated unique ID for the person.
           example: '123456789012'
         identifier:
+          description: CIS identifier for the healthcare worker. Also known as their UUID or smartcard ID.
           type: array
-          description: Auto generated unique ID for the person.
+          minItems: 1
+          maxItems: 1
           items:
             type: object
             properties:
@@ -345,80 +403,140 @@ components:
                 type: string
                 example: '123456789012'
         active:
+          description: Indicates whether the healthcare worker's account is active in CIS.
           type: boolean
-          description: Describes the active status of the Practitioner record in the directory.
-          example: True
+          example: true
         name:
+          description: Healthcare worker's name.
           type: array
-          description: Person's name details.
+          minItems: 1
+          maxItems: 1
           items:
             type: object
             properties:
               use:
                 type: string
                 description: Identifies the purpose for this name.
-                default: usual
+                enum: [usual]
               family:
-                type: string
                 description: That part of a person's name which is used to describe family, clan, tribal group, or marital association.
+                type: string
                 example: 'Smith'
               given:
-                type: string
                 description: The forenames or given names of a person. Includes middle names.
-                example: 'Jane Alison'
+                type: array
+                minItems: 1
+                items:
+                  type: string
+                  example: 'Jane Allison'
               prefix:
-                type: string
-                description: Standard form of address used to precede a person's name
-                example: 'Ms'
+                type: array
+                description: Standard form of address used to precede a person's name.
+                maxItems: 1
+                items:
+                  type: string
+                  example: 'Ms'
     PractitionerRole:
+      description: |
+        A healthcare worker role (sometimes called a 'role profile'), formatted as a FHIR `PractitionerRole` resource.
+        A healthcare worker can have multiple roles, and each role is associated with a specific organisation.
+        If the worker performs the same role in multiple organisations, there is a separate role profile for each organisation.
       type: object
       properties:
         resourceType:
+          description: FHIR resource type.
           type: string
-          default: PractitionerRole
+          enum: [PractitionerRole]
         id:
+          description: Unique identifier for the role, sometimes called the role profile ID.
           type: string
-          description: Id of the practitioner role
         identifier:
+          description: Unique identifier for the role, sometimes called the role profile ID.
           type: array
-          description: Auto generated unique ID for the role.
+          minItems: 1
+          maxItems: 1
           items:
             type: object
             properties:
               system:
+                description: Coding system for the idenfier.
                 type: string
-                default: https://fhir.nhs.uk/Id/sds-role-profile-id
+                enum: [https://fhir.nhs.uk/Id/sds-role-profile-id]
               value:
+                description: The identifier itself.
                 type: string
                 example: '123456789012'
         active:
           type: boolean
-          description: Describes the active status of the Practitioner record in the directory.
+          description: Whether the role is active in CIS.
           example: True
         practitioner:
           $ref: '#/components/schemas/Reference'
         organization:
           $ref: '#/components/schemas/Reference'
         period:
+          description: Time period during which the role applies, or applied.
           type: object
           properties:
-              start:
-                type: string
-              end:
-                type: string
+            start:
+              description: Start date for the period.
+              type: string
+            end:
+              description: End date for the period.
+              type: string
         code:
+          description: Code for the role.
           type: array
+          minItems: 1
+          maxItems: 1
           items:
             $ref: '#/components/schemas/CodeableConcept'
-    Reference:
+    Organization:
+      description: |
+        An organisation associated with one of the roles in the result set, formatted as a FHIR `Organization` resource.
       type: object
       properties:
         resourceType:
+          description: FHIR resource type.
           type: string
-          default: Identifier
-        system:
+          enum: [Organization]
+        id:
           type: string
-        value:
+          description: ODS code for the organisation.
+          example: V05266
+        identifier:
+          description: ODS code for the organisation.
+          type: array
+          minItems: 1
+          maxItems: 1
+          items:
+            type: object
+            properties:
+              system:
+                description: Coding system for the ODS code.
+                type: string
+                enum: [https://fhir.nhs.uk/Id/ods-organization-code]
+              value:
+                description: The ODS code itself.
+                type: string
+                example: 'V05266'
+        name:
+          description: Organisation name.
+          type: string
+          example: SILKSTONE PHARMACY
+    Reference:
+      type: object
+      properties:
+        reference:
+          type: string
+        identifier:
+          type: object
+          properties:
+            system:
+              type: string
+            value:
+              type: string
+        display:
           type: string
     CodeableConcept:
       type: object
@@ -427,14 +545,16 @@ components:
           type: string
           default: CodeableConcept
         coding:
-          type: object
-          properties:
-            resourceType:
-              type: string
-              default: Coding
-            system:
-              type: string
-            code:
-              type: string
-            display:
-              type: string
+          type: array
+          items:
+            type: object
+            properties:
+              resourceType:
+                type: string
+                default: Coding
+              system:
+                type: string
+              code:
+                type: string
+              display:
+                type: string
