@@ -18,6 +18,7 @@ import re
 import ast
 
 import boto3
+from botocore.config import Config
 
 def format_json(message, return_message: dict):
     if (len(message.split("{", 1))) == 1:
@@ -229,7 +230,14 @@ def lambda_handler(event, context):
     # call putRecordBatch/putRecords for each group of up to 500 records to be re-ingested
     if record_lists_to_reingest:
         records_reingested_so_far = 0
-        client = boto3.client('kinesis' if is_sas else 'firehose', region_name=region)
+        client = boto3.client(
+            'kinesis' if is_sas else 'firehose',
+            region_name=region,
+            config=Config(
+                connect_timeout=5,
+                read_timeout=60
+            )
+        )
         max_batch_size = 500
         flattened_list = [r for sublist in record_lists_to_reingest for r in sublist]
         for i in range(0, len(flattened_list), max_batch_size):
