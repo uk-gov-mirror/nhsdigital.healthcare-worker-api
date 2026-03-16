@@ -226,7 +226,7 @@ paths:
         Use this endpoint to get details of healthcare worker roles in the Care Identity Service (CIS) directory. It takes a CIS unique identifier
         as input and returns all the roles associated with that practitioner.
 
-        This endpoint supports the use of the _include query parameter to expose more information about referenced
+        This endpoint supports the use of the `_include` query parameter to expose more information about referenced
         organisations and practitioners.
 
         This endpoint currently does not include details of directly assigned activities, as explained in the [main overview](#overview--overview).
