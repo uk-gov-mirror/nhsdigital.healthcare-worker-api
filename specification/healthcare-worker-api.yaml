@@ -78,7 +78,7 @@ info:
     * 400 to 499 if it failed because of a client error by your application
     * 500 to 599 if it failed because of an error on our server
 
-    Error handling in this API follows [NHS guidelines](https://nhsconnect.github.io/FHIR-SpineCore/resources_error_handling.html) and produces an [OperationOutcome](https://fhir.nhs.uk/STU3/StructureDefinition/Spine-OperationOutcome-1) FHIR resource response with appropriate HTTP code.
+    Error handling in this API follows [NHS guidelines](https://nhsconnect.github.io/FHIR-SpineCore/resources_error_handling.html) and produces an [utcome](https://fhir.nhs.uk/STU3/StructureDefinition/Spine-utcome-1) FHIR resource response with appropriate HTTP code.
 
     Errors specific to each API are shown in the Endpoints section, under Response. See our [reference guide](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#http-status-codes) for more on errors.
 
@@ -608,7 +608,7 @@ components:
         resourceType:
           type: string
           description: FHIR Resource Type.
-          enum: OperationOutcome
+          enum: [OperationOutcome]
         issue:
           type: array
           description: List of issues that have occurred.
