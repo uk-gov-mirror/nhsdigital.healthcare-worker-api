@@ -168,6 +168,8 @@ paths:
         You can also get details of the healthcare worker's [national RBAC roles](https://digital.nhs.uk/services/care-identity-service/applications-and-services/cis2-authentication/integrate/design-and-build/national-rbac-for-developers),
         using the `_revinclude` query parameter.
 
+        Note that this currently does not include details of directly assigned activities, as explained in the [main overview](#overview--overview).
+
       parameters:
         - in: query
           name: identifier
@@ -226,6 +228,9 @@ paths:
 
         This endpoint supports the use of the _include query parameter to expose more information about referenced
         organisations and practitioners.
+
+        This endpoint currently does not include details of directly assigned activities, as explained in the [main overview](#overview--overview).
+
       parameters:
         - in: query
           name: practitioner.identifier
