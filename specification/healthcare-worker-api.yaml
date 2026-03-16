@@ -190,10 +190,12 @@ paths:
               examples:
                 basic:
                   summary: Basic response (without roles)
-                  externalValue: components/examples/GetHealthcareWorkerDetailsResponseSuccessBasic.json
+                  value:
+                    $ref: 'components/examples/GetHealthcareWorkerDetailsResponseSuccessBasic.json'
                 with-includes:
                   summary: Response with roles included
-                  externalValue: components/examples/GetHealthcareWorkerDetailsResponseSuccessWithIncludes.json
+                  value:
+                    $ref: 'components/examples/GetHealthcareWorkerDetailsResponseSuccessWithIncludes.json'
         '4XX':
           description: |
             An error occurred as follows:
@@ -276,10 +278,12 @@ paths:
               examples:
                 basic:
                   summary: Basic response (without practitioner or organisation included)
-                  $ref: 'components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessBasic.json'
+                  value:
+                    $ref: 'components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessBasic.json'
                 with-includes:
                   summary: Response with practitioner and organisations included
-                  externalValue: components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessWithIncludes.json
+                  value:
+                    $ref: 'components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessWithIncludes.json'
         '4XX':
           description: |
             An error occurred as follows:
