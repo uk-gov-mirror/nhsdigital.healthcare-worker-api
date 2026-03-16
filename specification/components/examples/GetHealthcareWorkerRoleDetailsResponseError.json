@@ -8,7 +8,7 @@
         "coding": [
           {
             "system": "https://fhir.nhs.uk/STU3/ValueSet/Spine-ErrorOrWarningCode-1",
-            "code": "MISSING_PRACTITIONER_IDENTIFIER",
+            "code": "MISSING_VALUE",
             "display": "Missing practitioner identifier"
           }
         ]
