@@ -264,6 +264,7 @@ paths:
                 with-includes:
                   summary: Response with practitioner and organisations included
                   externalValue: 'components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessWithIncludes.json'
+        '4XX':
           description: |
             An error occurred as follows:
 
