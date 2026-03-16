@@ -12,7 +12,7 @@ info:
 
     You cannot currently use this API to:
     - search by professional codes, such as GMC or RNC code
-    - get details of 'directly assigned' activities associated with the healthcare worker's role profiles
+    - get details of 'directly assigned' activities associated with the healthcare worker's role profiles (see below)
 
     The strategic aim of the API is to allow systems to search, retrieve and display healthcare worker data from over 1.4 million NHS employees with a health care profile.
     The objective is to increase data efficiency, business logic and improve interoperability within the business.
@@ -20,7 +20,7 @@ info:
     This strategic solution will allow internal and 3rd party systems to access and share information more reliably, flexibly and efficiently while benefiting from improved network and bandwidth capacity, financial savings
     and easier and smoother access to clinical systems.
 
-    ### National RBAC and directly assigned activities
+    ### Directly assigned activities
     [National RBAC](https://digital.nhs.uk/services/care-identity-service/applications-and-services/cis2-authentication/integrate/design-and-build/national-rbac-for-developers) is the method CIS uses to manage user permissions.
 
     In national RBAC:
@@ -33,7 +33,7 @@ info:
     - the activities that can be inferred from the role
     - the directly assigned activities
 
-    Currently, this API only provides details of the users' roles, not their directly assigned activities. We plan to add included activities in a future release.
+    Currently, this API only provides details of the users' roles, not their directly assigned activities. We plan to add directly assigned activities in a future release.
 
     ## Who can use this API
     This API can only be used where there is a legal basis to do so. Make sure you have a valid use case before you go too far with your development.
