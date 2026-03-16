@@ -301,7 +301,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/OperationOutcome'
               example:
-                externalValue: components/examples/GetHealthcareWorkerDetailsResponseError.json
+                externalValue: components/examples/GetHealthcareWorkerRoleDetailsResponseError.json
         '400':
           description: Missing or invalid query parameter(s).
         '404':
