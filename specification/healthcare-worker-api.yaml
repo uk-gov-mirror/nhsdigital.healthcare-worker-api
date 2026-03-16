@@ -119,6 +119,8 @@ info:
     - used to confirm you are ready for production
     - includes application authentication
 
+    Read about [setting up test data in our path to live environments](https://digital.nhs.uk/services/path-to-live-environments/setting-up-test-data-in-our-path-to-live-environments).
+
     ## Onboarding
     You need to get your software approved by us before it can go live with this API. We call this onboarding. The onboarding process can sometimes be quite long, so it's worth planning well ahead.
 
