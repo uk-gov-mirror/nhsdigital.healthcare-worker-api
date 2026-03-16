@@ -46,7 +46,7 @@ info:
     - [Organisation Data Terminology - FHIR API](https://digital.nhs.uk/developer/api-catalogue/organisation-data-terminology) - Get organisation information from the Organisation Data Service (ODS), including some limited information on some prescribing staff at each organisation.
 
     ## API status and roadmap
-    This API is [in production, beta](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#statuses).
+    This API is in [beta](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#statuses).
 
     For details of future changes, see the [Care Identity Service roadmap](https://digital.nhs.uk/services/care-identity-service/roadmap).
 
