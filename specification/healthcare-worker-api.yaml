@@ -44,8 +44,6 @@ info:
 
     For details of future changes, see the [Care Identity Service roadmap](https://digital.nhs.uk/services/care-identity-service/roadmap).
 
-    If you have any other queries, [contact us](https://digital.nhs.uk/developer/help-and-support).
-
     ## Service level
     This API is a silver service during beta, meaning it is operational 24 hours a day, 7 days a week but only supported during business hours (8am to 6pm), Monday to Friday excluding bank holidays.
 
