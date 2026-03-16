@@ -199,7 +199,7 @@ paths:
         '4XX':
           description: |
             An error occurred as follows:
-            
+
             | HTTP status | Error code                 | Description                                                                                                                                |
             | ----------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
             | 400         | INVALID_SEARCH_DATA	       | Invalid combination of search parameters. For details, see the `diagnostics` field.                                                        |
@@ -287,7 +287,7 @@ paths:
         '4XX':
           description: |
             An error occurred as follows:
-            
+
             | HTTP status | Error code                 | Description                                                                                                                                |
             | ----------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
             | 400         | INVALID_SEARCH_DATA	       | Invalid combination of search parameters. For details, see the `diagnostics` field.                                                        |
