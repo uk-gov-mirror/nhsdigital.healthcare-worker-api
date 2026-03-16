@@ -190,27 +190,23 @@ paths:
               examples:
                 basic:
                   summary: Basic response (without roles)
-                  value:
-                    $ref: 'components/examples/GetHealthcareWorkerDetailsResponseSuccessBasic.json'
+                  externalValue: 'components/examples/GetHealthcareWorkerDetailsResponseSuccessBasic.json'
                 with-includes:
                   summary: Response with roles included
-                  value:
-                    $ref: 'components/examples/GetHealthcareWorkerDetailsResponseSuccessWithIncludes.json'
+                  externalValue: 'components/examples/GetHealthcareWorkerDetailsResponseSuccessWithIncludes.json'
         '4XX':
           description: |
             An error occurred as follows:
 
-            | HTTP status | Error code                 | Description                                                                                                                                |
-            | ----------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-            | 400         | INVALID_SEARCH_DATA	       | Invalid combination of search parameters. For details, see the `diagnostics` field.                                                        |
-            | 400         | UNSUPPORTED_SERVICE        | No search parameters provided.                                                                                                             |
-            | 400         | MISSING_VALUE              | Missing header or query parameter. For details, see the `diagnostics` field.                                                               |
-            | 400         | INVALID_VALUE              | Invalid header or query parameter. For details, see the `diagnostics` field.                                                               |
-            | 400         | ADDITIONAL_PROPERTIES      | Unrecognised query parameter. For details, see the `diagnostics` field.                                                                    |
-            | 401         | ACCESS_DENIED              | Access token missing, invalid or expired, or calling application not configured for this operation.                                        |
-            | 403         | INVALID_VALUE              | Multiple results requested when using the API in application-restricted mode.                                                              |
-            | 408         | UNABLE_TO_CALL_SERVICE     | The downstream domain processing has not completed within the configured timeout period.                                                   |
-            | 429         | TOO_MANY_REQUESTS          | You have exceeded your application's [rate limit](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#rate-limits).  |
+            | HTTP status | Error code                      | Description                                                                                                                                |
+            | ----------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+            | 400         | MISSING_VALUE                   | Required request parameter missing, for example `identifier`.                                                                              |
+            | 401         | ACCESS_DENIED                   | Access token missing, invalid or expired, or calling application not configured for this operation.                                        |
+            | 404         | RESOURCE_NOT_FOUND              | No healthcare worker record found for the given CIS identifier.                                                                            |
+            | 410         | INACTIVE_ACCOUNT                | The requested healthcare worker record is inactive in CIS.                                                                                 |
+            | 429         | TOO_MANY_REQUESTS               | You have exceeded your application's [rate limit](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#rate-limits).  |
+
+            For more details, see [HTTP status codes](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#http-status-codes).
 
           content:
             application/fhir+json:
@@ -218,20 +214,6 @@ paths:
                 $ref: '#/components/schemas/OperationOutcome'
               example:
                 $ref: 'components/examples/GetHealthcareWorkerDetailsResponseError.json'
-        '400':
-          description: Missing or invalid query parameter(s).
-        '404':
-          description: Invalid endpoint path
-        '405':
-          description: Unsupported HTTP method. For this endpoint only GET is available
-        '410':
-          description: Resource closed. The requested care identity profile is no longer active.
-        '500':
-          description: Unhandled internal server error
-        '502':
-          description: Upstream system returned an unsupported response
-        '504':
-          description: Upstream server request has timed out
   /PractitionerRole:
     get:
       summary: Get healthcare worker role details
@@ -278,27 +260,22 @@ paths:
               examples:
                 basic:
                   summary: Basic response (without practitioner or organisation included)
-                  value:
-                    $ref: 'components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessBasic.json'
+                  externalValue: 'components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessBasic.json'
                 with-includes:
                   summary: Response with practitioner and organisations included
-                  value:
-                    $ref: 'components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessWithIncludes.json'
-        '4XX':
+                  externalValue: 'components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessWithIncludes.json'
           description: |
             An error occurred as follows:
 
-            | HTTP status | Error code                 | Description                                                                                                                                |
-            | ----------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-            | 400         | INVALID_SEARCH_DATA	       | Invalid combination of search parameters. For details, see the `diagnostics` field.                                                        |
-            | 400         | UNSUPPORTED_SERVICE        | No search parameters provided.                                                                                                             |
-            | 400         | MISSING_VALUE              | Missing header or query parameter. For details, see the `diagnostics` field.                                                               |
-            | 400         | INVALID_VALUE              | Invalid header or query parameter. For details, see the `diagnostics` field.                                                               |
-            | 400         | ADDITIONAL_PROPERTIES      | Unrecognised query parameter. For details, see the `diagnostics` field.                                                                    |
-            | 401         | ACCESS_DENIED              | Access token missing, invalid or expired, or calling application not configured for this operation.                                        |
-            | 403         | INVALID_VALUE              | Multiple results requested when using the API in application-restricted mode.                                                              |
-            | 408         | UNABLE_TO_CALL_SERVICE     | The downstream domain processing has not completed within the configured timeout period.                                                   |
-            | 429         | TOO_MANY_REQUESTS          | You have exceeded your application's [rate limit](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#rate-limits).  |
+            | HTTP status | Error code                      | Description                                                                                                                                |
+            | ----------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+            | 400         | MISSING_VALUE                   | Required request parameter missing, for example `practitioner.identifier`.                                                                 |
+            | 401         | ACCESS_DENIED                   | Access token missing, invalid or expired, or calling application not configured for this operation.                                        |
+            | 404         | RESOURCE_NOT_FOUND              | No healthcare worker record found for the given CIS identifier.                                                                            |
+            | 410         | INACTIVE_ACCOUNT                | The requested healthcare worker record is inactive in CIS.                                                                                 |
+            | 429         | TOO_MANY_REQUESTS               | You have exceeded your application's [rate limit](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#rate-limits).  |
+
+            For more details, see [HTTP status codes](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#http-status-codes).
 
           content:
             application/fhir+json:
@@ -306,20 +283,6 @@ paths:
                 $ref: '#/components/schemas/OperationOutcome'
               example:
                 $ref: 'components/examples/GetHealthcareWorkerRoleDetailsResponseError.json'
-        '400':
-          description: Missing or invalid query parameter(s).
-        '404':
-          description: Invalid endpoint path
-        '405':
-          description: Unsupported HTTP method. For this endpoint only GET is available
-        '410':
-          description: Resource closed. The requested care identity profile is no longer active.
-        '500':
-          description: Unhandled internal server error
-        '502':
-          description: Upstream system returned an unsupported response
-        '504':
-          description: Upstream server request has timed out
 components:
   securitySchemes:
     app-level3:
