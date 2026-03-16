@@ -14,12 +14,6 @@ info:
     - search by professional codes, such as GMC or RNC code
     - get details of 'directly assigned' activities associated with the healthcare worker's role profiles (see below)
 
-    The strategic aim of the API is to allow systems to search, retrieve and display healthcare worker data from over 1.4 million NHS employees with a health care profile.
-    The objective is to increase data efficiency, business logic and improve interoperability within the business.
-
-    This strategic solution will allow internal and 3rd party systems to access and share information more reliably, flexibly and efficiently while benefiting from improved network and bandwidth capacity, financial savings
-    and easier and smoother access to clinical systems.
-
     ### Directly assigned activities
     [National RBAC](https://digital.nhs.uk/services/care-identity-service/applications-and-services/cis2-authentication/integrate/design-and-build/national-rbac-for-developers) is the method CIS uses to manage user permissions.
 
@@ -38,11 +32,11 @@ info:
     ## Who can use this API
     This API can only be used where there is a legal basis to do so. Make sure you have a valid use case before you go too far with your development.
 
-    You must do this before you can go live (see "Onboarding" below).
+    You must do this before you can go live (see [Onboarding](#overview--onboarding)).
 
     ## Related APIs
     The following APIs are related to this one:
-    - [Spine Directory Service - LDAP API](https://digital.nhs.uk/developer/api-catalogue/spine-directory-service-ldap) - The legacy API for accessing healthcare worker information in CIS. Only available on HSCN and being considered for deprecation.
+    - [Spine Directory Service - LDAP API](https://digital.nhs.uk/developer/api-catalogue/spine-directory-service-ldap) - The legacy API for accessing healthcare worker information in CIS. Only available on HSCN and being planned for deprecation at some point.
     - [Organisation Data Terminology - FHIR API](https://digital.nhs.uk/developer/api-catalogue/organisation-data-terminology) - Get organisation information from the Organisation Data Service (ODS), including some limited information on some prescribing staff at each organisation.
 
     ## API status and roadmap
@@ -67,8 +61,6 @@ info:
     You do not need to know much about FHIR to use this API - FHIR APIs are just RESTful APIs that follow specific rules. In particular:
     - resource names are capitalised and singular, for example `/Endpoint` not `/endpoints`
 
-    Error handling in this API follows [NHS guidelines](https://nhsconnect.github.io/FHIR-SpineCore/resources_error_handling.html) and produces an [OperationOutcome](https://fhir.nhs.uk/STU3/StructureDefinition/Spine-OperationOutcome-1) FHIR resource response with appropriate HTTP code.
-
     ## Network access
     This API is available on the internet and, indirectly, on the [Health and Social Care Network (HSCN).](https://digital.nhs.uk/services/health-and-social-care-network)
 
@@ -87,6 +79,8 @@ info:
     * 200 to 299 if it succeeded, including code 202 if it was accepted by an API that needs to wait for further action
     * 400 to 499 if it failed because of a client error by your application
     * 500 to 599 if it failed because of an error on our server
+
+    Error handling in this API follows [NHS guidelines](https://nhsconnect.github.io/FHIR-SpineCore/resources_error_handling.html) and produces an [OperationOutcome](https://fhir.nhs.uk/STU3/StructureDefinition/Spine-OperationOutcome-1) FHIR resource response with appropriate HTTP code.
 
     Errors specific to each API are shown in the Endpoints section, under Response. See our [reference guide](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#http-status-codes) for more on errors.
 
@@ -108,15 +102,16 @@ info:
 
     ### Sandbox testing
     Our [sandbox environment](https://digital.nhs.uk/developer/guides-and-documentation/testing#sandbox-testing):
-    * only covers a limited set of scenarios
-    * is open-access, so does not allow you to test authorisation
+    - is for early developer testing
+    - only covers a limited set of scenarios
+    - is open-access, so does not allow you to test authorisation
 
-    For more details on sandbox testing, or to try out the sandbox using our \"Try this API\" feature, see the documentation for each endpoint.
+    For more details on sandbox testing, or to try out the sandbox using our 'Try this API' feature, see the documentation for each endpoint.
 
     ### Integration testing
     Our [integration test environment](https://digital.nhs.uk/developer/guides-and-documentation/testing#integration-testing):
-    - is for early developer testing
-    - used to confirm you are ready for production
+    - is for developer testing and formal integration testing
+    - is used to confirm you are ready for production
     - includes application authentication
 
     Read about [setting up test data in our path to live environments](https://digital.nhs.uk/services/path-to-live-environments/setting-up-test-data-in-our-path-to-live-environments).
@@ -126,7 +121,7 @@ info:
 
     To understand how our online digital onboarding process works, see [digital onboarding](https://digital.nhs.uk/developer/guides-and-documentation/digital-onboarding).
 
-    To get started, sign in or create a [developer account](https://onboarding.prod.api.platform.nhs.uk/), then select 'product onboarding'.
+    To get started, sign in or create a [developer account](https://onboarding.prod.api.platform.nhs.uk/), then select 'Digital onboarding service'.
 
   contact:
     name: Spine Directory Service API Support
@@ -166,9 +161,7 @@ paths:
         Only active accounts are returned. If the care identity itself is closed, the endpoint returns a 410 (Gone) response.
 
         You can also get details of the healthcare worker's [national RBAC roles](https://digital.nhs.uk/services/care-identity-service/applications-and-services/cis2-authentication/integrate/design-and-build/national-rbac-for-developers),
-        using the `_revinclude` query parameter.
-
-        Note that this currently does not include details of directly assigned activities, as explained in the [main overview](#overview--overview).
+        using the `_revinclude` query parameter. This currently does not include details of directly assigned activities, as explained in the [main overview](#overview--overview).
 
       parameters:
         - in: query
@@ -223,11 +216,10 @@ paths:
       operationId: getPractitionerRole
       description: |
         # Overview
-        Use this endpoint to get details of healthcare worker roles in the Care Identity Service (CIS) directory. It takes a CIS unique identifier
-        as input and returns all the roles associated with that practitioner.
+        Use this endpoint to get details of healthcare worker roles in the Care Identity Service (CIS). It takes a CIS unique identifier
+        as input and returns all the roles associated with that healthcare worker.
 
-        This endpoint supports the use of the `_include` query parameter to expose more information about referenced
-        organisations and practitioners.
+        You can get more information on the healthcare worker and the organisations linked to the roles using the `_include` query parameter.
 
         This endpoint currently does not include details of directly assigned activities, as explained in the [main overview](#overview--overview).
 
