@@ -339,12 +339,12 @@ components:
       schema:
         type: string
         format: uuid
-      example: '6d3d3674-7ce5-11ec-90d6-0242ac121234'
+        example: '6d3d3674-7ce5-11ec-90d6-0242ac121234'
     CorrelationId:
       description: The X-Correlation-Id from the request header, if supplied, mirrored back.
       schema:
         type: string
-      example: 11C46F5F-CDEF-4865-94B2-0EE0EDCC26DA
+        example: 11C46F5F-CDEF-4865-94B2-0EE0EDCC26DA
   schemas:
     Bundle:
       type: object
