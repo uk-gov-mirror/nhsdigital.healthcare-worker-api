@@ -338,10 +338,6 @@ components:
         type: string
       example: '11C46F5F-CDEF-4865-94B2-0EE0EDCC26DA'
   schemas:
-    CorrelationId:
-      TBC
-    MessageId:
-      TBC
     Bundle:
       type: object
       properties:
