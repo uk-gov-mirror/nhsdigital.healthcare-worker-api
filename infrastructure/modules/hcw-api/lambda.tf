@@ -19,7 +19,7 @@ resource "aws_lambda_function" "hcw-app" {
 
   s3_bucket   = data.aws_s3_bucket.app_deployment.id
   s3_key      = var.s3_filename
-  handler     = "main.lambda_handler"
+  handler     = var.sandbox_mode ? "sandbox_main.lambda_handler" : "main.lambda_handler"
   timeout     = 30
   memory_size = 512
 
@@ -41,7 +41,6 @@ resource "aws_lambda_function" "hcw-app" {
     variables = {
       LDAP_CREDENTIALS_SECRET_ID = data.aws_secretsmanager_secret.ldap_credentials.arn
       LDAP_GATEWAY_URL           = var.ldap_gateway_url
-      SANDBOX_MODE               = var.sandbox_mode
       BASE_URL                   = "https://${var.apim_environment}.api.service.nhs.uk/healthcare-worker"
 
       # Extension configuration (optional - using defaults)

@@ -1,4 +1,3 @@
-import os
 from typing import Dict, Type
 
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent

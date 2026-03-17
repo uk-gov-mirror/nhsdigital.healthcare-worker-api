@@ -1,9 +1,7 @@
-import os
 from datetime import datetime, timedelta
 from typing import Optional
 
 from ldap.connection import HcwLdapConnection
-from ldap.mock_connection import MockHcwLdapConnection
 from ldap.real_connection import RealHcwLdapConnection
 from logs.log import Log
 
@@ -14,28 +12,13 @@ logger = Log("connection_fetch")
 ldap_connection: Optional[HcwLdapConnection] = None
 
 
-def is_sandbox_mode() -> bool:
-    """
-    Check if we're running in sandbox mode.
-    """
-    return os.environ.get("SANDBOX_MODE", "false").lower() == "true"
-
-
 def get_connection():
     global ldap_connection
 
-    if is_sandbox_mode():
-        # In sandbox mode, just create mock connection if we don't have one
-        # No need for sophisticated connection pooling with mocks
-        if not ldap_connection:
-            logger.info("Creating new mock connection for sandbox", "LDAP_CONN_MOCK", "null")
-            ldap_connection = MockHcwLdapConnection()
-    else:
-        # In real mode, do full connection pooling logic
-        if (not ldap_connection or ldap_connection.connection.closed
-                or ldap_connection.bind_time < datetime.now() - timedelta(minutes=5)):
-            logger.info("Creating new real LDAP connection", "LDAP_CONN_REAL", "null")
-            ldap_connection = RealHcwLdapConnection()
+    if (not ldap_connection or ldap_connection.connection.closed
+            or ldap_connection.bind_time < datetime.now() - timedelta(minutes=5)):
+        logger.info("Creating new real LDAP connection", "LDAP_CONN_REAL", "null")
+        ldap_connection = RealHcwLdapConnection()
 
     return ldap_connection
 
