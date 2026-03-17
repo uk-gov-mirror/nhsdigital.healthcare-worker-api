@@ -185,7 +185,7 @@ paths:
           description: Successful operation
           headers:
             X-Request-Id:
-              $ref: #/components/headers/RequestId
+              $ref: '#/components/headers/RequestId'
             X-Correlation-Id:
               description: The X-Correlation-ID from the request header, if supplied, mirrored back.
               schema:
