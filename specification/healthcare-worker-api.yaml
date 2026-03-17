@@ -183,6 +183,18 @@ paths:
       responses:
         '200':
           description: Successful operation
+          headers:
+            X-Message-Id:
+              description: The X-Message-ID from the request header, if supplied, mirrored back.
+              schema:
+                type: string
+                format: uuid
+              example: '6d3d3674-7ce5-11ec-90d6-0242ac121234'
+            X-Correlation-Id:
+              description: The X-Correlation-ID from the request header, if supplied, mirrored back.
+              schema:
+                type: string
+              example: 11C46F5F-CDEF-4865-94B2-0EE0EDCC26DA
           content:
             application/fhir+json:
               schema:
@@ -326,6 +338,10 @@ components:
         type: string
       example: '11C46F5F-CDEF-4865-94B2-0EE0EDCC26DA'
   schemas:
+    CorrelationId:
+      TBC
+    MessageId:
+      TBC
     Bundle:
       type: object
       properties:
