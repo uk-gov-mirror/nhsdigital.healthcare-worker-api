@@ -418,7 +418,7 @@ components:
           type: string
           enum: [match,include]
     Practitioner:
-      description: A healthcare worker's personal details, formatted as a FHIR `Practitioner` resource.
+      description: A healthcare worker's personal details, expressed as a FHIR `Practitioner` resource.
       type: object
       properties:
         resourceType:
@@ -442,11 +442,13 @@ components:
                 type: string
                 enum: [https://fhir.nhs.uk/Id/sds-user-id]
               value:
-                description: The identifier value.
+                description: The identifier itself.
                 type: string
                 example: '123456789012'
         active:
-          description: Indicates whether the healthcare worker's account is active in CIS.
+          description: |
+            Indicates whether the healthcare worker's account is active in CIS.
+            Because the response only ever includes active accounts, this is always `true`.
           type: boolean
           example: true
         name:
@@ -481,7 +483,7 @@ components:
                   example: 'Ms'
     PractitionerRole:
       description: |
-        A healthcare worker role (sometimes called a 'role profile'), formatted as a FHIR `PractitionerRole` resource.
+        A healthcare worker role (sometimes called a 'role profile'), expressed as a FHIR `PractitionerRole` resource.
         A healthcare worker can have multiple roles, and each role is associated with a specific organisation.
         If the worker performs the same role in multiple organisations, there is a separate role profile for each organisation.
       type: object
@@ -536,7 +538,7 @@ components:
             $ref: '#/components/schemas/RoleCode'
     Organization:
       description: |
-        An organisation associated with one of the roles in the result set, formatted as a FHIR `Organization` resource.
+        An organisation associated with one of the roles in the result set, expressed as a FHIR `Organization` resource.
       type: object
       properties:
         resourceType:
@@ -610,7 +612,7 @@ components:
           description: Organisation name.
           type: string
     RoleCode:
-      description: Code for the role, expressed as a FHIR CodeableConcept resource.
+      description: Code for the role, expressed as a FHIR `CodeableConcept` resource.
       type: object
       properties:
         resourceType:
@@ -618,7 +620,7 @@ components:
           type: string
           enum: [CodeableConcept]
         coding:
-          description: The actual coding, expressed as a FHIR Coding resource.
+          description: The actual coding, expressed as a FHIR `Coding` resource.
           type: array
           minItems: 1
           maxItems: 1
