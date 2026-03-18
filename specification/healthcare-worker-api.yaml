@@ -185,9 +185,16 @@ paths:
           description: Successful operation
           headers:
             X-Request-Id:
-              $ref: '#/components/headers/RequestId'
+              description: The X-Request-Id from the request header, if supplied, mirrored back.
+              schema:
+                type: string
+                format: uuid
+                example: '6d3d3674-7ce5-11ec-90d6-0242ac121234'
             X-Correlation-Id:
-              $ref: '#/components/headers/CorrelationId'
+              description: The X-Correlation-Id from the request header, if supplied, mirrored back.
+              schema:
+                type: string
+                example: 11C46F5F-CDEF-4865-94B2-0EE0EDCC26DA
           content:
             application/fhir+json:
               schema:
@@ -215,9 +222,16 @@ paths:
 
           headers:
             X-Request-Id:
-              $ref: '#/components/headers/RequestId'
+              description: The X-Request-Id from the request header, if supplied, mirrored back.
+              schema:
+                type: string
+                format: uuid
+                example: '6d3d3674-7ce5-11ec-90d6-0242ac121234'
             X-Correlation-Id:
-              $ref: '#/components/headers/CorrelationId'
+              description: The X-Correlation-Id from the request header, if supplied, mirrored back.
+              schema:
+                type: string
+                example: 11C46F5F-CDEF-4865-94B2-0EE0EDCC26DA
           content:
             application/fhir+json:
               schema:
@@ -265,9 +279,16 @@ paths:
           description: Successful operation
           headers:
             X-Request-Id:
-              $ref: '#/components/headers/RequestId'
+              description: The X-Request-Id from the request header, if supplied, mirrored back.
+              schema:
+                type: string
+                format: uuid
+                example: '6d3d3674-7ce5-11ec-90d6-0242ac121234'
             X-Correlation-Id:
-              $ref: '#/components/headers/CorrelationId'
+              description: The X-Correlation-Id from the request header, if supplied, mirrored back.
+              schema:
+                type: string
+                example: 11C46F5F-CDEF-4865-94B2-0EE0EDCC26DA
           content:
             application/fhir+json:
               schema:
@@ -295,9 +316,16 @@ paths:
 
           headers:
             X-Request-Id:
-              $ref: '#/components/headers/RequestId'
+              description: The X-Request-Id from the request header, if supplied, mirrored back.
+              schema:
+                type: string
+                format: uuid
+                example: '6d3d3674-7ce5-11ec-90d6-0242ac121234'
             X-Correlation-Id:
-              $ref: '#/components/headers/CorrelationId'
+              description: The X-Correlation-Id from the request header, if supplied, mirrored back.
+              schema:
+                type: string
+                example: 11C46F5F-CDEF-4865-94B2-0EE0EDCC26DA
           content:
             application/fhir+json:
               schema:
@@ -345,18 +373,6 @@ components:
       schema:
         type: string
       example: '11C46F5F-CDEF-4865-94B2-0EE0EDCC26DA'
-  headers:
-    RequestId:
-      description: The X-Request-Id from the request header, if supplied, mirrored back.
-      schema:
-        type: string
-        format: uuid
-        example: '6d3d3674-7ce5-11ec-90d6-0242ac121234'
-    CorrelationId:
-      description: The X-Correlation-Id from the request header, if supplied, mirrored back.
-      schema:
-        type: string
-        example: 11C46F5F-CDEF-4865-94B2-0EE0EDCC26DA
   schemas:
     Bundle:
       type: object
