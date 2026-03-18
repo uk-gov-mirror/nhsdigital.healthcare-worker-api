@@ -23,6 +23,7 @@ jobs:
         run: |
           npx -y @redocly/cli bundle \
             specification/healthcare-worker-api.yaml \
+            -d \
             -o specification/healthcare-worker-api.resolved.json \
             --keep-url-references
           npx -y @redocly/cli lint --config redocly.yaml
