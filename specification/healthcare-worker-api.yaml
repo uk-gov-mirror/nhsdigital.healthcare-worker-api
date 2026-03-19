@@ -6,6 +6,8 @@ info:
     ## Overview
     Use this API to access details of healthcare workers registered in the [Care Identity Service (CIS)](https://digital.nhs.uk/services/care-identity-service) directory.
 
+    This is a test marker for UAT refresh verification.
+
     You can:
     - get basic professional details of any healthcare worker with an active care identity, using their unique ID (this is sometimes known as SDS user ID or Smartcard ID)
     - get details of the [national RBAC](https://digital.nhs.uk/services/care-identity-service/applications-and-services/cis2-authentication/integrate/design-and-build/national-rbac-for-developers) roles that have been assigned to them by their Registration Authority
