@@ -25,11 +25,13 @@ phases:
       - chmod +x /usr/bin/yq
   pre_build:
     commands:
-      # Bundle the OpenAPI spec to inline all external references (e.g. externalValue example files).
+      # Bundle and dereference the OpenAPI spec before publication.
+      # Proxygen preserves response header names reliably when header component refs are already
+      # inlined under the response header map keys.
       # This resolved file is used by apim_instance_deploy.sh so that proxygen receives a fully
       # self-contained spec rather than one with unresolvable relative file paths.
       # --keep-url-references (-k) preserves the proxygen-managed security scheme $ref which must remain unresolved.
-      - npx -y @redocly/cli bundle specification/healthcare-worker-api.yaml -o specification/healthcare-worker-api.resolved.yaml --keep-url-references
+      - npx -y @redocly/cli bundle specification/healthcare-worker-api.yaml -d -o specification/healthcare-worker-api.resolved.yaml --keep-url-references
   build:
     commands:
       - cd infrastructure
