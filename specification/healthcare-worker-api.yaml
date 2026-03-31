@@ -109,7 +109,7 @@ info:
 
     To try out the sandbox using our 'Try this API' feature, see the documentation for each endpoint.
 
-    Read about [sandbox test data for the Healthcare Worker FHIR API](https://digital.nhs.uk/developer/api-catalogue/healthcare-worker-fhir/test-data-for-the-healthcare-worker-fhir-api#sandbox-environment).
+    Read about [test data for the Healthcare Worker FHIR API](https://digital.nhs.uk/developer/api-catalogue/healthcare-worker-fhir/test-data-for-the-healthcare-worker-fhir-api#sandbox-environment).
 
     ### Integration testing
     Our [integration test environment](https://digital.nhs.uk/developer/guides-and-documentation/testing#integration-testing):
@@ -117,7 +117,7 @@ info:
     - is used to confirm you are ready for production
     - includes application authentication
 
-    Read about [integration test data for the Healthcare Worker FHIR API](https://digital.nhs.uk/developer/api-catalogue/healthcare-worker-fhir/test-data-for-the-healthcare-worker-fhir-api#integration-test-environment).
+    Read about [test data for the Healthcare Worker FHIR API](https://digital.nhs.uk/developer/api-catalogue/healthcare-worker-fhir/test-data-for-the-healthcare-worker-fhir-api#integration-test-environment).
 
     ## Onboarding
     You need to get your software approved by us before it can go live with this API. We call this onboarding. The onboarding process can sometimes be quite long, so it's worth planning well ahead.
