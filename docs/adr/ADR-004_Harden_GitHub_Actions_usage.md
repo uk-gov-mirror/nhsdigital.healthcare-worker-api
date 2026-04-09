@@ -14,14 +14,14 @@
 
 Recent supply-chain incidents affecting GitHub Actions have increased the risk of consuming mutable or insufficiently reviewed upstream action code.
 
-The repository already removed the `aquasecurity/trivy-action` dependency after the upstream compromise. The next hardening step is to reduce trust in all external actions, pin any remaining use to immutable SHAs, and make workflow changes auditable.
+The repository already removed the `aquasecurity/trivy-action` dependency after the upstream compromise. The next hardening step is to reduce trust in all external actions, pin any remaining use to immutable SHAs, and make workflow changes easier to review.
 
 The NHS England guidance requires:
 
 - full-length commit SHA pinning for every action reference, with an inline version comment
 - minimising the use of third-party actions
 - documenting any surviving external action usage and the alternatives considered
-- using Dependabot for GitHub Actions with a cooldown period before version updates are proposed
+- using Dependabot for GitHub Actions with a delay period before version updates are proposed
 
 ## Decision
 
@@ -31,7 +31,7 @@ This repository will adopt the following controls:
 2. Local shell or native GitHub CLI steps must be preferred over marketplace actions when the capability is straightforward to implement in-repo.
 3. Workflow and composite action changes must be protected by CODEOWNERS review.
 4. A repository check will fail if any external action reference is not pinned or lacks a version comment.
-5. Dependabot will continue to manage GitHub Actions updates, but with a seven-day cooldown before routine version bumps are proposed.
+5. Dependabot will continue to manage GitHub Actions updates, but with a seven-day delay before routine version bumps are proposed.
 
 ## Reviewed external actions
 
@@ -74,6 +74,6 @@ This repository will adopt the following controls:
 
 ## Consequences
 
-- Workflow changes are now more reviewable because every external reference is immutable and annotated.
+- Workflow changes are now easier to review because every external reference is immutable and annotated.
 - Dependabot updates for GitHub Actions will be delayed by seven days, reducing exposure to newly published compromised releases.
 - The repository still depends on a small set of external actions, but each one has a clear operational reason and a recorded review decision.
