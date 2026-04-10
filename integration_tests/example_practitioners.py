@@ -1,6 +1,6 @@
-KNOWN_USER = "150549950108"
-NO_PREFIX_OR_MIDDLE_NAME = "151504269102"
-MULTIPLE_MIDDLE_NAMES = "151504270100"
+KNOWN_USER = "152133081108"
+NO_PREFIX_OR_MIDDLE_NAME = "152133095108"
+MULTIPLE_MIDDLE_NAMES = "152133102102"
 
 SINGLE_ROLE = NO_PREFIX_OR_MIDDLE_NAME
 NO_ROLE = MULTIPLE_MIDDLE_NAMES
@@ -49,12 +49,12 @@ class PractitionerExample:
 
 
 practitioners: [PractitionerExample] = [
-    PractitionerExample(KNOWN_USER, "Mr", "Jitendra", "Banshpal", "Mr Jitendra Banshpal", []),
+    PractitionerExample(KNOWN_USER, "Mr", "Jack AutoTestM", "Joe", "Mr Jack AutoTestM Joe", []),
     PractitionerExample(NO_PREFIX_OR_MIDDLE_NAME, "", "Finnley", "Reeve", "Finnley Reeve",
-                        [RoleExample("151504442105", "Y51",
-                                        "THE NORTH MIDLANDS AND EAST PROGRAMME FOR IT (NMEPFIT)", "2024-11-27",
-                                        "S0070:G0380:R0002",
-                                        "\"Add'l Clinical Services\":\"Non Clinical - Add Clin Serv\":\"Porter\"")]),
+                        [RoleExample("152133101104", "CIM1",
+                                        "CIM ONE", "2026-03-25",
+                                        "S8001:G8005:R8015",
+                                        "\"Support\":\"Systems Support\":\"Systems Support Access Role\"")]),
     PractitionerExample(MULTIPLE_MIDDLE_NAMES, "Miss", "Shayla Cailin Seanna Cayley", "Ashworth",
                         "Miss Shayla Cailin Seanna Cayley Ashworth", []),
     PractitionerExample(MISSING_ORG_PERSON_DATES, "Dr", "LOUISE", "STEENE", "Dr LOUISE STEENE", []),
