@@ -18,12 +18,12 @@ locals {
 resource "null_resource" "apim_instance_deploy" {
   triggers = {
     # Hash all files under specification/ so that changes to example files also trigger redeployment.
-    spec             = sha1(join("", [for f in sort(fileset("${path.root}/../specification", "**")) : sha1(file("${path.root}/../specification/${f}"))]))
-    build_script     = sha1(file("${path.module}/apim_instance_deploy.sh"))
-    env              = var.env
-    apim_environment = var.apim_environment
-    key_arn          = data.aws_secretsmanager_secret.apim_account_private_key.arn
-    key              = data.aws_secretsmanager_secret.apim_account_private_key.last_changed_date
+    spec                 = sha1(join("", [for f in sort(fileset("${path.root}/../specification", "**")) : sha1(file("${path.root}/../specification/${f}"))]))
+    build_script         = sha1(file("${path.module}/apim_instance_deploy.sh"))
+    env                  = var.env
+    apim_environment     = var.apim_environment
+    key_arn              = data.aws_secretsmanager_secret.apim_account_private_key.arn
+    key                  = data.aws_secretsmanager_secret.apim_account_private_key.last_changed_date
     api_gateway_url      = local.api_gateway_url
     spec_publish_key_arn = contains(["ft", "int"], var.env) ? data.aws_secretsmanager_secret.apim_spec_publish_private_key[0].arn : ""
     spec_publish_key     = contains(["ft", "int"], var.env) ? data.aws_secretsmanager_secret.apim_spec_publish_private_key[0].last_changed_date : ""
