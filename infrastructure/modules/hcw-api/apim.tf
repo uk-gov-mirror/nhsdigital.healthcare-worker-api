@@ -30,6 +30,14 @@ resource "null_resource" "apim_instance_deploy" {
   }
 
   provisioner "local-exec" {
-    command = "${path.module}/apim_instance_deploy.sh ${var.env} ${var.apim_environment} ${data.aws_secretsmanager_secret.apim_account_private_key.arn} ${local.api_gateway_url} ${contains(["ft", "int"], var.env) ? data.aws_secretsmanager_secret.apim_spec_publish_private_key[0].arn : ""}"
+    command = format(
+      "%s/apim_instance_deploy.sh %s %s %s %s %s",
+      path.module,
+      var.env,
+      var.apim_environment,
+      data.aws_secretsmanager_secret.apim_account_private_key.arn,
+      local.api_gateway_url,
+      contains(["ft", "int"], var.env) ? data.aws_secretsmanager_secret.apim_spec_publish_private_key[0].arn : ""
+    )
   }
 }
