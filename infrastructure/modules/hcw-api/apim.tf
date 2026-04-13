@@ -2,6 +2,11 @@ data "aws_secretsmanager_secret" "apim_account_private_key" {
   name = "apim-deploy-private-key"
 }
 
+data "aws_secretsmanager_secret" "apim_spec_publish_private_key" {
+  count = contains(["ft", "int"], var.env) ? 1 : 0
+  name  = "apim-spec-publish-private-key"
+}
+
 locals {
   api_gateway_domain = "${var.subdomain}.healthcare-worker.care-identity-service2.nhs.uk"
   # Use raw API Gateway URL when no custom domain (empty subdomain)
@@ -19,10 +24,12 @@ resource "null_resource" "apim_instance_deploy" {
     apim_environment = var.apim_environment
     key_arn          = data.aws_secretsmanager_secret.apim_account_private_key.arn
     key              = data.aws_secretsmanager_secret.apim_account_private_key.last_changed_date
-    api_gateway_url  = local.api_gateway_url
+    api_gateway_url        = local.api_gateway_url
+    spec_publish_key_arn   = contains(["ft", "int"], var.env) ? data.aws_secretsmanager_secret.apim_spec_publish_private_key[0].arn : ""
+    spec_publish_key       = contains(["ft", "int"], var.env) ? data.aws_secretsmanager_secret.apim_spec_publish_private_key[0].last_changed_date : ""
   }
 
   provisioner "local-exec" {
-    command = "${path.module}/apim_instance_deploy.sh ${var.env} ${var.apim_environment} ${data.aws_secretsmanager_secret.apim_account_private_key.arn} ${local.api_gateway_url}"
+    command = "${path.module}/apim_instance_deploy.sh ${var.env} ${var.apim_environment} ${data.aws_secretsmanager_secret.apim_account_private_key.arn} ${local.api_gateway_url} ${contains([\"ft\", \"int\"], var.env) ? data.aws_secretsmanager_secret.apim_spec_publish_private_key[0].arn : \"\"}"
   }
 }

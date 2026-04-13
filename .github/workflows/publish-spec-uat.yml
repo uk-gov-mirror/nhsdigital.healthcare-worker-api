@@ -44,7 +44,7 @@ jobs:
       - name: "Fetch proxygen private key from AWS Secrets Manager"
         run: |
           aws secretsmanager get-secret-value \
-            --secret-id "apim-deploy-private-key" \
+            --secret-id "apim-spec-publish-private-key" \
             --query SecretString \
             --output text > ${HOME}/.proxygen/key
           proxygen status

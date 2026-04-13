@@ -55,7 +55,8 @@ resource "aws_iam_role_policy" "github_actions_read_proxygen_key" {
           "secretsmanager:GetSecretValue"
         ]
         Resource = [
-          data.aws_secretsmanager_secret.apim_account_private_key.arn
+          data.aws_secretsmanager_secret.apim_account_private_key.arn,
+          "arn:aws:secretsmanager:eu-west-2:${var.account_id}:secret:apim-spec-publish-private-key*"
         ]
       }
     ]

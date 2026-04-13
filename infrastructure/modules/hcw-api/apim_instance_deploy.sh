@@ -6,6 +6,9 @@ environment_name=$1
 apim_environment=$2
 apim_private_key_secret_arn=$3
 api_gw_url=$4
+spec_publish_private_key_secret_arn=$5
+
+source ./modules/hcw-api/proxygen-profiles.sh
 
 cp ../specification/healthcare-worker-api.yaml temp_spec.yaml
 
@@ -35,7 +38,21 @@ else
   echo "No name suffix set"
 fi
 
-source ./modules/hcw-api/proxygen-setup.sh "$apim_private_key_secret_arn"
+if [[ "$environment_name" == "prod" ]]; then
+  source ./modules/hcw-api/proxygen-setup.sh \
+    "$apim_private_key_secret_arn" \
+    "$PROD_PROXYGEN_ENDPOINT_URL" \
+    "$PROD_PROXYGEN_BASE_URL" \
+    "$PROD_PROXYGEN_KEY_ID" \
+    "$PROD_PROXYGEN_CLIENT_ID"
+else
+  source ./modules/hcw-api/proxygen-setup.sh \
+    "$apim_private_key_secret_arn" \
+    "$PTL_PROXYGEN_ENDPOINT_URL" \
+    "$PTL_PROXYGEN_BASE_URL" \
+    "$PTL_PROXYGEN_KEY_ID" \
+    "$PTL_PROXYGEN_CLIENT_ID"
+fi
 
 # Deploy proxygen instance
 service_base_path="healthcare-worker${env_name_suffix}"
@@ -44,9 +61,21 @@ proxygen instance deploy --no-confirm "$apim_environment" "${service_base_path}"
 
 if [[ "$environment_name" == "ft" ]]; then
   echo "Uploading app spec to UAT"
+  source ./modules/hcw-api/proxygen-setup.sh \
+    "$spec_publish_private_key_secret_arn" \
+    "$PROD_PROXYGEN_ENDPOINT_URL" \
+    "$PROD_PROXYGEN_BASE_URL" \
+    "$PROD_PROXYGEN_KEY_ID" \
+    "$PROD_PROXYGEN_CLIENT_ID"
   proxygen spec publish ./temp_spec.yaml --uat --no-confirm
 elif [[ "$environment_name" == "int" ]]; then
   echo "Uploading app spec"
+  source ./modules/hcw-api/proxygen-setup.sh \
+    "$spec_publish_private_key_secret_arn" \
+    "$PROD_PROXYGEN_ENDPOINT_URL" \
+    "$PROD_PROXYGEN_BASE_URL" \
+    "$PROD_PROXYGEN_KEY_ID" \
+    "$PROD_PROXYGEN_CLIENT_ID"
   proxygen spec publish ./temp_spec.yaml --no-confirm
 fi
 
