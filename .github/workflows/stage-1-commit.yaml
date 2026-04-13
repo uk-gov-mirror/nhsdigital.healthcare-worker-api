@@ -36,10 +36,12 @@ jobs:
   scan-secrets:
     name: "Scan secrets"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 2
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0 # Full history is needed to scan all commits
       - name: "Scan secrets"
@@ -47,10 +49,12 @@ jobs:
   check-file-format:
     name: "Check file format"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 2
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0 # Full history is needed to compare branches
       - name: "Check file format"
@@ -58,10 +62,12 @@ jobs:
   check-markdown-format:
     name: "Check Markdown format"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 2
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0 # Full history is needed to compare branches
       - name: "Check Markdown format"
@@ -69,10 +75,12 @@ jobs:
   check-english-usage:
     name: "Check English usage"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 2
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0 # Full history is needed to compare branches
       - name: "Check English usage"
@@ -80,21 +88,37 @@ jobs:
   lint-terraform:
     name: "Lint Terraform"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 2
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: "Lint Terraform"
         uses: ./.github/actions/lint-terraform
   lint-openapi-specification:
     name: "Lint OpenAPI specification"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 2
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: "Lint OpenAPI specification"
         uses: ./.github/actions/lint-openapi-specification
+  check-github-actions-hardening:
+    name: "Check GitHub Actions hardening"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 2
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: "Check action pinning and comments"
+        run: |
+          bash ./scripts/tests/check-github-actions-pinning.sh
   count-lines-of-code:
     name: "Count lines of code"
     runs-on: ubuntu-latest
@@ -104,7 +128,7 @@ jobs:
     timeout-minutes: 2
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: "Count lines of code"
         uses: ./.github/actions/create-lines-of-code-report
         with:
@@ -120,10 +144,10 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    timeout-minutes: 2
+    timeout-minutes: 5
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: "Scan dependencies"
         uses: ./.github/actions/scan-dependencies
         with:

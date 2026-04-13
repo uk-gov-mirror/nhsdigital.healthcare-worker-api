@@ -11,6 +11,8 @@ jobs:
     name: "Set CI/CD metadata"
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
+    permissions:
+      contents: read
     timeout-minutes: 1
     outputs:
       build_datetime: ${{ steps.variables.outputs.build_datetime }}
@@ -22,7 +24,7 @@ jobs:
       version: ${{ steps.variables.outputs.version }}
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: "Set CI/CD variables"
         id: variables
         run: |
@@ -50,26 +52,26 @@ jobs:
     runs-on: ubuntu-latest
     needs: [metadata]
     if: github.event.pull_request.merged == true
+    permissions:
+      contents: write
     timeout-minutes: 3
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: "Get the artefacts"
         run: |
           echo "Getting the artefacts created by the build stage ..."
           # TODO: Use either action/cache or action/upload-artifact
       - name: "Create release"
-        id: create_release
-        uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ needs.metadata.outputs.version }}
-          release_name: Release ${{ needs.metadata.outputs.version }}
-          body: |
-            Release of ${{ needs.metadata.outputs.version }}
-          draft: false
-          prerelease: false
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ needs.metadata.outputs.version }}
+          RELEASE_TARGET: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          gh release create "$RELEASE_TAG" \
+            --target "$RELEASE_TARGET" \
+            --title "Release $RELEASE_TAG" \
+            --notes "Release of $RELEASE_TAG"
       # - name: "Upload release asset"
       #   uses: actions/upload-release-asset@v1
       #   env:
@@ -82,17 +84,28 @@ jobs:
   success:
     name: "Success notification"
     runs-on: ubuntu-latest
-    needs: [publish]
+    needs: [metadata, publish]
+    permissions: {}
     steps:
       - name: "Check prerequisites for notification"
         id: check
         run: echo "secret_exist=${{ secrets.TEAMS_NOTIFICATION_WEBHOOK_URL != '' }}" >> $GITHUB_OUTPUT
       - name: "Notify on publishing packages"
         if: steps.check.outputs.secret_exist == 'true'
-        uses: nhs-england-tools/notify-msteams-action@v1.0.0
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          teams-webhook-url: ${{ secrets.TEAMS_NOTIFICATION_WEBHOOK_URL }}
-          message-title: "Notification title"
-          message-text: "This is a notification body"
-          link: ${{ github.event.pull_request.html_url }}
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_NOTIFICATION_WEBHOOK_URL }}
+        run: |
+          curl --fail --show-error \
+            -H 'Content-Type: application/json' \
+            -d @- \
+            "$TEAMS_WEBHOOK_URL" <<EOF
+          {
+            "@type": "MessageCard",
+            "@context": "https://schema.org/extensions",
+            "summary": "Healthcare Worker API release published",
+            "themeColor": "0072C6",
+            "title": "Healthcare Worker API release published",
+            "text": "Release ${{ needs.metadata.outputs.version }} created successfully. [View pull request]($PR_URL)"
+          }
+          EOF
