@@ -15,6 +15,9 @@ jobs:
   metadata:
     name: "Set CI/CD metadata"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     timeout-minutes: 1
     outputs:
       build_datetime_london: ${{ steps.variables.outputs.build_datetime_london }}
@@ -28,7 +31,7 @@ jobs:
       does_pull_request_exist: ${{ steps.pr_exists.outputs.does_pull_request_exist }}
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: "Set CI/CD variables"
         id: variables
         run: |
@@ -71,6 +74,9 @@ jobs:
   commit-stage: # Recommended maximum execution time is 2 minutes
     name: "Commit stage"
     needs: [metadata]
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/stage-1-commit.yaml
     with:
       build_datetime: "${{ needs.metadata.outputs.build_datetime }}"
@@ -84,6 +90,8 @@ jobs:
   test-stage: # Recommended maximum execution time is 5 minutes
     name: "Test stage"
     needs: [metadata, commit-stage]
+    permissions:
+      contents: read
     uses: ./.github/workflows/stage-2-test.yaml
     with:
       build_datetime: "${{ needs.metadata.outputs.build_datetime }}"
