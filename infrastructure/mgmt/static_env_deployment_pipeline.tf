@@ -43,7 +43,7 @@ resource "aws_kms_key" "kms_key" {
         Sid    = "Allow access for Key Administrators"
         Effect = "Allow"
         Principal = {
-          AWS = "arn:aws:iam::209479271736:role/aws-reserved/sso.amazonaws.com/eu-west-2/AWSReservedSSO_AWSAdministratorAccess_a77a65f102a298f7"
+          AWS = "arn:aws:iam::209479271736:role/aws-reserved/sso.amazonaws.com/eu-west-2/AWSReservedSSO_Admin_a325754cf9f9b23a"
         }
         Action = [
           "kms:Create*",
