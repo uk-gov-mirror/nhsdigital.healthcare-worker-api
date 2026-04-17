@@ -142,3 +142,7 @@ resource "aws_codebuild_project" "hcw-api-destroy-pr-env" {
 resource "aws_secretsmanager_secret" "apim_account_private_key" {
   name = "apim-deploy-private-key"
 }
+
+resource "aws_secretsmanager_secret" "apim_spec_publish_private_key" {
+  name = "apim-spec-publish-private-key"
+}
