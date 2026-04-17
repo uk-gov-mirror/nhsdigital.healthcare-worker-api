@@ -20,7 +20,13 @@ phases:
     commands:
       - |
         echo "Setting up for integration tests"
-        source ./infrastructure/modules/hcw-api/proxygen-setup.sh "$apim_private_key_secret_arn"
+        source ./infrastructure/modules/hcw-api/proxygen-profiles.sh
+        source ./infrastructure/modules/hcw-api/proxygen-setup.sh \
+          "$apim_private_key_secret_arn" \
+          "$PTL_PROXYGEN_ENDPOINT_URL" \
+          "$PTL_PROXYGEN_BASE_URL" \
+          "$PTL_PROXYGEN_KEY_ID" \
+          "$PTL_PROXYGEN_CLIENT_ID"
         if [[ "${branch}" == pr-* ]]; then
           # Static envs have the client id in the git config, so we don't need to dynamically fetch them
           env_suffix="_${branch}"
