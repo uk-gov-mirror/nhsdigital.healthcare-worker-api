@@ -18,11 +18,11 @@ runs:
       id: check
       run: echo "secret_exist=${{ inputs.sonar_token != '' }}" >> $GITHUB_OUTPUT
     - name: Set up Node.js 22
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
       with:
         node-version: "22"
     - name: Set up Python 3.12
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
       with:
         python-version: "3.12"
     - name: "Perform static analysis"
@@ -46,24 +46,4 @@ runs:
         poetry run coverage run -m pytest
         poetry run coverage xml
         ./scripts/reports/perform-static-analysis.sh
-    - name: "Install Trivy"
-      shell: bash
-      run: |
-        wget --max-redirect=0 -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
-        echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee /etc/apt/sources.list.d/trivy.list
-        sudo apt-get update
-        sudo apt-get install -y trivy
-        trivy --version
-    - name: "Run Trivy Checks"
-      uses: aquasecurity/trivy-action@0.34.1
-      with:
-        scan-type: "config"
-        format: "sarif"
-        output: trivy.sarif
-        skip-setup-trivy: true
-      env:
-        TRIVY_SKIP_DB_UPDATE: true
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: 'trivy.sarif'
+      # HCW-359: Trivy steps removed on 2026-03-20 after the upstream trivy-action compromise; replacement scanner to follow.

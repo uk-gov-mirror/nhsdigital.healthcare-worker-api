@@ -6,36 +6,49 @@ info:
     ## Overview
     Use this API to access details of healthcare workers registered in the [Care Identity Service (CIS)](https://digital.nhs.uk/services/care-identity-service) directory.
 
+    You don't need to use this API if you only need details for a healthcare worker who is signed in using [CIS2 Authentication](https://digital.nhs.uk/services/care-identity-service/applications-and-services/cis2-authentication) -
+    you can use the [CIS2 Authentication user info endpoint](https://digital.nhs.uk/services/care-identity-service/applications-and-services/cis2-authentication/integrate/design-and-build/sign-in-journey#user-info-request) instead.
+
     You can:
-    - get basic professional details of any healthcare worker with an active care identity, using their unique ID (this is sometimes known as SDS user ID or Smartcard ID).
+    - get basic professional details of any healthcare worker with an active care identity, using their unique ID (this is sometimes known as SDS user ID or Smartcard ID)
+    - get details of the [national RBAC](https://digital.nhs.uk/services/care-identity-service/applications-and-services/cis2-authentication/integrate/design-and-build/national-rbac-for-developers) roles that have been assigned to them by their Registration Authority
 
     You cannot currently use this API to:
     - search by professional codes, such as GMC or RNC code
+    - get details of 'directly assigned' activities associated with the healthcare worker's role profiles (see below)
 
-    The strategic aim of the API is to allow systems to search, retrieve and display healthcare worker data from over 1.4 million NHS employees with a health care profile.
-    The objective is to increase data efficiency, business logic and improve interoperability within the business.
+    ### Directly assigned activities
+    [National RBAC](https://digital.nhs.uk/services/care-identity-service/applications-and-services/cis2-authentication/integrate/design-and-build/national-rbac-for-developers) is the method CIS uses to manage user permissions.
 
-    This strategic solution will allow internal and 3rd party systems to access and share information more reliably, flexibly and efficiently while benefiting from improved network and bandwidth capacity, financial savings
-    and easier and smoother access to clinical systems.
+    In national RBAC:
+    - users are assigned 'role profiles'
+    - each role profile is linked to a single 'role'
+    - each role is linked to zero or more 'activities' - the things the user is allowed to do
+    - a role profile can also have 'directly assigned' activities
+
+    So the total set of activities for a given role profile includes:
+    - the activities that can be inferred from the role
+    - the directly assigned activities
+
+    Currently, this API only provides details of the users' roles, not their directly assigned activities. We plan to add directly assigned activities in a future release.
 
     ## Who can use this API
     This API can only be used where there is a legal basis to do so. Make sure you have a valid use case before you go too far with your development.
 
-    You must do this before you can go live (see "Onboarding" below).
+    You must do this before you can go live (see [Onboarding](#overview--onboarding)).
 
     ## Related APIs
     The following APIs are related to this one:
-    * [Healthcare Worker - FHIR API](https://digital.nhs.uk/developer/api-catalogue/healthcare-fhir-api)
+    - [Spine Directory Service - LDAP API](https://digital.nhs.uk/developer/api-catalogue/spine-directory-service-ldap) - The legacy API for accessing healthcare worker information in CIS. Only available on HSCN and being planned for deprecation at some point.
+    - [Organisation Data Terminology - FHIR API](https://digital.nhs.uk/developer/api-catalogue/organisation-data-terminology) - Get organisation information from the Organisation Data Service (ODS), including some limited information on some prescribing staff at each organisation.
 
     ## API status and roadmap
-    This API is [in production, beta](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#statuses).
+    This API is in [beta](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#statuses), meaning it's available in production but might still be subject to breaking changes.
 
-    To see our roadmap, or to suggest, comment or vote on features for this API, see our [interactive product backlog](https://nhs-digital-api-management.featureupvote.com/suggestions/204411/healthcare-professionals-api).
-
-    If you  have any other queries, [contact us](https://digital.nhs.uk/developer/help-and-support).
+    For details of future changes, see [Care Identity Service roadmap](https://digital.nhs.uk/services/care-identity-service/roadmap).
 
     ## Service level
-    This API is a silver service during private beta, meaning it is operational 24 hours a day, 7 days a week but only supported during business hours (8am to 6pm), Monday to Friday excluding bank holidays.
+    This API is a silver service during beta, meaning it is operational 24 hours a day, 7 days a week but only supported during business hours (8am to 6pm), Monday to Friday excluding bank holidays.
 
     For more details, see [service levels](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#service-levels).
 
@@ -49,10 +62,8 @@ info:
     You do not need to know much about FHIR to use this API - FHIR APIs are just RESTful APIs that follow specific rules. In particular:
     - resource names are capitalised and singular, for example `/Endpoint` not `/endpoints`
 
-    Error handling in this API follows [NHS guidelines](https://nhsconnect.github.io/FHIR-SpineCore/resources_error_handling.html) and produces an [OperationOutcome](https://fhir.nhs.uk/STU3/StructureDefinition/Spine-OperationOutcome-1) FHIR resource response with appropriate HTTP code.
-
     ## Network access
-    This API is available on the internet and, indirectly, on the [Health and Social Care Network (HSCN).](https://digital.nhs.uk/services/health-and-social-care-network)
+    This API is available on the internet and, indirectly, on the [Health and Social Care Network (HSCN)](https://digital.nhs.uk/services/health-and-social-care-network).
 
     For more details see [Network access for APIs](https://digital.nhs.uk/developer/guides-and-documentation/network-access-for-apis).
 
@@ -63,17 +74,25 @@ info:
 
     * [Application-restricted RESTful APIs - signed JWT authentication](https://digital.nhs.uk/developer/guides-and-documentation/security-and-authorisation/application-restricted-restful-apis-signed-jwt-authentication)
 
-    ## Postman Collection
-    See https://github.com/NHSDigital/healthcare-worker-api/tree/develop/postman for an export of our postman collection. The readme in that directory explains how to set it up and send the requests.
+    ## Errors
+    We use standard HTTP status codes to show whether an API request succeeded or not. They are usually in the range:
+
+    * 200 to 299 if it succeeded, including code 202 if it was accepted by an API that needs to wait for further action
+    * 400 to 499 if it failed because of a client error by your application
+    * 500 to 599 if it failed because of an error on our server
+
+    Error handling in this API follows [NHS guidelines](https://nhsconnect.github.io/FHIR-SpineCore/resources_error_handling.html) and produces an [OperationOutcome](https://fhir.nhs.uk/STU3/StructureDefinition/Spine-OperationOutcome-1) FHIR resource response with appropriate HTTP code.
+
+    Errors specific to each API are shown in the Endpoints section, under Response. See our [reference guide](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#http-status-codes) for more on errors.
 
     ## Open source
-
     You might find the following [open source](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#open-source) resources useful:
 
-    | Resource                | Description                                                   | Links                                                                                                                                        |
-    | ----------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-    | Project codebase        | The full Healthcare Worker codebase is open source in GitHub. | [Github](https://github.com/NHSDigital/healthcare-worker-api)                                                                                |
-    | FHIR libraries and SDKs | Various open source libraries for integrating with FHIR APIs. | [FHIR libraries and SDKs](https://digital.nhs.uk/developer/guides-and-documentation/api-technologies-at-nhs-digital#fhir-libraries-and-sdks) |
+    | Resource                | Description                                                       | Links                                                                                                                                        |
+    | ----------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+    | API source code         | The full Healthcare Worker API codebase is open source in GitHub. | [GitHub](https://github.com/NHSDigital/healthcare-worker-api)                                                                                |
+    | Postman collection      | Export of our Postman collection for use with the API.            | [GitHub](https://github.com/NHSDigital/healthcare-worker-api/tree/develop/postman)
+    | FHIR libraries and SDKs | Various open source libraries for integrating with FHIR APIs.     | [FHIR libraries and SDKs](https://digital.nhs.uk/developer/guides-and-documentation/api-technologies-at-nhs-digital#fhir-libraries-and-sdks) |
 
     ## Environments and testing
     | Environment       | Base URL
@@ -84,41 +103,29 @@ info:
 
     ### Sandbox testing
     Our [sandbox environment](https://digital.nhs.uk/developer/guides-and-documentation/testing#sandbox-testing):
-    * only covers a limited set of scenarios
-    * is open-access, so does not allow you to test authorisation
+    - is for early developer testing
+    - only covers a limited set of scenarios
+    - is open-access, so does not allow you to test authorisation
 
-    For more details on sandbox testing, or to try out the sandbox using our \"Try this API\" feature, see the documentation for each endpoint.
+    To try out the sandbox using our 'Try this API' feature, see the documentation for each endpoint.
+
+    Read about [test data for the Healthcare Worker FHIR API](https://digital.nhs.uk/developer/api-catalogue/healthcare-worker-fhir/test-data-for-the-healthcare-worker-fhir-api#sandbox-environment).
 
     ### Integration testing
     Our [integration test environment](https://digital.nhs.uk/developer/guides-and-documentation/testing#integration-testing):
-    - is for early developer testing
-    - used to confirm you are ready for production
+    - is for developer testing and formal integration testing
+    - is used to confirm you are ready for production
     - includes application authentication
 
-    ## Related APIs
-    The following APIs are related to this one:- [Spine Directory Service - LDAP API](https://digital.nhs.uk/developer/api-catalogue/spine-directory-service-ldap) - Access details of organisations, people and systems registered in the Spine Directory Service (SDS) using our LDAP API. This API is only available on HSCN, doesn't use the FHIR standard and is being considered for deprecation.
-    - [Organisation Data Terminology - FHIR API](https://digital.nhs.uk/developer/api-catalogue/organisation-data-terminology) - Access an organisation-based dataset from the Organisation Data Service (ODS), including some limited information on some prescribing staff at each organisation.
-    - [Organisation Data Service - FHIR API](https://digital.nhs.uk/developer/api-catalogue/organisation-data-service-fhir) - Access a reduced organisation-based dataset from the Organisation Data Service (ODS). An older, limited alternative to ODS Terminology API and soon to be deprecated.
+    Read about [test data for the Healthcare Worker FHIR API](https://digital.nhs.uk/developer/api-catalogue/healthcare-worker-fhir/test-data-for-the-healthcare-worker-fhir-api#integration-test-environment).
 
     ## Onboarding
     You need to get your software approved by us before it can go live with this API. We call this onboarding. The onboarding process can sometimes be quite long, so it's worth planning well ahead.
 
-    As part of this process, you need to demonstrate that you can manage risks and that your software conforms
-    technically with the requirements for this API. This might impact the design of your software. For details, see
-    [Onboarding support information](https://digital.nhs.uk/developer/api-catalogue/child-protection-information-sharing-hl7-v3/onboarding-support-information).
-
     To understand how our online digital onboarding process works, see [digital onboarding](https://digital.nhs.uk/developer/guides-and-documentation/digital-onboarding).
 
-    To get started, sign in or create a [developer account](https://onboarding.prod.api.platform.nhs.uk/), then select 'product onboarding'.
+    To get started, sign in or create a [developer account](https://onboarding.prod.api.platform.nhs.uk/), then select 'Digital onboarding service'.
 
-    ## Errors
-    We use standard HTTP status codes to show whether an API request succeeded or not. They are usually in the range:
-
-    * 200 to 299 if it succeeded, including code 202 if it was accepted by an API that needs to wait for further action
-    * 400 to 499 if it failed because of a client error by your application
-    * 500 to 599 if it failed because of an error on our server
-
-    Errors specific to each API are shown in the Endpoints section, under Response. See our [reference guide](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#http-status-codes) for more on errors.
   contact:
     name: Spine Directory Service API Support
     url: https://digital.nhs.uk/developer/help-and-support
@@ -157,7 +164,7 @@ paths:
         Only active accounts are returned. If the care identity itself is closed, the endpoint returns a 410 (Gone) response.
 
         You can also get details of the healthcare worker's [national RBAC roles](https://digital.nhs.uk/services/care-identity-service/applications-and-services/cis2-authentication/integrate/design-and-build/national-rbac-for-developers),
-        using the `_revinclude` query parameter.
+        using the `_revinclude` query parameter. This currently does not include details of directly assigned activities, as explained in the [main overview](#overview--overview).
 
       parameters:
         - in: query
@@ -181,6 +188,11 @@ paths:
       responses:
         '200':
           description: Successful operation
+          headers:
+            X-Request-Id:
+              $ref: 'components/headers/XRequestId.yaml'
+            X-Correlation-Id:
+              $ref: 'components/headers/XCorrelationId.yaml'
           content:
             application/fhir+json:
               schema:
@@ -188,35 +200,48 @@ paths:
               examples:
                 basic:
                   summary: Basic response (without roles)
-                  externalValue: components/examples/GetHealthcareWorkerDetailsResponseSuccessBasic.json
+                  externalValue: 'components/examples/GetHealthcareWorkerDetailsResponseSuccessBasic.json'
                 with-includes:
                   summary: Response with roles included
-                  externalValue: components/examples/GetHealthcareWorkerDetailsResponseSuccessWithIncludes.json
-        '400':
-          description: Missing or invalid query parameter(s).
-        '404':
-          description: Invalid endpoint path
-        '405':
-          description: Unsupported HTTP method. For this endpoint only GET is available
-        '410':
-          description: Resource closed. The requested care identity profile is no longer active.
-        '500':
-          description: Unhandled internal server error
-        '502':
-          description: Upstream system returned an unsupported response
-        '504':
-          description: Upstream server request has timed out
+                  externalValue: 'components/examples/GetHealthcareWorkerDetailsResponseSuccessWithIncludes.json'
+        '4XX':
+          description: |
+            An error occurred as follows:
+
+            | HTTP status | Error code                      | Description                                                                                                                                |
+            | ----------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+            | 400         | MISSING_VALUE                   | Required request parameter missing, for example `identifier`.                                                                              |
+            | 401         | ACCESS_DENIED                   | Access token missing, invalid or expired, or calling application not configured for this operation.                                        |
+            | 404         | RESOURCE_NOT_FOUND              | No healthcare worker record found for the given CIS identifier.                                                                            |
+            | 410         | INACTIVE_ACCOUNT                | The requested healthcare worker record is inactive in CIS.                                                                                 |
+            | 429         | TOO_MANY_REQUESTS               | You have exceeded your application's [rate limit](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#rate-limits).  |
+
+            For more details, see [HTTP status codes](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#http-status-codes).
+
+          headers:
+            X-Request-Id:
+              $ref: 'components/headers/XRequestId.yaml'
+            X-Correlation-Id:
+              $ref: 'components/headers/XCorrelationId.yaml'
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/OperationOutcome'
+              example:
+                $ref: 'components/examples/GetHealthcareWorkerDetailsResponseError.json'
   /PractitionerRole:
     get:
       summary: Get healthcare worker role details
       operationId: getPractitionerRole
       description: |
         # Overview
-        Use this endpoint to get details of healthcare worker roles in the Care Identity Service (CIS) directory. It takes a CIS unique identifier
-        as input and returns all the roles associated with that practitioner.
+        Use this endpoint to get details of healthcare worker roles in the Care Identity Service (CIS). It takes a CIS unique identifier
+        as input and returns all the roles associated with that healthcare worker.
 
-        This endpoint supports the use of the _include query parameter to expose more information about referenced
-        organisations and practitioners.
+        You can get more information on the healthcare worker and the organisations linked to the roles using the `_include` query parameter.
+
+        This endpoint currently does not include details of directly assigned activities, as explained in the [main overview](#overview--overview).
+
       parameters:
         - in: query
           name: practitioner.identifier
@@ -243,6 +268,11 @@ paths:
       responses:
         '200':
           description: Successful operation
+          headers:
+            X-Request-Id:
+              $ref: 'components/headers/XRequestId.yaml'
+            X-Correlation-Id:
+              $ref: 'components/headers/XCorrelationId.yaml'
           content:
             application/fhir+json:
               schema:
@@ -250,24 +280,35 @@ paths:
               examples:
                 basic:
                   summary: Basic response (without practitioner or organisation included)
-                  externalValue: components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessBasic.json
+                  externalValue: 'components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessBasic.json'
                 with-includes:
                   summary: Response with practitioner and organisations included
-                  externalValue: components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessWithIncludes.json
-        '400':
-          description: Missing or invalid query parameter(s).
-        '404':
-          description: Invalid endpoint path
-        '405':
-          description: Unsupported HTTP method. For this endpoint only GET is available
-        '410':
-          description: Resource closed. The requested care identity profile is no longer active.
-        '500':
-          description: Unhandled internal server error
-        '502':
-          description: Upstream system returned an unsupported response
-        '504':
-          description: Upstream server request has timed out
+                  externalValue: 'components/examples/GetHealthcareWorkerRoleDetailsResponseSuccessWithIncludes.json'
+        '4XX':
+          description: |
+            An error occurred as follows:
+
+            | HTTP status | Error code                      | Description                                                                                                                                |
+            | ----------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+            | 400         | MISSING_VALUE                   | Required request parameter missing, for example `practitioner.identifier`.                                                                 |
+            | 401         | ACCESS_DENIED                   | Access token missing, invalid or expired, or calling application not configured for this operation.                                        |
+            | 404         | RESOURCE_NOT_FOUND              | No healthcare worker record found for the given CIS identifier.                                                                            |
+            | 410         | INACTIVE_ACCOUNT                | The requested healthcare worker record is inactive in CIS.                                                                                 |
+            | 429         | TOO_MANY_REQUESTS               | You have exceeded your application's [rate limit](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#rate-limits).  |
+
+            For more details, see [HTTP status codes](https://digital.nhs.uk/developer/guides-and-documentation/reference-guide#http-status-codes).
+
+          headers:
+            X-Request-Id:
+              $ref: 'components/headers/XRequestId.yaml'
+            X-Correlation-Id:
+              $ref: 'components/headers/XCorrelationId.yaml'
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/OperationOutcome'
+              example:
+                $ref: 'components/examples/GetHealthcareWorkerRoleDetailsResponseError.json'
 components:
   securitySchemes:
     app-level3:
@@ -370,7 +411,7 @@ components:
           type: string
           enum: [match,include]
     Practitioner:
-      description: A healthcare worker's personal details, formatted as a FHIR `Practitioner` resource.
+      description: A healthcare worker's personal details, expressed as a FHIR `Practitioner` resource.
       type: object
       properties:
         resourceType:
@@ -390,13 +431,17 @@ components:
             type: object
             properties:
               system:
+                description: Coding system used for the identifier.
                 type: string
-                default: https://fhir.nhs.uk/Id/sds-user-id
+                enum: [https://fhir.nhs.uk/Id/sds-user-id]
               value:
+                description: The identifier itself.
                 type: string
                 example: '123456789012'
         active:
-          description: Indicates whether the healthcare worker's account is active in CIS.
+          description: |
+            Indicates whether the healthcare worker's account is active in CIS.
+            Because the response only ever includes active accounts, this is always `true`.
           type: boolean
           example: true
         name:
@@ -431,7 +476,7 @@ components:
                   example: 'Ms'
     PractitionerRole:
       description: |
-        A healthcare worker role (sometimes called a 'role profile'), formatted as a FHIR `PractitionerRole` resource.
+        A healthcare worker role (sometimes called a 'role profile'), expressed as a FHIR `PractitionerRole` resource.
         A healthcare worker can have multiple roles, and each role is associated with a specific organisation.
         If the worker performs the same role in multiple organisations, there is a separate role profile for each organisation.
       type: object
@@ -464,9 +509,9 @@ components:
           description: Whether the role is active in CIS.
           example: True
         practitioner:
-          $ref: '#/components/schemas/Reference'
+          $ref: '#/components/schemas/PractitionerReference'
         organization:
-          $ref: '#/components/schemas/Reference'
+          $ref: '#/components/schemas/OrganizationReference'
         period:
           description: Time period during which the role applies, or applied.
           type: object
@@ -483,10 +528,10 @@ components:
           minItems: 1
           maxItems: 1
           items:
-            $ref: '#/components/schemas/CodeableConcept'
+            $ref: '#/components/schemas/RoleCode'
     Organization:
       description: |
-        An organisation associated with one of the roles in the result set, formatted as a FHIR `Organization` resource.
+        An organisation associated with one of the roles in the result set, expressed as a FHIR `Organization` resource.
       type: object
       properties:
         resourceType:
@@ -517,37 +562,166 @@ components:
           description: Organisation name.
           type: string
           example: SILKSTONE PHARMACY
-    Reference:
+    PractitionerReference:
+      description: Summary of the healthcare worker to whom the roles relate.
       type: object
       properties:
         reference:
+          description: Relative URL for the Practitioner FHIR resource for the healthcare worker.
           type: string
         identifier:
+          description: CIS identifier for the healthcare worker. Also known as their UUID or smartcard ID.
           type: object
           properties:
             system:
+              description: Coding system for the identifier.
               type: string
+              enum: [https://fhir.nhs.uk/Id/sds-user-id]
             value:
+              description: The identifier itself.
               type: string
         display:
+          description: Healthcare worker's full name, including prefix, given name and family name.
           type: string
-    CodeableConcept:
+    OrganizationReference:
+      description: Summary of an organisation to which one or more of the roles relate.
+      type: object
+      properties:
+        reference:
+          description: Relative URL for the Organization FHIR resource for the organisation.
+          type: string
+        identifier:
+          description: ODS code for the organisation.
+          type: object
+          properties:
+            system:
+              description: Coding system for the ODS code.
+              type: string
+              enum: [https://fhir.nhs.uk/Id/ods-organization-code]
+            value:
+              description: The ODS code itself.
+              type: string
+        display:
+          description: Organisation name.
+          type: string
+    RoleCode:
+      description: Code for the role, expressed as a FHIR `CodeableConcept` resource.
       type: object
       properties:
         resourceType:
+          description: FHIR resource type.
           type: string
-          default: CodeableConcept
+          enum: [CodeableConcept]
         coding:
+          description: The actual coding, expressed as a FHIR `Coding` resource.
           type: array
+          minItems: 1
+          maxItems: 1
           items:
             type: object
             properties:
               resourceType:
+                description: FHIR resource type.
                 type: string
-                default: Coding
+                enum: [Coding]
               system:
+                description: Code system used for the role code.
                 type: string
+                enum: [https://fhir.nhs.uk/CodeSystem/NHSDigital-SDS-JobRoleCode]
               code:
+                description: |
+                  The role code itself. Consists of three parts, separated by colons, in the format `Snnnn:Gnnnn:Rnnnn`,
+                  forming a hierarchy. The useful part is the 'R' code, which maps to activity codes as explained in
+                  [National RBAC for developers](https://digital.nhs.uk/services/care-identity-service/applications-and-services/cis2-authentication/integrate/design-and-build/national-rbac-for-developers).
                 type: string
               display:
+                description: |
+                  Role code description. Consists of three parts, separated by colons, corresponding to the three parts of the role code.
+                  The useful part is the third part, corresponding to the 'R' code.
                 type: string
+    OperationOutcome:
+      type: object
+      description: |
+        Details of an error.
+        There are a number of possible error codes that can be returned along with a more detailed description in the `display` field.
+      properties:
+        resourceType:
+          type: string
+          description: FHIR Resource Type.
+          enum: [OperationOutcome]
+        issue:
+          type: array
+          description: List of issues that have occurred.
+          minItems: 1
+          items:
+            type: object
+            required:
+              - severity
+              - code
+            properties:
+              severity:
+                type: string
+                enum: [fatal, error, warning, information]
+                description: Severity of the error.
+                example: error
+              code:
+                type: string
+                description: FHIR error code.
+                example: invalid
+                enum:
+                  - invalid
+                  - structure
+                  - required
+                  - value
+                  - invariant
+                  - security
+                  - login
+                  - unknown
+                  - expired
+                  - forbidden
+                  - suppressed
+                  - processing
+                  - not-supported
+                  - duplicate
+                  - multiple-matches
+                  - not-found
+                  - deleted
+                  - too-long
+                  - code-invalid
+                  - extension
+                  - too-costly
+                  - business-rule
+                  - conflict
+                  - transient
+                  - lock-error
+                  - no-store
+                  - exception
+                  - timeout
+                  - incomplete
+                  - throttled
+                  - informational
+              details:
+                type: object
+                description: Internal error code.
+                properties:
+                  coding:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        system:
+                          type: string
+                          description: URI of the coding system specification.
+                          example: https://fhir.nhs.uk/R4/CodeSystem/Spine-ErrorOrWarningCode
+                        version:
+                          type: string
+                          description: Version of the coding system in use.
+                          example: '1'
+                        code:
+                          type: string
+                          description: Symbol in syntax defined by the system.
+                          example: MISSING_PRACTITIONER_IDENTIFIER
+                        display:
+                          type: string
+                          description: Representation defined by the system.
+                          example: Missing practitioner identifier

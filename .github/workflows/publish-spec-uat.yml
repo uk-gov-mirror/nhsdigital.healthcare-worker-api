@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: "Set OAS info.version to ${{ github.ref_name }}-${{ github.sha }}"
         run: |
@@ -23,6 +23,7 @@ jobs:
         run: |
           npx -y @redocly/cli bundle \
             specification/healthcare-worker-api.yaml \
+            -d \
             -o specification/healthcare-worker-api.resolved.json \
             --keep-url-references
           npx -y @redocly/cli lint --config redocly.yaml
@@ -36,7 +37,7 @@ jobs:
           cp ./.github/proxygen-settings.yaml ${HOME}/.proxygen/settings.yaml
 
       - name: "Configure AWS credentials"
-        uses: aws-actions/configure-aws-credentials@90a7a1fb1ee4e8d6a99f60d2fd22287e1657e51e # v2
+        uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355 # v2
         with:
           role-to-assume: arn:aws:iam::${{ secrets.DEV_AWS_ACCOUNT_ID }}:role/GitHubActionsPublishSpecRole
           aws-region: eu-west-2
@@ -44,7 +45,7 @@ jobs:
       - name: "Fetch proxygen private key from AWS Secrets Manager"
         run: |
           aws secretsmanager get-secret-value \
-            --secret-id "apim-deploy-private-key" \
+            --secret-id "apim-spec-publish-private-key" \
             --query SecretString \
             --output text > ${HOME}/.proxygen/key
           proxygen status
