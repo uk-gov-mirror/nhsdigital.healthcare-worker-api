@@ -1,6 +1,7 @@
 import unittest
 
 from fhir.fhir_reference import FhirReference, FhirReferable, FhirIdentifier
+from hcw_exception import HcwException
 from request_handlers.include_populator import get_references_to_include, get_revincludes
 
 
@@ -94,6 +95,15 @@ class TestIncludeQueryParam(unittest.TestCase):
 
         assert len(includes) == 0
 
+    def test_invalid_include_value_raises_bad_request(self):
+        original = FhirTestObject("base")
+
+        with self.assertRaises(HcwException) as context:
+            get_references_to_include([original], {"_include": ["TestObject"]})
+
+        assert context.exception.status_code == 400
+        assert context.exception.fhir_code == "invalid"
+
 
 class TestRevIncludeQueryParam(unittest.TestCase):
     """
@@ -183,5 +193,14 @@ class TestRevIncludeQueryParam(unittest.TestCase):
                                                     related_entries)
 
         assert len(includes) == 0
+
+    def test_invalid_revinclude_value_raises_bad_request(self):
+        main_response = FhirTestObject("base")
+
+        with self.assertRaises(HcwException) as context:
+            get_revincludes([main_response], {"_revinclude": ["TestObject"]}, [])
+
+        assert context.exception.status_code == 400
+        assert context.exception.fhir_code == "invalid"
 
 # Include extra items we're not matching

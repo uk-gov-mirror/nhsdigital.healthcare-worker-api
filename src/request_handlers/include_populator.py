@@ -4,9 +4,34 @@ The data layer returns these full objects, but they're not included in the norma
 """
 from fhir.fhir_object import FhirObject
 from fhir.fhir_reference import FhirReference, FhirReferable, FhirIdentifier
+from hcw_exception import HcwException
 from logs.log import Log
 
 logger = Log("include_populator")
+
+
+def get_query_parameter_values(query_parameters: dict[str, list[str] | str], parameter_name: str) -> list[str]:
+    values = query_parameters.get(parameter_name)
+    if not values:
+        return []
+
+    if isinstance(values, str):
+        return [values]
+
+    return values
+
+
+def parse_include_value(include: str, parameter_name: str) -> tuple[str, str]:
+    include_parts = include.split(":")
+    if len(include_parts) < 2 or not include_parts[0] or not include_parts[1]:
+        raise HcwException(
+            400,
+            f"Invalid value '{include}' for query parameter {parameter_name}",
+            "invalid",
+            "Missing or invalid query parameter(s).",
+        )
+
+    return include_parts[0], include_parts[1]
 
 
 def find_referenced_values(response: [FhirObject], resource_type: str,
@@ -36,13 +61,13 @@ def find_reverse_references_to_include(response: [FhirObject], resource_type: st
 
 
 def get_references_to_include(response: [FhirObject], query_parameters: [str, [str]]) -> [FhirObject]:
-    includes = query_parameters.get("_include")
+    includes = get_query_parameter_values(query_parameters, "_include")
     if not includes:
         return []
 
     references_to_include: set[FhirObject] = set()
     for include in includes:
-        resource_type, field_reference_name, *_ = include.split(":")
+        resource_type, field_reference_name = parse_include_value(include, "_include")
         references_to_include = references_to_include.union(find_referenced_values(response, resource_type, field_reference_name))
 
     return references_to_include
@@ -50,7 +75,7 @@ def get_references_to_include(response: [FhirObject], query_parameters: [str, [s
 
 def get_revincludes(response: [FhirObject], query_parameters: [str, [str]],
                                 related_entries: list[FhirObject]) -> [FhirObject]:
-    includes = query_parameters.get("_revinclude")
+    includes = get_query_parameter_values(query_parameters, "_revinclude")
     logger.info(f"Revincludes = {includes}","REQ_REVINCLUDES", "null")
     if not includes:
         return []
@@ -60,7 +85,7 @@ def get_revincludes(response: [FhirObject], query_parameters: [str, [str]],
         if isinstance(entry, FhirReferable):
             logger.info(f"Checking for includes on {entry}", "REQ_REVINCLUDES_CHECK", "null")
             for include in includes:
-                resource_type, field_reference_name, *_ = include.split(":")
+                resource_type, field_reference_name = parse_include_value(include, "_revinclude")
                 matches = find_reverse_references_to_include(related_entries, resource_type,
                                                                 field_reference_name, entry.get_identifier())
 

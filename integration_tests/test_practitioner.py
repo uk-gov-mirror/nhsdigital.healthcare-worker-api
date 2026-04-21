@@ -147,6 +147,25 @@ class TestWorker(IntegrationTest):
         self.check_valid_response(response, get_practitioners_example(SINGLE_ROLE))
         self.check_response_includes_practitioner_roles(response, get_practitioners_example(SINGLE_ROLE))
 
+    def test_practitioner_with_include_returns_bad_request(self):
+        response = self.send_worker_get(SINGLE_ROLE,
+                                        extra_query_params={"_include": "PractitionerRole:practitioner"})
+
+        self.assert_status_code_with_timestamp(response, 400)
+        assert response.json() == {
+            "resourceType": "OperationOutcome",
+            "issue": [{
+                "code": "invalid",
+                "severity": "error",
+                "details": {
+                    "coding": [{
+                        "code": "400",
+                        "display": "Missing or invalid query parameter(s).",
+                        "system": "https://fhir.nhs.uk/STU3/ValueSet/Spine-ErrorOrWarningCode-1"}]
+                }
+            }]
+        }
+
     # HCW-183 Missing date scenario tests
     def test_org_person_missing_both_dates_included(self):
         """Test org person with missing open+close dates is included"""
