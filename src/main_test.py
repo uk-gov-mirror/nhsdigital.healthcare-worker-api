@@ -9,7 +9,9 @@ from main import lambda_handler
 from request_handlers.handlers import UnknownHandlerException
 
 EXAMPLE_PATH = "/example"
-EXPECTED_HEADERS = {"Content-Type": "application/json"}
+APPLICATION_JSON = "application/json"
+NHS_DIGITAL_ORIGIN = "https://digital.nhs.uk"
+EXPECTED_HEADERS = {"Content-Type": APPLICATION_JSON}
 
 
 @patch("main.Log")
@@ -38,14 +40,14 @@ def test_worker_sandbox_adds_cors_origin_header(request_router_mock, jsonpickle_
     response = lambda_handler({
         "resource": EXAMPLE_PATH,
         "headers": {
-            "Origin": "https://digital.nhs.uk"
+            "Origin": NHS_DIGITAL_ORIGIN
         }
     }, LambdaContext())
 
     assert response["statusCode"] == 200
     assert response["headers"] == {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "https://digital.nhs.uk",
+        "Content-Type": APPLICATION_JSON,
+        "Access-Control-Allow-Origin": NHS_DIGITAL_ORIGIN,
         "Vary": "Origin"
     }
     assert log_mock.cleanup.called
@@ -62,15 +64,15 @@ def test_worker_sandbox_adds_credentials_header_when_authorization_present(reque
     response = lambda_handler({
         "resource": EXAMPLE_PATH,
         "headers": {
-            "Origin": "https://digital.nhs.uk",
+            "Origin": NHS_DIGITAL_ORIGIN,
             "Authorization": "Bearer token"
         }
     }, LambdaContext())
 
     assert response["statusCode"] == 200
     assert response["headers"] == {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "https://digital.nhs.uk",
+        "Content-Type": APPLICATION_JSON,
+        "Access-Control-Allow-Origin": NHS_DIGITAL_ORIGIN,
         "Access-Control-Allow-Credentials": "true",
         "Vary": "Origin"
     }
