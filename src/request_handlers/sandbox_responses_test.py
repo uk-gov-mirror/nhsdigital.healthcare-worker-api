@@ -1,7 +1,10 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from sandbox_main import lambda_handler
+from request_handlers.sandbox_static_responses import SANDBOX_SCENARIOS, get_success_example_path
 
 EXAMPLES_DIR = Path(__file__).resolve().parents[2] / "specification" / "components" / "examples"
 BASE_URL = "https://int.api.service.nhs.uk/healthcare-worker"
@@ -14,6 +17,11 @@ class LambdaContext:
 
 def load_example(file_name: str) -> dict:
     with open(EXAMPLES_DIR / file_name, encoding="utf-8") as example_file:
+        return json.load(example_file)
+
+
+def load_example_path(example_path: Path) -> dict:
+    with open(example_path, encoding="utf-8") as example_file:
         return json.load(example_file)
 
 
@@ -42,58 +50,40 @@ def sandbox_event(resource: str, query_string_parameters: dict, multi_value_quer
     }
 
 
-def test_sandbox_practitioner_basic_matches_spec_example():
-    response = lambda_handler(
-        sandbox_event("/Practitioner", {"identifier": SANDBOX_UUID}),
-        LambdaContext(),
-    )
-
-    assert response["statusCode"] == 200
-    assert sort_bundle_entries(json.loads(response["body"])) == sort_bundle_entries(
-        load_example("GetHealthcareWorkerDetailsResponseSuccessBasic.json")
-    )
-
-
-def test_sandbox_practitioner_with_revinclude_matches_spec_example():
-    response = lambda_handler(
-        sandbox_event(
+@pytest.mark.parametrize(
+    ("resource", "query_string_parameters", "example_name"),
+    [
+        ("/Practitioner", {"identifier": SANDBOX_UUID}, "basic"),
+        (
             "/Practitioner",
             {"identifier": SANDBOX_UUID, "_revinclude": "PractitionerRole:practitioner"},
+            "with-includes",
         ),
-        LambdaContext(),
-    )
-
-    assert response["statusCode"] == 200
-    assert sort_bundle_entries(json.loads(response["body"])) == sort_bundle_entries(
-        load_example("GetHealthcareWorkerDetailsResponseSuccessWithIncludes.json")
-    )
-
-
-def test_sandbox_practitioner_role_basic_matches_spec_example():
-    response = lambda_handler(
-        sandbox_event("/PractitionerRole", {"practitioner.identifier": SANDBOX_UUID}),
-        LambdaContext(),
-    )
-
-    assert response["statusCode"] == 200
-    assert sort_bundle_entries(json.loads(response["body"])) == sort_bundle_entries(
-        load_example("GetHealthcareWorkerRoleDetailsResponseSuccessBasic.json")
-    )
-
-
-def test_sandbox_practitioner_role_with_include_matches_spec_example():
-    response = lambda_handler(
-        sandbox_event(
+        ("/PractitionerRole", {"practitioner.identifier": SANDBOX_UUID}, "basic"),
+        (
             "/PractitionerRole",
             {"practitioner.identifier": SANDBOX_UUID, "_include": "PractitionerRole:practitioner"},
+            "with-includes",
         ),
+    ],
+)
+def test_sandbox_success_scenarios_match_spec_examples(resource: str, query_string_parameters: dict, example_name: str):
+    response = lambda_handler(
+        sandbox_event(resource, query_string_parameters),
         LambdaContext(),
     )
 
     assert response["statusCode"] == 200
     assert sort_bundle_entries(json.loads(response["body"])) == sort_bundle_entries(
-        load_example("GetHealthcareWorkerRoleDetailsResponseSuccessWithIncludes.json")
+        load_example_path(get_success_example_path(resource, example_name))
     )
+
+
+def test_sandbox_success_examples_remain_declared_in_openapi():
+    for resource, config in SANDBOX_SCENARIOS.items():
+        example_names = [config.default_example_name, *config.conditional_examples.values()]
+        for example_name in example_names:
+            assert get_success_example_path(resource, example_name).exists()
 
 
 def test_sandbox_practitioner_unknown_uuid_returns_not_found():

@@ -1,4 +1,5 @@
-import os
+from datetime import datetime, timedelta
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
@@ -21,21 +22,39 @@ def test_real_connection(connection_mock):
 
 
 @patch("ldap.connection_fetch.RealHcwLdapConnection")
-def test_real_connection_even_if_sandbox_mode_is_true(connection_mock):
-    with patch.dict(os.environ, {"SANDBOX_MODE": "true"}):
-        connection = get_connection()
-    assert connection == connection_mock.return_value
+def test_reuses_existing_open_connection(connection_mock):
+    existing_connection = SimpleNamespace(
+        connection=SimpleNamespace(closed=False),
+        bind_time=datetime.now(),
+    )
+    ldap.connection_fetch.ldap_connection = existing_connection
 
-
-@patch("ldap.connection_fetch.RealHcwLdapConnection")
-def test_real_connection_with_unknown_value(connection_mock):
-    with patch.dict(os.environ, {"SANDBOX_MODE": "non_boolean_value"}):
-        connection = get_connection()
-    assert connection == connection_mock.return_value
-
-
-@patch("ldap.connection_fetch.RealHcwLdapConnection")
-def test_real_connection_with_no_value(connection_mock):
     connection = get_connection()
+
+    assert connection == existing_connection
+    connection_mock.assert_not_called()
+
+
+@patch("ldap.connection_fetch.RealHcwLdapConnection")
+def test_recreates_stale_connection(connection_mock):
+    ldap.connection_fetch.ldap_connection = SimpleNamespace(
+        connection=SimpleNamespace(closed=False),
+        bind_time=datetime.now() - timedelta(minutes=6),
+    )
+
+    connection = get_connection()
+
+    assert connection == connection_mock.return_value
+
+
+@patch("ldap.connection_fetch.RealHcwLdapConnection")
+def test_recreates_closed_connection(connection_mock):
+    ldap.connection_fetch.ldap_connection = SimpleNamespace(
+        connection=SimpleNamespace(closed=True),
+        bind_time=datetime.now(),
+    )
+
+    connection = get_connection()
+
     assert connection == connection_mock.return_value
 

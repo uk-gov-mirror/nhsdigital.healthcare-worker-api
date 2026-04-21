@@ -11,5 +11,6 @@ tar -xvf hcw_api-*.tar.gz
 
 cd hcw_api-*/src || exit
 mkdir -p specification/components/examples
+cp ../../../specification/healthcare-worker-api.yaml specification/
 cp ../../../specification/components/examples/*.json specification/components/examples/
 zip -r ../../../hcw-api.zip . -x "*.pyc" -x "*__pycache__*"
