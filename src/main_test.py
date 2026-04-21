@@ -1,3 +1,4 @@
+import os
 import json
 from unittest.mock import patch
 
@@ -23,6 +24,56 @@ def test_worker(request_router_mock, jsonpickle_mock, log_mock):
     jsonpickle_mock.encode.assert_called_with(event_handler_response, unpicklable=False)
     assert response["statusCode"] == 200
     assert response["body"] == jsonpickle_mock.encode.return_value
+    assert log_mock.cleanup.called
+
+
+@patch.dict(os.environ, {"SANDBOX_MODE": "true"}, clear=False)
+@patch("main.Log")
+@patch("main.jsonpickle")
+@patch("main.RequestRouter")
+def test_worker_sandbox_adds_cors_origin_header(request_router_mock, jsonpickle_mock, log_mock):
+    event_handler_response = {"worker": "details"}
+    request_router_mock.return_value.handle_event.return_value = event_handler_response
+
+    response = lambda_handler({
+        "resource": EXAMPLE_PATH,
+        "headers": {
+            "Origin": "https://digital.nhs.uk"
+        }
+    }, LambdaContext())
+
+    assert response["statusCode"] == 200
+    assert response["headers"] == {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "https://digital.nhs.uk",
+        "Vary": "Origin"
+    }
+    assert log_mock.cleanup.called
+
+
+@patch.dict(os.environ, {"SANDBOX_MODE": "true"}, clear=False)
+@patch("main.Log")
+@patch("main.jsonpickle")
+@patch("main.RequestRouter")
+def test_worker_sandbox_adds_credentials_header_when_authorization_present(request_router_mock, jsonpickle_mock, log_mock):
+    event_handler_response = {"worker": "details"}
+    request_router_mock.return_value.handle_event.return_value = event_handler_response
+
+    response = lambda_handler({
+        "resource": EXAMPLE_PATH,
+        "headers": {
+            "Origin": "https://digital.nhs.uk",
+            "Authorization": "Bearer token"
+        }
+    }, LambdaContext())
+
+    assert response["statusCode"] == 200
+    assert response["headers"] == {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "https://digital.nhs.uk",
+        "Access-Control-Allow-Credentials": "true",
+        "Vary": "Origin"
+    }
     assert log_mock.cleanup.called
 
 

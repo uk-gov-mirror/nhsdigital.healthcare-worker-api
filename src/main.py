@@ -2,6 +2,7 @@
 Basic hello world app for an initial deployment
 """
 import json
+import os
 import traceback
 from datetime import datetime
 
@@ -20,6 +21,36 @@ from request_handlers.handlers import RequestRouter
 
 logger = Log("main")
 
+
+def _is_sandbox_mode() -> bool:
+    return os.environ.get("SANDBOX_MODE", "false").lower() == "true"
+
+
+def _get_request_header(event: APIGatewayProxyEvent, header_name: str) -> str | None:
+    header_values = event.resolved_headers_field.get(header_name, [])
+    if isinstance(header_values, str):
+        return header_values
+    if isinstance(header_values, list):
+        return header_values[0] if header_values else None
+    return None
+
+
+def _build_response_headers(event: APIGatewayProxyEvent) -> dict[str, str]:
+    response_headers = {"Content-Type": "application/json"}
+
+    if not _is_sandbox_mode():
+        return response_headers
+
+    origin = _get_request_header(event, "Origin")
+    if origin:
+        response_headers["Access-Control-Allow-Origin"] = origin
+        response_headers["Vary"] = "Origin"
+
+        if _get_request_header(event, "Authorization"):
+            response_headers["Access-Control-Allow-Credentials"] = "true"
+
+    return response_headers
+
 def lambda_handler(event_dict: dict, context: LambdaContext) -> dict:
     """
     Lambda event handler
@@ -32,7 +63,7 @@ def lambda_handler(event_dict: dict, context: LambdaContext) -> dict:
     logger.save_event_details(event)
     logger.info("New request received", "REQ_RECEIVED", "null")
 
-    response_headers = {"Content-Type": "application/json"}
+    response_headers = _build_response_headers(event)
     try:
         response = RequestRouter().handle_event(event.resource, event)
 
