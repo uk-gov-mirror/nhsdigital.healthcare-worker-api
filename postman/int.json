@@ -1,70 +1,51 @@
 {
-	"id": "eba39c81-d2ad-498e-8185-2f60546fe1e5",
-	"name": "INT",
-	"values": [
-		{
-			"key": "base_url",
-			"value": "https://int.api.service.nhs.uk/healthcare-worker",
-			"type": "default",
-			"enabled": true
-		},
-		{
-			"key": "client_id",
-			"value": "ODriiJhfHAWm7RvqSEnURCJ9exwVkfCN",
-			"type": "default",
-			"enabled": true
-		},
-		{
-			"key": "realm_url",
-			"value": "https://int.api.service.nhs.uk/oauth2/token",
-			"type": "default",
-			"enabled": true
-		},
-		{
-			"key": "key_id",
-			"value": "test-1",
-			"type": "default",
-			"enabled": true
-		},
-		{
-			"key": "expireTime",
-			"value": "",
-			"type": "any",
-			"enabled": true
-		},
-		{
-			"key": "authToken",
-			"value": "",
-			"type": "any",
-			"enabled": true
-		},
-		{
-			"key": "access_token",
-			"value": "",
-			"type": "any",
-			"enabled": true
-		},
-		{
-			"key": "parsed",
-			"value": "",
-			"type": "any",
-			"enabled": true
-		},
-		{
-			"key": "shaValue",
-			"value": "",
-			"type": "any",
-			"enabled": true
-		},
-		{
-			"key": "stringified",
-			"value": "",
-			"type": "any",
-			"enabled": true
-		}
-	],
-	"color": null,
-	"_postman_variable_scope": "environment",
-	"_postman_exported_at": "2026-04-21T08:13:26.142Z",
-	"_postman_exported_using": "Postman/11.88.0"
-}
+    "id": "eba39c81-d2ad-498e-8185-2f60546fe1e5",
+    "name": "INT",
+    "values": [
+        {
+            "key": "base_url",
+            "value": "https://int.api.service.nhs.uk/healthcare-worker",
+            "type": "default",
+            "enabled": true
+        },
+        {
+            "key": "client_id",
+            "value": "ODriiJhfHAWm7RvqSEnURCJ9exwVkfCN",
+            "type": "default",
+            "enabled": true
+        },
+        {
+            "key": "realm_url",
+            "value": "https://int.api.service.nhs.uk/oauth2/token",
+            "type": "default",
+            "enabled": true
+        },
+        {
+            "key": "key_id",
+            "value": "test-1",
+            "type": "default",
+            "enabled": true
+        },
+        {
+            "key": "expireTime",
+            "value": "",
+            "type": "any",
+            "enabled": true
+        },
+        {
+            "key": "authToken",
+            "value": "",
+            "type": "any",
+            "enabled": true
+        },
+        {
+            "key": "access_token",
+            "value": "",
+            "type": "any",
+            "enabled": true
+        }
+    ],
+    "_postman_variable_scope": "environment",
+    "_postman_exported_at": "2026-04-21T08:13:26.142Z",
+    "_postman_exported_using": "Postman/11.88.0"
+  }
