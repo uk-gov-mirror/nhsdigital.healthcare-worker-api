@@ -22,14 +22,14 @@ _ENV_TEST_DATA = {
                 {"role_profile_id": "ROLE_SINGLE", "org_code": "INT1", "org_name": "INT TEST ORG", "start_date": "2024-01-01",
                  "role_code": "S0010:G0010:R0010", "role_name": "\"Test\":\"Test\":\"Test Role\""}
             ]},
-            "MULTIPLE_MIDDLE_NAMES": {"prefix": "Ms", "given": "Mary Jane", "family": "Doe", "full_name": "Ms Mary Jane Doe", "roles": []},
-            "MISSING_ORG_PERSON_DATES": {"prefix": "Dr", "given": "John", "family": "Missing", "full_name": "Dr John Missing", "roles": []},
-            "MISSING_ORG_PERSON_OPEN_PAST_CLOSE": {"prefix": "Mr", "given": "Past", "family": "Close", "full_name": "Mr Past Close", "roles": []},
-            "MISSING_ROLE_OPEN_DATE_PAST_CLOSE": {"prefix": "Mrs", "given": "Role", "family": "Missing", "full_name": "Mrs Role Missing", "roles": [
+            "MULTIPLE_MIDDLE_NAMES": {"prefix": "Mr", "given": "John", "family": "Zion", "full_name": "	Mr John Si Sang Chin Zion", "roles": []},
+            "MISSING_ORG_PERSON_DATES": {"prefix": "Miss", "given": "Ming", "family": "Neha", "full_name": "Miss Ming Neha", "roles": []},
+            "MISSING_ORG_PERSON_OPEN_PAST_CLOSE": {"prefix": "", "given": "Elliot", "family": "Joe", "full_name": "Elliot Joe", "roles": []},
+            "MISSING_ROLE_OPEN_DATE_PAST_CLOSE": {"prefix": "", "given": "Nina", "family": "Pat", "full_name": "Nina Pat", "roles": [
                 {"role_profile_id": "ROLE_MISSING_OPEN_DATE_PAST_CLOSE", "org_code": "INT1", "org_name": "", "start_date": "",
                  "role_code": "S0020:G0020:R0020", "role_name": "\"Admin\":\"Test\":\"Test Admin\""}
             ]},
-            "MISSING_ROLE_DATES": {"prefix": "Dr", "given": "Date", "family": "Missing", "full_name": "Dr Date Missing", "roles": [
+            "MISSING_ROLE_DATES": {"prefix": "", "given": "Mandy", "family": "Jack", "full_name": "Mandy Jack", "roles": [
                 {"role_profile_id": "ROLE_MISSING_DATES", "org_code": "INT1", "org_name": "", "start_date": "",
                  "role_code": "S0030:G0030:R0030", "role_name": "\"Clinical\":\"Test\":\"Test Clinical\""}
             ]},
