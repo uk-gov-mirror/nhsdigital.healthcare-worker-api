@@ -17,10 +17,10 @@ _ENV_TEST_DATA = {
         "ROLE_MISSING_OPEN_DATE_PAST_CLOSE": "555390095908",
         "ROLE_MISSING_DATES": "555390057105",
         "practitioners": {
-            "KNOWN_USER": {"prefix": "Miss", "given": "Lydia", "family": "Joe", "full_name": "Miss Lydia Jael Joe", "roles": []},
+            "KNOWN_USER": {"prefix": "Miss", "given": "Lydia Jael", "family": "Joe", "full_name": "Miss Lydia Jael Joe", "roles": []},
             "NO_PREFIX_OR_MIDDLE_NAME": {"prefix": "", "given": "Solomon", "family": "John", "full_name": "Solomon John", "roles": [
-                {"role_profile_id": "ROLE_SINGLE", "org_code": "INT1", "org_name": "INT TEST ORG", "start_date": "2024-01-01",
-                "role_code": "S0010:G0010:R0010", "role_name": "\"Test\":\"Test\":\"Test Role\""}
+                {"role_profile_id": "ROLE_SINGLE", "org_code": "Y94", "org_name": "XXX DO NOT USE XXX CFH TEST CLUSTER", "start_date": "2026-03-31",
+                "role_code": "S0010:G0010:R5100", "role_name": "\"Test\":\"Test\":\"Test Role\""}
             ]},
             "MULTIPLE_MIDDLE_NAMES": {"prefix": "Mr", "given": "John", "family": "Zion", "full_name": "	Mr John Si Sang Chin Zion", "roles": []},
             "MISSING_ORG_PERSON_DATES": {"prefix": "Miss", "given": "Ming", "family": "Neha", "full_name": "Miss Ming Neha", "roles": []},
