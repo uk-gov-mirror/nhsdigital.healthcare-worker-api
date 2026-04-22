@@ -46,7 +46,7 @@
           }
         ]
       },
-      "fullUrl": "https://int.api.service.nhs.uk/healthcare-workerPractitionerRole/615218913510"
+      "fullUrl": "https://int.api.service.nhs.uk/healthcare-worker/PractitionerRole/615218913510"
     },
     {
       "search": {
@@ -93,13 +93,13 @@
           }
         ]
       },
-      "fullUrl": "https://int.api.service.nhs.uk/healthcare-workerPractitionerRole/555051225101"
+      "fullUrl": "https://int.api.service.nhs.uk/healthcare-worker/PractitionerRole/555051225101"
     }
   ],
   "link": [
     {
       "relation": "self",
-      "url": "https://https://int.api.service.nhs.uk/healthcare-worker/PractitionerRole"
+      "url": "https://int.api.service.nhs.uk/healthcare-worker/PractitionerRole"
     }
   ]
 }
