@@ -20,18 +20,18 @@ _ENV_TEST_DATA = {
             "KNOWN_USER": {"prefix": "Miss", "given": "Lydia", "family": "Joe", "full_name": "Miss Lydia Jael Joe", "roles": []},
             "NO_PREFIX_OR_MIDDLE_NAME": {"prefix": "", "given": "Solomon", "family": "John", "full_name": "Solomon John", "roles": [
                 {"role_profile_id": "ROLE_SINGLE", "org_code": "INT1", "org_name": "INT TEST ORG", "start_date": "2024-01-01",
-                 "role_code": "S0010:G0010:R0010", "role_name": "\"Test\":\"Test\":\"Test Role\""}
+                "role_code": "S0010:G0010:R0010", "role_name": "\"Test\":\"Test\":\"Test Role\""}
             ]},
             "MULTIPLE_MIDDLE_NAMES": {"prefix": "Mr", "given": "John", "family": "Zion", "full_name": "	Mr John Si Sang Chin Zion", "roles": []},
             "MISSING_ORG_PERSON_DATES": {"prefix": "Miss", "given": "Ming", "family": "Neha", "full_name": "Miss Ming Neha", "roles": []},
             "MISSING_ORG_PERSON_OPEN_PAST_CLOSE": {"prefix": "", "given": "Elliot", "family": "Joe", "full_name": "Elliot Joe", "roles": []},
             "MISSING_ROLE_OPEN_DATE_PAST_CLOSE": {"prefix": "", "given": "Nina", "family": "Pat", "full_name": "Nina Pat", "roles": [
                 {"role_profile_id": "ROLE_MISSING_OPEN_DATE_PAST_CLOSE", "org_code": "INT1", "org_name": "", "start_date": "",
-                 "role_code": "S0020:G0020:R0020", "role_name": "\"Admin\":\"Test\":\"Test Admin\""}
+                "role_code": "S0020:G0020:R0020", "role_name": "\"Admin\":\"Test\":\"Test Admin\""}
             ]},
             "MISSING_ROLE_DATES": {"prefix": "", "given": "Mandy", "family": "Jack", "full_name": "Mandy Jack", "roles": [
                 {"role_profile_id": "ROLE_MISSING_DATES", "org_code": "INT1", "org_name": "", "start_date": "",
-                 "role_code": "S0030:G0030:R0030", "role_name": "\"Clinical\":\"Test\":\"Test Clinical\""}
+                "role_code": "S0030:G0030:R0030", "role_name": "\"Clinical\":\"Test\":\"Test Clinical\""}
             ]},
         }
     },
@@ -52,18 +52,18 @@ _ENV_TEST_DATA = {
             "KNOWN_USER": {"prefix": "Mr", "given": "Jitendra", "family": "Banshpal", "full_name": "Mr Jitendra Banshpal", "roles": []},
             "NO_PREFIX_OR_MIDDLE_NAME": {"prefix": "", "given": "Finnley", "family": "Reeve", "full_name": "Finnley Reeve", "roles": [
                 {"role_profile_id": "ROLE_SINGLE", "org_code": "Y51", "org_name": "THE NORTH MIDLANDS AND EAST PROGRAMME FOR IT (NMEPFIT)", "start_date": "2024-11-27",
-                 "role_code": "S0070:G0380:R0002", "role_name": "\"Add'l Clinical Services\":\"Non Clinical - Add Clin Serv\":\"Porter\""}
+                "role_code": "S0070:G0380:R0002", "role_name": "\"Add'l Clinical Services\":\"Non Clinical - Add Clin Serv\":\"Porter\""}
             ]},
             "MULTIPLE_MIDDLE_NAMES": {"prefix": "Miss", "given": "Shayla Cailin Seanna Cayley", "family": "Ashworth", "full_name": "Miss Shayla Cailin Seanna Cayley Ashworth", "roles": []},
             "MISSING_ORG_PERSON_DATES": {"prefix": "Dr", "given": "LOUISE", "family": "STEENE", "full_name": "Dr LOUISE STEENE", "roles": []},
             "MISSING_ORG_PERSON_OPEN_PAST_CLOSE": {"prefix": "Mr", "given": "KARTHIK J", "family": "BVM", "full_name": "Mr KARTHIK J BVM", "roles": []},
             "MISSING_ROLE_OPEN_DATE_PAST_CLOSE": {"prefix": "Mr", "given": "Elvis", "family": "Presley", "full_name": "Mr Elvis Presley", "roles": [
                 {"role_profile_id": "ROLE_MISSING_OPEN_DATE_PAST_CLOSE", "org_code": "Y51", "org_name": "", "start_date": "",
-                 "role_code": "S0080:G0440:R5000", "role_name": "\"Admin & Clerical\":\"Admin\":\"Sponsor\""}
+                "role_code": "S0080:G0440:R5000", "role_name": "\"Admin & Clerical\":\"Admin\":\"Sponsor\""}
             ]},
             "MISSING_ROLE_DATES": {"prefix": "Dr", "given": "Shikha", "family": "Tiwari", "full_name": "Dr Shikha Tiwari", "roles": [
                 {"role_profile_id": "ROLE_MISSING_DATES", "org_code": "Y51", "org_name": "", "start_date": "",
-                 "role_code": "S0070:G0380:R0002", "role_name": "\"Add\'l Clinical Services\":\"Non Clinical - Add Clin Serv\":\"Porter\""}
+                "role_code": "S0070:G0380:R0002", "role_name": "\"Add\'l Clinical Services\":\"Non Clinical - Add Clin Serv\":\"Porter\""}
             ]},
         }
     },
