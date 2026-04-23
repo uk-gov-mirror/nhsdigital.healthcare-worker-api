@@ -17,11 +17,16 @@ import builtins
 from hcw_exception import HcwException
 from ldap.real_connection import RealHcwLdapConnection
 
+ORIGINAL_OPEN = builtins.open
+
 
 @pytest.fixture(autouse=True)
 def cleanup():
     yield
     ldap.real_connection.connection = None
+    builtins.open = ORIGINAL_OPEN
+    if hasattr(ldap.real_connection, "open"):
+        delattr(ldap.real_connection, "open")
 
 
 def environment_variables() -> dict:
@@ -45,7 +50,7 @@ def setup_ldap_connection_mock():
     ldap.real_connection.Server = MagicMock()
     ldap.real_connection.Connection = MagicMock()
     ldap.real_connection.uuid = MagicMock()
-    builtins.open = mock_open()
+    ldap.real_connection.open = mock_open()
 
     return (ldap.real_connection.boto3, ldap.real_connection.Tls, ldap.real_connection.Server,
             ldap.real_connection.Connection, ldap.real_connection.uuid)
