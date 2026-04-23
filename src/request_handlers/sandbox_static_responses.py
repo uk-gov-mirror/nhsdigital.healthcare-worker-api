@@ -4,11 +4,16 @@ from functools import lru_cache
 from pathlib import Path
 
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
-import yaml
 
 SANDBOX_UUID = "123456789012"
 SPECIFICATION_FILE = Path("specification") / "healthcare-worker-api.yaml"
 EXAMPLES_SUBPATH = Path("specification") / "components" / "examples"
+SUCCESS_EXAMPLE_REFERENCES: dict[tuple[str, str], Path] = {
+    ("/Practitioner", "basic"): EXAMPLES_SUBPATH / "GetHealthcareWorkerDetailsResponseSuccessBasic.json",
+    ("/Practitioner", "with-includes"): EXAMPLES_SUBPATH / "GetHealthcareWorkerDetailsResponseSuccessWithIncludes.json",
+    ("/PractitionerRole", "basic"): EXAMPLES_SUBPATH / "GetHealthcareWorkerRoleDetailsResponseSuccessBasic.json",
+    ("/PractitionerRole", "with-includes"): EXAMPLES_SUBPATH / "GetHealthcareWorkerRoleDetailsResponseSuccessWithIncludes.json",
+}
 
 
 @dataclass(frozen=True)
@@ -79,9 +84,15 @@ def get_success_example_path(endpoint: str, example_name: str) -> Path:
     try:
         relative_path = _get_success_example_references()[(endpoint, example_name)]
     except KeyError as exc:
-        raise KeyError(f"Sandbox example {example_name!r} for endpoint {endpoint!r} was not found in the spec") from exc
+        raise KeyError(f"Sandbox example {example_name!r} for endpoint {endpoint!r} is not configured") from exc
 
     return _get_repository_root() / relative_path
+
+
+def success_example_is_declared_in_spec(endpoint: str, example_name: str) -> bool:
+    example_path = _get_success_example_references()[(endpoint, example_name)]
+    external_value = example_path.relative_to("specification").as_posix()
+    return f"externalValue: '{external_value}'" in _get_specification_text()
 
 
 def _load_success_example(endpoint: str, example_name: str) -> str:
@@ -91,29 +102,13 @@ def _load_success_example(endpoint: str, example_name: str) -> str:
 
 @lru_cache(maxsize=1)
 def _get_success_example_references() -> dict[tuple[str, str], Path]:
-    references: dict[tuple[str, str], Path] = {}
+    return SUCCESS_EXAMPLE_REFERENCES
 
+
+@lru_cache(maxsize=1)
+def _get_specification_text() -> str:
     with open(_get_repository_root() / SPECIFICATION_FILE, encoding="utf-8") as spec_file:
-        specification = yaml.safe_load(spec_file)
-
-    paths = specification.get("paths", {})
-    for endpoint in SANDBOX_SCENARIOS:
-        examples = (
-            paths.get(endpoint, {})
-            .get("get", {})
-            .get("responses", {})
-            .get("200", {})
-            .get("content", {})
-            .get("application/fhir+json", {})
-            .get("examples", {})
-        )
-
-        for example_name, example_definition in examples.items():
-            external_value = example_definition.get("externalValue")
-            if external_value:
-                references[(endpoint, example_name)] = Path("specification") / external_value
-
-    return references
+        return spec_file.read()
 
 
 @lru_cache(maxsize=1)

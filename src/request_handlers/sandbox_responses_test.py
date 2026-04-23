@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from sandbox_main import lambda_handler
-from request_handlers.sandbox_static_responses import SANDBOX_SCENARIOS, get_success_example_path
+from request_handlers.sandbox_static_responses import SANDBOX_SCENARIOS, get_success_example_path, success_example_is_declared_in_spec
 
 EXAMPLES_DIR = Path(__file__).resolve().parents[2] / "specification" / "components" / "examples"
 BASE_URL = "https://int.api.service.nhs.uk/healthcare-worker"
@@ -84,6 +84,7 @@ def test_sandbox_success_examples_remain_declared_in_openapi():
         example_names = [config.default_example_name, *config.conditional_examples.values()]
         for example_name in example_names:
             assert get_success_example_path(resource, example_name).exists()
+            assert success_example_is_declared_in_spec(resource, example_name)
 
 
 def test_sandbox_practitioner_unknown_uuid_returns_not_found():
