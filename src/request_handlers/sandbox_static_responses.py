@@ -4,6 +4,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from aws_lambda_powertools.utilities.data_classes import APIGatewayProxyEvent
+import yaml
 
 SANDBOX_UUID = "123456789012"
 SPECIFICATION_FILE = Path("specification") / "healthcare-worker-api.yaml"
@@ -91,66 +92,26 @@ def _load_success_example(endpoint: str, example_name: str) -> str:
 @lru_cache(maxsize=1)
 def _get_success_example_references() -> dict[tuple[str, str], Path]:
     references: dict[tuple[str, str], Path] = {}
-    current_endpoint: str | None = None
-    in_get = False
-    in_success_response = False
-    in_examples = False
-    current_example_name: str | None = None
 
     with open(_get_repository_root() / SPECIFICATION_FILE, encoding="utf-8") as spec_file:
-        for line in spec_file:
-            stripped = line.strip()
-            indent = len(line) - len(line.lstrip(" "))
+        specification = yaml.safe_load(spec_file)
 
-            if indent == 2 and stripped.endswith(":") and stripped.startswith("/"):
-                current_endpoint = stripped[:-1]
-                in_get = False
-                in_success_response = False
-                in_examples = False
-                current_example_name = None
-                continue
+    paths = specification.get("paths", {})
+    for endpoint in SANDBOX_SCENARIOS:
+        examples = (
+            paths.get(endpoint, {})
+            .get("get", {})
+            .get("responses", {})
+            .get("200", {})
+            .get("content", {})
+            .get("application/fhir+json", {})
+            .get("examples", {})
+        )
 
-            if current_endpoint not in SANDBOX_SCENARIOS:
-                continue
-
-            if indent == 4:
-                in_get = stripped == "get:"
-                in_success_response = False
-                in_examples = False
-                current_example_name = None
-                continue
-
-            if not in_get:
-                continue
-
-            if indent == 8:
-                in_success_response = stripped.rstrip(":").strip("\"'") == "200"
-                in_examples = False
-                current_example_name = None
-                continue
-
-            if not in_success_response:
-                continue
-
-            if indent == 14 and stripped == "examples:":
-                in_examples = True
-                current_example_name = None
-                continue
-
-            if indent <= 14 and stripped != "examples:":
-                in_examples = False
-                current_example_name = None
-
-            if not in_examples:
-                continue
-
-            if indent == 16 and stripped.endswith(":"):
-                current_example_name = stripped[:-1]
-                continue
-
-            if current_example_name and indent == 18 and stripped.startswith("externalValue:"):
-                example_path = stripped.split(":", maxsplit=1)[1].strip().strip("\"'")
-                references[(current_endpoint, current_example_name)] = Path("specification") / example_path
+        for example_name, example_definition in examples.items():
+            external_value = example_definition.get("externalValue")
+            if external_value:
+                references[(endpoint, example_name)] = Path("specification") / external_value
 
     return references
 
